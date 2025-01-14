@@ -1,12 +1,12 @@
 services:
   backend:
     build:
-      context: .
+      context: ./storefront
       dockerfile: Dockerfile
     ports:
       - 8001:8000
     volumes:
-      - ./storefront:/app
+      - .:/app
     depends_on:
       - db
   
