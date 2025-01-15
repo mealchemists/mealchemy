@@ -14,10 +14,10 @@ docker-compose build
 
 ## Apply database migrations
 
-after the docker compise command is ran and the server is running you cna perform the database migratiosn to create the required tables for the project.
+after the docker-compose command is ran and the server is running you can perform the database migration to create the required tables for the project.
 
 ```
-docker-compuse exec backend sh
+docker-compose exec backend sh
 python manage.py makemigrations
 python manage.py migrate
 ```
