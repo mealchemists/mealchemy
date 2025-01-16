@@ -1,21 +1,62 @@
 [
-    {},
-    {},
-    {},
-    {},
     {
-        "wpel-icon": ""
+        "data-ingredient-quantity": "4",
+        "data-ingredient-unit": "",
+        "data-ingredient-name": "skinless, boneless chicken breast halves"
     },
-    {},
-    {},
-    {},
-    {},
-    {},
     {
-        "style": "Using a spatula and gently hand-mixing, alternate adding flour mixture and buttermilk to the butter mixture, starting and ending with flour mixture and mixing until just combined after each addition.\u00a0The batter should be thoroughly combined, but there may be some small lumps in the batter and avoid over-mixing (and do not use your electric mixer or stand mixer for this step).",
-        "wprm-recipe-instruction-ingredient": "1 \u00bc cup (300 ml)  buttermilk"
+        "data-ingredient-quantity": "8",
+        "data-ingredient-unit": "",
+        "data-ingredient-name": "carrots, sliced into 1/2-inch rounds"
     },
-    {},
-    {},
-    {}
+    {
+        "data-ingredient-quantity": "8",
+        "data-ingredient-unit": "stalks",
+        "data-ingredient-name": "celery, chopped"
+    },
+    {
+        "data-ingredient-quantity": "8",
+        "data-ingredient-unit": "",
+        "data-ingredient-name": "green onions, chopped"
+    },
+    {
+        "data-ingredient-quantity": "4",
+        "data-ingredient-unit": "",
+        "data-ingredient-name": "green bell peppers, sliced"
+    },
+    {
+        "data-ingredient-quantity": "\u00bc",
+        "data-ingredient-unit": "cup",
+        "data-ingredient-name": "chopped fresh flat-leaf parsley"
+    },
+    {
+        "data-ingredient-quantity": "\u00bd",
+        "data-ingredient-unit": "cup",
+        "data-ingredient-name": "olive oil"
+    },
+    {
+        "data-ingredient-quantity": "1",
+        "data-ingredient-unit": "teaspoon",
+        "data-ingredient-name": "Italian seasoning"
+    },
+    {
+        "data-ingredient-quantity": "1",
+        "data-ingredient-unit": "teaspoon",
+        "data-ingredient-name": "chili powder"
+    },
+    {
+        "data-ingredient-quantity": "1",
+        "data-ingredient-unit": "teaspoon",
+        "data-ingredient-name": "lemon pepper"
+    },
+    {
+        "data-ingredient-quantity": "1",
+        "data-ingredient-unit": "teaspoon",
+        "data-ingredient-name": "salt"
+    },
+    {
+        "data-ingredient-quantity": "4",
+        "data-ingredient-unit": "pinches",
+        "data-ingredient-name": "freshly ground black pepper, or to taste"
+    }
 ]

@@ -1,4 +1,5 @@
 # this is our master dictionary of supported websites
+import re
 lookup_data = {
     "allrecipes": {
         "parent-tag": "p",

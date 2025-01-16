@@ -13,17 +13,16 @@ def extract_base_domain(url):
     temp = parsed_url.netloc.lstrip('www.')
     return temp.rstrip('.com')
 url = "https://www.recipetineats.com/my-very-best-vanilla-cake/"
-# if len(sys.argv) == 1:
-#     print("Supply a URL")
-#     exit(1)
+
+if len(sys.argv) > 1:
+    url = sys.argv[1]
     
-# url = sys.argv[1]
 location = extract_base_domain(url)
 
 
 s = AllRecipeScrapper(url, lookup_data[location]["parent-tag"], lookup_data[location]["child-tag"])
 s.configure_page()
-matches = s.find_tags(regex=None)
+matches = s.find_tags(regex=lookup_data[location]["regex"])
 s.process_ingredents(matches)
 
 output_file = "output.json"
