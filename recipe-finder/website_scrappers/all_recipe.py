@@ -1,4 +1,4 @@
-from im import Scrapper
+from scrapper import Scrapper
 from bs4 import BeautifulSoup
 import requests
 
@@ -19,15 +19,15 @@ class AllRecipeScrapper(Scrapper):
         return self.soup.find_all(self.has_child_tag)
 
     def process_ingredents(self, matches):
-        for p in matches:
+        
+        for child in matches:
             ingredent = {}
-            for child in p.children:
-                if child.name != self.child_tag
-                for sub_child in child.children:
-                if (hasattr(child, "attrs")):
-                    if (list(child.attrs.keys())[0] == 'class'):
-                        ingredent[child['class'][0]] = child.text
-                    else:
-                        ingredent[list(child.attrs.keys())[0]] = child.text
+            ingredent_tags = child.findChildren("span")
+            for tag in ingredent_tags:
+                
+                if (list(tag.attrs.keys())[0] == 'class'):
+                    ingredent[tag['class'][0]] = tag.text
+                else:
+                    ingredent[list(tag.attrs.keys())[0]] = tag.text
             self.ingredents.append(ingredent)
         return self.ingredents
