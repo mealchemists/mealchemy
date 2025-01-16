@@ -14,5 +14,15 @@ lookup_data = {
         "parent-tag": "li",
         "child-tag": "span",
         "regex": ".+ingredients__list+"
-    }
+    },
+    "sugarspunrun": {
+        "parent-tag": "li",
+        "child-tag": "strong",
+        "regex": None
+    },
+        "recipetineats": {
+        "parent-tag": "li",
+        "child-tag": "strong",
+        "regex": None
+    },
 }

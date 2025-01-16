@@ -22,10 +22,10 @@ class AllRecipeScrapper(Scrapper):
         
         for child in matches:
             ingredent = {}
-            ingredent_tags = child.findChildren("span")
+            ingredent_tags = child.findChildren(self.child_tag)
             for tag in ingredent_tags:
-                
-                if (list(tag.attrs.keys())[0] == 'class'):
+                attr_keys = list(tag.attrs.keys())
+                if ( len(attr_keys) > 0 and attr_keys[0] == 'class'):
                     ingredent[tag['class'][0]] = tag.text
                 else:
                     ingredent[list(tag.attrs.keys())[0]] = tag.text

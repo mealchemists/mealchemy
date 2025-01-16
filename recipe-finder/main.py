@@ -12,12 +12,12 @@ def extract_base_domain(url):
     parsed_url = urlparse(url)
     temp = parsed_url.netloc.lstrip('www.')
     return temp.rstrip('.com')
-        
-if len(sys.argv) == 1:
-    print("Supply a URL")
-    exit(1)
+url = "https://www.recipetineats.com/my-very-best-vanilla-cake/"
+# if len(sys.argv) == 1:
+#     print("Supply a URL")
+#     exit(1)
     
-url = sys.argv[1]
+# url = sys.argv[1]
 location = extract_base_domain(url)
 
 
