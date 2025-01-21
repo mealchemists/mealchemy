@@ -25,9 +25,12 @@ def scrape_website(website):
         
 def extract_body_content(html_content):
     soup = BeautifulSoup(html_content, "html.parser")
-    body_content = soup.body
+    body_content = soup.find("ul", attrs={"class": "mm-recipes-structured-ingredients__list"})
+    step_content = soup.find("div", attrs={"id": "mm-recipes-steps_1-0"})
+    recipe_details = soup.find("div", attrs={"id": "mm-recipes-details_1-0"})
+    nutrition_details = soup.find("div", attrs={"id": "mm-recipes-nutrition-facts-summary_1-0"})
     if body_content:
-        return str(body_content)
+        return str("ingredients\n" + body_content.text + "steps\n" + step_content.text + "recipe_details" + recipe_details + "nutrition" +nutrition_details)
     return ""
 
 def clean_body_content(body_content):

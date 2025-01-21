@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from .models import Recipe
 from .serializers import RecipeSerializer, IngredientSerializer
 from rest_framework.decorators import api_view
+from .producer import publish
 
 @api_view(['POST'])
 def save_scraped_data(request):
@@ -15,15 +16,20 @@ def save_scraped_data(request):
         
         recipe_serialzer.save()
         ingredient_serializer.save()
-        
         return Response({
             'cart': recipe_serialzer.data,
             'another': ingredient_serializer.data
         })
-        
+    
+@api_view(['POST'])
+def recipe_url(request):
+    if request.method == 'POST':
+        data = request.data
+        print(data['url'])
+        publish(data['url'])
+        return Response(data, status=status.HTTP_201_CREATED)
         
     
-
 class RecipeViewSet(viewsets.ViewSet):
     def list(self, request): #/api/Recipes
         Recipes = Recipe.objects.all()
