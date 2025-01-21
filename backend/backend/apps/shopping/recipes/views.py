@@ -1,7 +1,28 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from .models import Recipe
-from .serializers import RecipeSerializer
+from .serializers import RecipeSerializer, IngredientSerializer
+from rest_framework.decorators import api_view
+
+@api_view(['POST'])
+def save_scraped_data(request):
+    if request.method == 'POST':
+        recipe_serialzer = RecipeSerializer(data=request.data["recipe-data"])
+        ingredient_serializer = IngredientSerializer(data=request.data["ingredient-data"], many=True)
+        
+        recipe_serialzer.is_valid(raise_exception=True)
+        ingredient_serializer.is_valid(raise_exception=True)
+        
+        recipe_serialzer.save()
+        ingredient_serializer.save()
+        
+        return Response({
+            'cart': recipe_serialzer.data,
+            'another': ingredient_serializer.data
+        })
+        
+        
+    
 
 class RecipeViewSet(viewsets.ViewSet):
     def list(self, request): #/api/Recipes

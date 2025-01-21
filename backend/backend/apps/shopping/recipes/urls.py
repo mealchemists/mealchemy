@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from .views import RecipeViewSet
+from .views import RecipeViewSet, save_scraped_data
 
 urlpatterns = [
     path('recipe', RecipeViewSet.as_view({
@@ -12,4 +12,5 @@ urlpatterns = [
         'put': 'update',
         'delete': 'destroy'
     })),
+    path('save-scraped-data/', save_scraped_data, name='save-scraped-data'),
 ]
