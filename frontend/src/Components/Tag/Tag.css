@@ -3,6 +3,8 @@ p {
     font-weight: bold;
     font-size: 0.75rem;
     margin: 0;
+    width: fit-content;
+
 }
 
 .tag {
@@ -13,4 +15,6 @@ p {
     border-radius: 50px;
     padding: 0.5% 1.5%;
     background-color: white; 
+    width: fit-content;
+
 }
