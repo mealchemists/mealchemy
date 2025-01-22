@@ -4,6 +4,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 from lookup import lookup_data
 from util import extract_base_domain
+
 class Scraper:
     def __init__(self, url):
         self.url = url
