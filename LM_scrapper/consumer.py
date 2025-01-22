@@ -10,13 +10,16 @@ channel = connection.channel()
 channel.queue_declare(queue="admin")
 
 def callback(ch, method, properties, body): 
-   print(body)
-   get_recipe_data(body.decode("utf-8"))
-
-channel.basic_consume(queue="admin", on_message_callback=callback)
+    print(f"Received message: {body}")
+    get_recipe_data(body.decode("utf-8"))
     
-print("started consuming")
+    # Acknowledge the message after processing
+    ch.basic_ack(delivery_tag=method.delivery_tag)
 
+# Start consuming with manual acknowledgment
+channel.basic_consume(queue="admin", on_message_callback=callback, auto_ack=False)
+
+print("Started consuming")
+
+# Start consuming messages
 channel.start_consuming()
-
-channel.close()
