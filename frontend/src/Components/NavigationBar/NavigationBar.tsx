@@ -1,4 +1,5 @@
 import React from 'react';
+import './NavigationBar.css';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 
 interface NavigationBarProps {
@@ -7,12 +8,14 @@ interface NavigationBarProps {
 
 const NavigationBar: React.FC<NavigationBarProps> = ({ onClick }) => {
     return <nav className="navContainer">
-        <ul>
-            <li onClick={() => onClick("Recipes")}>Recipe</li>
-            <li onClick={() => onClick("MealPlanning")}>MealPlanning</li>
-            <li onClick={() => onClick("ShoppingList")}>Shopping List</li>
-        </ul>
-        <a href="/" className="userProfile"><AccountCircleOutlinedIcon></AccountCircleOutlinedIcon></a>
+        <div className="middleNav">
+            <ul>
+                <li onClick={() => onClick("Recipes")}>Recipe</li>
+                <li onClick={() => onClick("MealPlanning")}>MealPlanning</li>
+                <li onClick={() => onClick("ShoppingList")}>Shopping List</li>
+            </ul>
+        </div>
+        <a href="/" className="userProfile"><AccountCircleOutlinedIcon fontSize='large'></AccountCircleOutlinedIcon></a>
     </nav>
 }
 

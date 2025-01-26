@@ -1,16 +1,17 @@
 import React from 'react';
 import './ListItem.css';
 import Tag from '../Tag/Tag';
+import {Recipe} from '../../Models/models'
 
-function ListItem({ title, tags, imgsrc }) {
+function ListItem({ recipe }) {
     return (
         <div className="itemContainer">
-            <img src={imgsrc} alt={title} className="itemImage" />
+            <img src={recipe.imageSrc} alt={recipe.title} className="itemImage" />
             <div className="contentContainer">
-                <p className="itemTitle">{title}</p>
+                <p className="itemTitle">{recipe.title}</p>
                 <div className="tagsContainer">
-                    {tags.map((tag, index) => (
-                        <Tag key={index} text={tag} />
+                    {recipe.tags.map((tag, index) => (
+                        <Tag key={index} text={tag} removable = {false} />
                     ))}
                 </div>
             </div>
