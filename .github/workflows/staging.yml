@@ -1,0 +1,120 @@
+name: Mealchemy-CI-Staging
+on: 
+    pull_request:
+        branches:
+            - dev-staging
+    push:
+        branches:
+            - dev-staging
+
+
+jobs:
+    cancel-previous-runs:
+        runs-on: ubuntu-latest
+        steps:
+          - name: Cancel previous job runs
+            uses: styfle/cancel-workflow-action@0.12.0
+            with:
+                access_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+    lint-format-python:
+        name: Format and lint code
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v4
+
+          - name: Python setup
+            run: |
+                python -m pip install --upgrade pip
+                pip install --no-cache-dir -r backend/requirements.txt
+                pip install black flake8 isort
+
+          - name: Cache Python dependencies
+            uses: actions/cache@v4
+            with:
+                path: ~/.cache/pip
+                key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+                restore-keys: |
+                    ${{ runner.os }}-pip-
+
+          - name: Run Python formatters and linters
+            run: |
+                black --check .
+                isort --check .
+                flake8 .
+
+        # Hide for now... need more information on frontend
+        #   - name: Install JavaScript dependencies
+        #     run: npm ci
+
+        #   - name: Run JavaScript formatters & linters
+        #     run: |
+        #         npx eslint . --max-warnings=0
+        #         npx prettier --check .
+
+
+    test:
+        name: "Run unit tests"
+        runs-on: ubuntu-latest
+        needs: lint-format-python
+        strategy:
+            fail-fast: true # Stop all ongoing jobs if one fails...?
+            matrix:
+                python-version: [3.12]
+
+        services:
+            postgres:
+                image: postgres:latest
+                env:
+                    POSTGRES_USER: admin
+                    POSTGRES_PASSWORD: root
+                    POSTGRES_DB: mealchemy-ci-testdb
+                ports:
+                    - 5432:5432
+                # Might add options; need to research
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name:
+              # GitHub Actions jobs already run in a clean Ubuntu environment
+              # by default so that we don't have to install as many manual dependencies.
+              uses: actions/setup-python@v5
+              with:
+                python-version: "3.12"
+
+            - name: Python dependencies
+              # --no-cache-dir since we will start from fresh each time
+              run: |
+                python -m pip install --upgrade pip
+                pip install --no-cache-dir -r backend/requirements.txt
+
+            - name: Cache Python dependencies
+              uses: actions/cache@v4
+              with:
+                  path: ~/.cache/pip
+                  key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pip-
+
+            - name: Wait for database to be ready
+              run: |
+                until pg_isready -h localhost -p 5432 -U django; do
+                    echo "Waiting for database..."
+                    sleep 2
+                done
+
+            - name: Run database migrations
+              env:
+                DATABASE_URL: postgres://django:password@localhost:5432/mealchemy-ci-testdb
+              run: |
+                python manage.py makemigrations
+                python manage.py migrate
+
+            - name: Run tests
+              env:
+                DATABASE_URL: postgres://django:password@localhost:5432/mealchemy-ci-testdb
+              run: |
+                python manage.py test
