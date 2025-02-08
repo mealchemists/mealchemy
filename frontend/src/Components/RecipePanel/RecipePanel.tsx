@@ -1,8 +1,5 @@
 import React from 'react';
 import ListItem from '../ListItem/ListItem';
-import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
-import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
-import Tag from '../Tag/Tag';
 
 function RecipePanel({ recipes, filterTags = [] }) {
     return (

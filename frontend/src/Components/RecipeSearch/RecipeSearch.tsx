@@ -1,17 +1,9 @@
-// const handleRemoveFilter = (tag) => {
-//     setFilterTags((prevTags) => {
-//       const newTags = { ...prevTags };
-//       if (newTags[type]) {
-//         newTags[type] = newTags[type].filter((t) => t !== tag);
-//         handleSearchSubmit(newTags);
-//       }
-//       return newTags;
-//     });
-//   };
+
 
 import { useState } from 'react';
 import './RecipeSearch.css';
-import Tag from '../Tag/Tag';
+import { Chip } from '@mui/material';
+
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import FilterPopup from '../FilterPopup/FilterPopup';
@@ -31,7 +23,7 @@ function RecipeSearch() {
         setSliderRange(newRange as number[]);
     };
 
-    const sliderRangeToText = () =>{
+    const sliderRangeToText = () => {
         return `${sliderRange[0]} - ${sliderRange[1]} mins`
     }
 
@@ -39,9 +31,10 @@ function RecipeSearch() {
         setFilterTags(newFilterTags);
     };
 
-    const handleRemoveFilter = (text:string)=>{
-        setFilterTags((prevTags) => prevTags.filter((t) => t !== text));
-    }
+    const handleDelete = () => {
+        console.info('You clicked the delete icon.');
+    };
+
 
     return (
         <div>
@@ -63,14 +56,27 @@ function RecipeSearch() {
                             onFilterChange={handleFilterChange}
                             onSliderChange={handleSliderChange}
                             sliderRange={sliderRange}
-                        
+
                         />
                     )}
                 </div>
 
             </div>
             <div className="filterTagContainer">
-                <Tag text = {sliderRangeToText()} removable = {false}></Tag>
+                <Chip 
+                    label={sliderRangeToText()} 
+                    variant="outlined" 
+                    onDelete={handleDelete} 
+                    sx={{
+                        color: "#38793b", 
+                        fontWeight: "bold",
+                        border: "3px solid #38793b",
+                        "& .MuiChip-deleteIcon": { color: "#38793b" },
+                        "& .MuiChip-deleteIcon:hover": {
+                            color: "#b0dbb2", 
+                          },
+                      }}
+                />
             </div>
         </div>
     );
