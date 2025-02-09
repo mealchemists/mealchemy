@@ -22,6 +22,7 @@ docker-compose build
 After the server is up and running, open a new terminal, and paste the following commands to perform the database migration to create the required tables for the project.
 
 ```
+
 # docker-compose exec backend bash
 # python manage.py makemigrations
 # python manage.py migrate
