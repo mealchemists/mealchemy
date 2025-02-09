@@ -1,4 +1,5 @@
 name: Mealchemy-CI-Staging
+
 on: 
     pull_request:
         branches:
@@ -6,12 +7,12 @@ on:
 
 jobs:
     cancel-previous-runs:
+        name: Cancel ongoing job runs for this PR
         runs-on: ubuntu-latest
         permissions: 
             actions: write # this is required for cancel-workflow-action to work
         steps:
-          - name: Cancel ongoing job runs for this PR
-            uses: styfle/cancel-workflow-action@0.12.0
+          - uses: styfle/cancel-workflow-action@0.12.0
             with:
                 access_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -41,7 +42,7 @@ jobs:
                 restore-keys: |
                     ${{ runner.os }}-pip-
 
-          - name: Run Python formatters and linters
+          - name: Run Python formatters
             run: |
                 black .
             # run: |
@@ -49,7 +50,7 @@ jobs:
             #     isort --check .
             #     flake8 .
 
-        # Hide for now... need more information on frontend
+        # Hide for now... need to focus on backend first of all
         #   - name: Install JavaScript dependencies
         #     run: npm ci
 
@@ -72,31 +73,33 @@ jobs:
             postgres:
                 image: postgres:latest
                 env:
-                    POSTGRES_USER: admin@admin.com
+                    # NOTE: This should match whatever you specify under 'db'
+                    # in docker-compose.yaml.
+                    POSTGRES_USER: admin
                     POSTGRES_PASSWORD: root
                     POSTGRES_DB: mealchemy-ci-testdb
                 ports:
                     - 5432:5432
                 # TODO: May need to look options for Postgres in the future.
         steps:
-            - name: Checkout code
+            - name: Checkout code...
               uses: actions/checkout@v4
 
-            - name:
+            - name: Setup Python...
               # GitHub Actions jobs already run in a clean Ubuntu environment
               # by default, so that we don't have to install as many manual dependencies.
               uses: actions/setup-python@v5
               with:
                 python-version: "3.12"
 
-            - name: Python dependencies
+            - name: Install Python dependencies...
               # --no-cache-dir since we will start from fresh each time
               working-directory: ./backend/
               run: |
                 python -m pip install --upgrade pip
                 pip install --no-cache-dir -r requirements.txt
 
-            - name: Cache Python dependencies
+            - name: Cache Python dependencies...
               uses: actions/cache@v4
               with:
                   path: ~/.cache/pip
@@ -104,7 +107,7 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-pip-
 
-            - name: Wait for database to be ready
+            - name: Wait for database to be ready...
               run: |
                 until pg_isready -h localhost -p 5432 -U django; do
                     echo "Waiting for database..."
