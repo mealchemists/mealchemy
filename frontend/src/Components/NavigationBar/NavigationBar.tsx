@@ -7,16 +7,18 @@ interface NavigationBarProps {
 }
 
 const NavigationBar: React.FC<NavigationBarProps> = ({ onClick }) => {
-    return <nav className="navContainer">
-        <div className="middleNav">
-            <ul>
-                <li onClick={() => onClick("Recipes")}>Recipe</li>
-                <li onClick={() => onClick("MealPlanning")}>MealPlanning</li>
-                <li onClick={() => onClick("ShoppingList")}>Shopping List</li>
-            </ul>
-        </div>
-        <a href="/" className="userProfile"><AccountCircleOutlinedIcon fontSize='large'></AccountCircleOutlinedIcon></a>
-    </nav>
+    return (
+        <nav className="navContainer">
+            <div className="middleNav">
+                <ul>
+                    <li onClick={() => onClick("Recipes")}>Recipe</li>
+                    <li onClick={() => onClick("MealPlanning")}>MealPlanning</li>
+                    <li onClick={() => onClick("ShoppingList")}>Shopping List</li>
+                </ul>
+            </div>
+            <a href="/" className="userProfile"><AccountCircleOutlinedIcon fontSize='large'></AccountCircleOutlinedIcon></a>
+        </nav>
+    )
 }
 
 export default NavigationBar;

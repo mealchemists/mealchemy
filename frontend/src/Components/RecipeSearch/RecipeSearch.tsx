@@ -1,6 +1,6 @@
 
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import './RecipeSearch.css';
 import { Chip } from '@mui/material';
 
@@ -9,30 +9,61 @@ import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import FilterPopup from '../FilterPopup/FilterPopup';
 import { Recipe } from '../../Models/models'
 
-function RecipeSearch() {
-    const [isFilterPopupOpen, setIsFilterPopupOpen] = useState<boolean>(false);
-    const [filterTags, setFilterTags] = useState([]);
-    const [sliderRange, setSliderRange] = useState<number[]>([0, 10]); //replace 10 with max number
+import MenuItem from '@mui/material/MenuItem';
+import Menu from '@mui/material/Menu';
+import IconButton from '@mui/material/IconButton';
 
+const options = [
+    'Select',
+    'Add Manually',
+    'Add by URL',
+    'Add by PDF'
+  ];
+  
+  const ITEM_HEIGHT = 48;
+
+interface RecipeSearchProps {
+    onSelect : (option:string) => void
+}
+  
+function RecipeSearch({onSelect}: RecipeSearchProps) {
+    const [isFilterPopupOpen, setIsFilterPopupOpen] = useState<boolean>(false);
+    const [filterChips, setFilterChips] = useState([]);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [sortBy, setSortBy] = useState<string>("alpha");
+    const [sliderRange, setSliderRange] = useState<number[]>([0, 10]);
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+    const [optionSelection, setOptionSelection] = useState<string>("");
+
+    const openOptions = Boolean(anchorEl);
+
+    const handleOptionsClick = (event: React.MouseEvent<HTMLElement>) => {
+      setAnchorEl(event.currentTarget);
+    };
+    const handleOptionsClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleOptionsSelect = (option: string) => {
+        if (option === "Select"){
+            // make buttons visible
+            onSelect(option);
+        }
+    };
     const handleFilterClick = (event?: React.MouseEvent) => {
         event?.stopPropagation();
         setIsFilterPopupOpen((prev) => !prev);
     };
 
-    const handleSliderChange = (event: Event, newRange: number | number[]) => {
-        setSliderRange(newRange as number[]);
-    };
+    const handleFilterChange = (filters: string[], sort: string, range: number[], tags: string[]) => {
+        setFilterChips(filters);
 
-    const sliderRangeToText = () => {
-        return `${sliderRange[0]} - ${sliderRange[1]} mins`
-    }
+        setSortBy(sort);
+        setSliderRange(range);
+        setSelectedTags(tags);
 
-    const handleFilterChange = (newFilterTags: []) => {
-        setFilterTags(newFilterTags);
-    };
-
-    const handleDelete = () => {
-        console.info('You clicked the delete icon.');
+        // TODO: Filter the recipes here
     };
 
 
@@ -40,7 +71,42 @@ function RecipeSearch() {
         <div>
             <div className="searchContainer">
                 <div className="searchLeft">
-                    <MoreHorizOutlinedIcon fontSize='large'></MoreHorizOutlinedIcon>
+                <IconButton
+                    aria-label="more"
+                    id="long-button"
+                    aria-controls={openOptions ? 'long-menu' : undefined}
+                    aria-expanded={openOptions ? 'true' : undefined}
+                    aria-haspopup="true"
+                    onClick={handleOptionsClick}
+                >
+                    <MoreHorizOutlinedIcon
+                        sx={{
+                            color: "#38793b", 
+                            }} />
+                </IconButton>
+                <Menu
+                    id="long-menu"
+                    MenuListProps={{
+                    'aria-labelledby': 'long-button',
+                    }}
+                    anchorEl={anchorEl}
+                    open={openOptions}
+                    onClose={handleOptionsClose}
+                    slotProps={{
+                    paper: {
+                        style: {
+                        maxHeight: ITEM_HEIGHT * 4.5,
+                        width: '20ch',
+                        },
+                    },
+                    }}
+                >
+                    {options.map((option) => (
+                    <MenuItem key={option} onClick={()=>handleOptionsSelect(option)}>
+                        {option}
+                    </MenuItem>
+                    ))}
+                </Menu>
                 </div>
 
                 <div className="searchMiddle">
@@ -48,25 +114,30 @@ function RecipeSearch() {
                 </div>
 
                 <div className="searchRight" onClick={() => handleFilterClick()}>
-                    <FilterAltOutlinedIcon fontSize='large'></FilterAltOutlinedIcon>
+                    <FilterAltOutlinedIcon 
+                        fontSize='large'
+                        sx={{
+                            color: "#38793b", 
+                          }}
+                        ></FilterAltOutlinedIcon>
                     {isFilterPopupOpen && (
                         <FilterPopup
-                            selectedFilters={filterTags}
                             onClose={(e) => handleFilterClick(e)}
                             onFilterChange={handleFilterChange}
-                            onSliderChange={handleSliderChange}
+                            sortBy={sortBy}
                             sliderRange={sliderRange}
-
+                            selectedTags={selectedTags}
                         />
                     )}
                 </div>
 
             </div>
             <div className="filterTagContainer">
-                <Chip 
-                    label={sliderRangeToText()} 
+                {filterChips.map((filter)=> (
+                    <Chip 
+                    key = {filter}
+                    label={filter} 
                     variant="outlined" 
-                    onDelete={handleDelete} 
                     sx={{
                         color: "#38793b", 
                         fontWeight: "bold",
@@ -77,6 +148,8 @@ function RecipeSearch() {
                           },
                       }}
                 />
+                ))}
+               
             </div>
         </div>
     );

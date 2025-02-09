@@ -10,19 +10,19 @@ function App() {
   const nav = useNavigate();
 
   return (
-    <div>
-      <NavigationBar
-        onClick={(item) => nav(`/${item}`)}
-      />
+    <div className="app-container">
+        <div className="navigation-bar">
+          <NavigationBar onClick={(item) => nav(`/${item}`)} />
+        </div>
 
-      <div>
-        <Routes>
-          <Route path="/" element={<MealPlanningPage />} />
-          <Route path="/MealPlanning" element={<MealPlanningPage />} />
-          <Route path="/Recipes" element={<RecipePage />} />
-          <Route path="/ShoppingList" element={<ShoppingListPage />} />
-        </Routes>
-      </div>
+        <div className="content">
+          <Routes>
+            <Route path="/" element={<MealPlanningPage />} />
+            <Route path="/MealPlanning" element={<MealPlanningPage />} />
+            <Route path="/Recipes" element={<RecipePage />} />
+            <Route path="/ShoppingList" element={<ShoppingListPage />} />
+          </Routes>
+        </div>
     </div>
   );
 }

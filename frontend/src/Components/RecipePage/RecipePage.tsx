@@ -15,7 +15,7 @@ function RecipePage() {
     return (
         <div className="mainContainer">
             <div className="sideContainer">
-                <RecipeSearch></RecipeSearch>
+                
                 <RecipePanel recipes={[recipe]} />
             </div>
             <div className="separator"></div> 

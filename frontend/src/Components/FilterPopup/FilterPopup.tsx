@@ -24,12 +24,13 @@ const top100Films = [
     year: 2003,
   }
 ]
+
 interface FilterPopupProps {
-  onClose?: (e: React.MouseEvent) => void;
-  onFilterChange?: (selectedFilters: string[]) => void;
-  selectedFilters: string[];
+  onClose: (e: React.MouseEvent) => void;
+  onFilterChange: (selectedFilters: string[], sortBy: string, sliderRange: number[], selectedTags: string[]) => void;
+  sortBy: string;
   sliderRange: number[];
-  onSliderChange: (event: Event, newValue: number | number[]) => void;
+  selectedTags: string[];
 }
 
 function valuetext(range: number) {
@@ -37,34 +38,40 @@ function valuetext(range: number) {
 }
 
 
-export default function FilterPopup({ onClose, onFilterChange, selectedFilters, sliderRange, onSliderChange }: FilterPopupProps) {
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [filterTags, setFilterTags] = useState<string[]>(selectedFilters);
-
-
+export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSortBy, sliderRange: initialSliderRange, selectedTags: initialTags }: FilterPopupProps) {
+  const [sortBy, setSortBy] = useState<string>(initialSortBy);
+  const [sliderRange, setSliderRange] = useState<number[]>(initialSliderRange);
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialTags);
 
   const applyFilters = (e: React.MouseEvent) => {
-    // Pass the selected filters to a parent component or do something with them
-    onFilterChange(filterTags);
+    const filters: string[] = [];
 
-    // Close the popup
+    if (sortBy) filters.push(`Sort By: ${sortBy === "alpha" ? "Alphabetical (A-Z)" : "Cooking Time"}`);
+    if (sliderRange) filters.push(`Cooking Time: ${sliderRangeToText()}`);
+    if (selectedTags.length > 0) filters.push(`Tags: ${selectedTags.join(", ")}`);
+  
+    onFilterChange(filters, sortBy, sliderRange, selectedTags);
+
     onClose(e);
   };
 
-  const handleFilterChange = (value: string) => {
-    setFilterTags((prevFilters) => {
-      if (prevFilters.includes(value)) {
-        // Remove the filter if it's already selected
-        return prevFilters.filter((item) => item !== value);
-      } else {
-        // Add the filter if it's not already selected
-        return [...prevFilters, value];
-      }
-    });
+  const onSliderChange = (event: Event, newRange: number | number[]) => {
+    setSliderRange(newRange as number[]);
   };
 
+  const handleSortChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSortBy(event.target.value);
+  };
+
+  const sliderRangeToText = () => {
+    return `${sliderRange[0]} - ${sliderRange[1]} mins`
+  }
+
   const resetFilters = () => {
-    setFilterTags([]);
+    setSortBy("alpha");
+    setSliderRange([0,10]);
+    setSelectedTags([]);
+    onFilterChange([], sortBy, sliderRange, selectedTags); 
   };
 
 
@@ -84,51 +91,54 @@ export default function FilterPopup({ onClose, onFilterChange, selectedFilters, 
         <div className="popupContentContainer">
           <p> Sort By</p>
           <div className="radioContainer">
-          <FormControl sx = {{
-            width:"90%",
-            margin: "0 auto",
-          }}>
-            <RadioGroup
-              row
-              aria-labelledby="demo-row-radio-buttons-group-label"
-              name="row-radio-buttons-group"
-            >
-              <FormControlLabel
-                value="alpha"
-                control={<Radio size="small" 
-                  sx={{
-                  color: "#b0dbb2",
-                  '&.Mui-checked': {
-                    color: "#38793b"
-                  }
-                }} />}
-                label="Alphabetical (A-Z)"
-                sx={{
-                  "& .MuiRadio-root": { padding: "3px" },
-                  "& .MuiTypography-root": { fontSize: "0.9rem" },
+            <FormControl sx={{
+              width: "90%",
+              margin: "0 auto",
+            }}>
+              <RadioGroup
+                row
+                aria-labelledby="demo-row-radio-buttons-group-label"
+                name="row-radio-buttons-group"
+                value={sortBy}
+                onChange={handleSortChange}
 
-                }}
-              />
-              <FormControlLabel
-                value="cookingTime"
-                control={<Radio size="small"
+              >
+                <FormControlLabel
+                  value="alpha"
+                  control={<Radio size="small"
+                    sx={{
+                      color: "#b0dbb2",
+                      '&.Mui-checked': {
+                        color: "#38793b"
+                      }
+                    }} />}
+                  label="Alphabetical (A-Z)"
                   sx={{
-                    color: "#b0dbb2",
+                    "& .MuiRadio-root": { padding: "3px" },
+                    "& .MuiTypography-root": { fontSize: "0.9rem" },
+
+                  }}
+                />
+                <FormControlLabel
+                  value="cookingTime"
+                  control={<Radio size="small"
+                    sx={{
+                      color: "#b0dbb2",
+                      '&.Mui-checked': {
+                        color: "#38793b"
+                      }
+                    }} />}
+                  label="Cooking Time"
+                  sx={{
+                    "& .MuiRadio-root": { padding: "3px" },
+                    "& .MuiTypography-root": { fontSize: "0.9rem" },
                     '&.Mui-checked': {
                       color: "#38793b"
-                    }
-                  }} />}
-                label="Cooking Time"
-                sx={{
-                  "& .MuiRadio-root": { padding: "3px" },
-                  "& .MuiTypography-root": { fontSize: "0.9rem" },
-                  '&.Mui-checked': {
-                    color: "#38793b"
-                  },
-                }}
-              />
-            </RadioGroup>
-          </FormControl>
+                    },
+                  }}
+                />
+              </RadioGroup>
+            </FormControl>
           </div>
           <p>Cooking Time</p>
           <div className="sliderContainer">
@@ -155,7 +165,8 @@ export default function FilterPopup({ onClose, onFilterChange, selectedFilters, 
             multiple
             id="tags-outlined"
             options={top100Films.map((option) => option.title)}
-            defaultValue={[top100Films[1].title]}
+            value={selectedTags}
+            onChange={(event, newValue) => setSelectedTags(newValue)}
             freeSolo
             renderTags={(value: readonly string[], getTagProps) =>
               value.map((option: string, index: number) => {
