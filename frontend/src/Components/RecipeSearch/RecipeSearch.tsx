@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import './RecipeSearch.css';
-import { Chip } from '@mui/material';
+import { Chip, Icon } from '@mui/material';
 
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
@@ -34,7 +34,7 @@ function RecipeSearch({ onSelect }: RecipeSearchProps) {
     const [sliderRange, setSliderRange] = useState<number[]>([0, 10]);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [showCancelButton, setShowCancelButton] = useState(false);
-
+    
     const openOptions = Boolean(anchorEl);
 
     const handleOptionsClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -47,7 +47,8 @@ function RecipeSearch({ onSelect }: RecipeSearchProps) {
     const handleCancel = () => {
         onSelect("");
         setShowCancelButton(false);
-    }
+    };
+
     const handleOptionsSelect = (option: string) => {
         if (option === "Select") {
             // make buttons visible
@@ -123,12 +124,14 @@ function RecipeSearch({ onSelect }: RecipeSearchProps) {
                 </div>
 
                 <div className="searchRight" onClick={() => handleFilterClick()}>
-                    <FilterAltOutlinedIcon
-                        fontSize='large'
-                        sx={{
-                            color: "#38793b",
-                        }}
-                    ></FilterAltOutlinedIcon>
+                    <IconButton>
+                        <FilterAltOutlinedIcon
+                            fontSize='large'
+                            sx={{
+                                color: "#38793b",
+                            }}
+                        ></FilterAltOutlinedIcon>
+                    </IconButton>
                     {isFilterPopupOpen && (
                         <FilterPopup
                             onClose={(e) => handleFilterClick(e)}

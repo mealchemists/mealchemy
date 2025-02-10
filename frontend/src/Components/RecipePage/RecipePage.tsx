@@ -9,6 +9,8 @@ function RecipePage() {
         title: "Salad",
         cookingTime: 30,
         tags: ["Healthy", "Vegetarian", "Quick"],
+        ingredients:["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
+        instructions: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
         imageSrc: "/salad.jpg"
     };
 

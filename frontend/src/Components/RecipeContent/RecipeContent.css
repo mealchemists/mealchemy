@@ -1,7 +1,81 @@
 .recipeContent{
-    text-align:center;
+   text-align:center;
 }
 
 .recipeContent h1{
     margin-top:0;
+    margin-bottom:10px;
+}
+
+.recipeContent .buttonContainer{
+    display: flex;
+    justify-content: space-between; 
+    align-items: center; 
+    width: 100%;
+}
+
+.recipeContent .tagContainer .tagLabel{
+    margin-right:5px;
+}
+
+.recipeContent .itemImage {
+    width:300px;
+    aspect-ratio: 1 / 1; 
+    object-fit: cover; 
+    border-radius: 10px; 
+    margin-right: 15px;
+}
+
+.recipeContent .imgIngredients{
+    display: flex;
+    align-items: flex-start;
+    gap: 50px;
+    justify-content: center; 
+    width: 100%;
+    margin-top:20px;
+    margin-bottom:10px;
+}
+
+.ingredientContainer {
+    text-align:left;
+}
+
+.ingredientContainer h2{
+    margin-top:0px;
+    margin-bottom:5px;
+}
+
+.ingredientContainer ul{
+    margin-top:0px;
+    padding-left:0px;
+
+}
+
+.instructionContainer {
+    display: flex;
+    flex-direction: column;
+    text-align: left;  
+    justify-content: center;
+    align-items: center; /* This centers the container horizontally */
+    width: fit-content;
+    margin: 0 auto;
+    border: 3px solid #38793b; 
+    border-radius:10px;
+    background-color:rgba(255, 255, 255, 0.75);
+}
+
+.instructionContent {
+    width: 100%; 
+    padding-top:0px;
+    margin-top:0px;
+}
+
+.instructionContainer h2{
+    margin-bottom:0px;
+    padding-bottom:0px;
+}
+
+ol {
+    margin-right:10px;
+    margin-left:0px;
 }
