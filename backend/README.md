@@ -22,12 +22,13 @@ docker-compose build
 After the server is up and running, open a new terminal, and paste the following commands to perform the database migration to create the required tables for the project.
 
 ```
-# docker-compose exec backend sh
+# docker-compose exec backend bash
 # python manage.py makemigrations
 # python manage.py migrate
 ```
 
-pgAdmin is a web client that can be used to access and manipulate schema, and data of the current database. You can login into pgadmin using `localhost:5050' *(login info to pgAdmin can be found in dockercompose.yaml)*.
+
+pgAdmin is a web client that can be used to access and manipulate schema, and data of the current database. You can login into pgadmin using `localhost:5050` *(login info to pgAdmin can be found in dockercompose.yaml)*.
 
 - NOTE: You can use a local install of pgAdmin to perform the same functionalities. You will need to provide a connection string (this might need some more looking into).
 
@@ -38,6 +39,15 @@ In pgAdmin, add a new server and connection to be able to view the tables and qu
 3. Under the 'Connection' tab, in the 'Host name/address' field, type in 'backend-db-1'.
 4. In the same tab, under the 'Password' field, put in the same password that you would use to log into pgAdmin.
 5. Click 'Save'.
+
+## Running unit tests
+
+Django will automatically create and destroy a test database during testing:
+
+```bash
+$ docker-compose exec backend python manage.py test
+```
+- *Remember to have the container running (`docker-compose up`).*
 
 ## Using endpoints
 
