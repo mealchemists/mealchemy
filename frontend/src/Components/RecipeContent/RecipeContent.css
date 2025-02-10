@@ -1,3 +1,7 @@
 .recipeContent{
     text-align:center;
 }
+
+.recipeContent h1{
+    margin-top:0;
+}

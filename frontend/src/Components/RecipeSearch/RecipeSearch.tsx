@@ -18,37 +18,43 @@ const options = [
     'Add Manually',
     'Add by URL',
     'Add by PDF'
-  ];
-  
-  const ITEM_HEIGHT = 48;
+];
+
+const ITEM_HEIGHT = 48;
 
 interface RecipeSearchProps {
-    onSelect : (option:string) => void
+    onSelect: (option: string) => void,
 }
-  
-function RecipeSearch({onSelect}: RecipeSearchProps) {
+
+function RecipeSearch({ onSelect }: RecipeSearchProps) {
     const [isFilterPopupOpen, setIsFilterPopupOpen] = useState<boolean>(false);
     const [filterChips, setFilterChips] = useState([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [sortBy, setSortBy] = useState<string>("alpha");
     const [sliderRange, setSliderRange] = useState<number[]>([0, 10]);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
-    const [optionSelection, setOptionSelection] = useState<string>("");
+    const [showCancelButton, setShowCancelButton] = useState(false);
 
     const openOptions = Boolean(anchorEl);
 
     const handleOptionsClick = (event: React.MouseEvent<HTMLElement>) => {
-      setAnchorEl(event.currentTarget);
+        setAnchorEl(event.currentTarget);
     };
     const handleOptionsClose = () => {
         setAnchorEl(null);
     };
 
+    const handleCancel = () => {
+        onSelect("");
+        setShowCancelButton(false);
+    }
     const handleOptionsSelect = (option: string) => {
-        if (option === "Select"){
+        if (option === "Select") {
             // make buttons visible
+            setAnchorEl(null);
             onSelect(option);
+            setShowCancelButton(true);
+            handleOptionsClose();
         }
     };
     const handleFilterClick = (event?: React.MouseEvent) => {
@@ -71,42 +77,45 @@ function RecipeSearch({onSelect}: RecipeSearchProps) {
         <div>
             <div className="searchContainer">
                 <div className="searchLeft">
-                <IconButton
-                    aria-label="more"
-                    id="long-button"
-                    aria-controls={openOptions ? 'long-menu' : undefined}
-                    aria-expanded={openOptions ? 'true' : undefined}
-                    aria-haspopup="true"
-                    onClick={handleOptionsClick}
-                >
-                    <MoreHorizOutlinedIcon
-                        sx={{
-                            color: "#38793b", 
-                            }} />
-                </IconButton>
-                <Menu
-                    id="long-menu"
-                    MenuListProps={{
-                    'aria-labelledby': 'long-button',
-                    }}
-                    anchorEl={anchorEl}
-                    open={openOptions}
-                    onClose={handleOptionsClose}
-                    slotProps={{
-                    paper: {
-                        style: {
-                        maxHeight: ITEM_HEIGHT * 4.5,
-                        width: '20ch',
-                        },
-                    },
-                    }}
-                >
-                    {options.map((option) => (
-                    <MenuItem key={option} onClick={()=>handleOptionsSelect(option)}>
-                        {option}
-                    </MenuItem>
-                    ))}
-                </Menu>
+                    {showCancelButton ? (
+                        <button onClick={handleCancel} autoFocus>Cancel</button>
+                    ) : (
+                        <IconButton
+                            aria-label="more"
+                            id="long-button"
+                            aria-controls={openOptions ? 'long-menu' : undefined}
+                            aria-expanded={openOptions ? 'true' : undefined}
+                            aria-haspopup="true"
+                            onClick={handleOptionsClick}
+                        >
+                            <MoreHorizOutlinedIcon sx={{ color: "#38793b" }} />
+                        </IconButton>
+                    )}
+
+                    <Menu
+                        id="long-menu"
+                        MenuListProps={{
+                            'aria-labelledby': 'long-button',
+                        }}
+                        anchorEl={anchorEl}
+                        open={openOptions}
+                        onClose={handleOptionsClose}
+                        slotProps={{
+                            paper: {
+                                style: {
+                                    maxHeight: ITEM_HEIGHT * 4.5,
+                                    width: '20ch',
+                                },
+                            },
+                        }}
+                        disableEnforceFocus
+                    >
+                        {options.map((option) => (
+                            <MenuItem key={option} onClick={() => handleOptionsSelect(option)}>
+                                {option}
+                            </MenuItem>
+                        ))}
+                    </Menu>
                 </div>
 
                 <div className="searchMiddle">
@@ -114,12 +123,12 @@ function RecipeSearch({onSelect}: RecipeSearchProps) {
                 </div>
 
                 <div className="searchRight" onClick={() => handleFilterClick()}>
-                    <FilterAltOutlinedIcon 
+                    <FilterAltOutlinedIcon
                         fontSize='large'
                         sx={{
-                            color: "#38793b", 
-                          }}
-                        ></FilterAltOutlinedIcon>
+                            color: "#38793b",
+                        }}
+                    ></FilterAltOutlinedIcon>
                     {isFilterPopupOpen && (
                         <FilterPopup
                             onClose={(e) => handleFilterClick(e)}
@@ -133,23 +142,23 @@ function RecipeSearch({onSelect}: RecipeSearchProps) {
 
             </div>
             <div className="filterTagContainer">
-                {filterChips.map((filter)=> (
-                    <Chip 
-                    key = {filter}
-                    label={filter} 
-                    variant="outlined" 
-                    sx={{
-                        color: "#38793b", 
-                        fontWeight: "bold",
-                        border: "3px solid #38793b",
-                        "& .MuiChip-deleteIcon": { color: "#38793b" },
-                        "& .MuiChip-deleteIcon:hover": {
-                            color: "#b0dbb2", 
-                          },
-                      }}
-                />
+                {filterChips.map((filter) => (
+                    <Chip
+                        key={filter}
+                        label={filter}
+                        variant="outlined"
+                        sx={{
+                            color: "#38793b",
+                            fontWeight: "bold",
+                            border: "3px solid #38793b",
+                            "& .MuiChip-deleteIcon": { color: "#38793b" },
+                            "& .MuiChip-deleteIcon:hover": {
+                                color: "#b0dbb2",
+                            },
+                        }}
+                    />
                 ))}
-               
+
             </div>
         </div>
     );
