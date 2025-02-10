@@ -75,9 +75,10 @@ jobs:
                 env:
                     # NOTE: This should match whatever you specify under 'db'
                     # in docker-compose.yaml.
+                    POSTGRES_DB: test_db
                     POSTGRES_USER: admin
                     POSTGRES_PASSWORD: root
-                    POSTGRES_DB: mealchemy-ci-testdb
+                    POSTGRES_HOST: localhost
                 ports:
                     - 5432:5432
                 # TODO: May need to look options for Postgres in the future.
@@ -117,7 +118,7 @@ jobs:
             - name: Run database migrations
               working-directory: ./backend/
               env:
-                DATABASE_URL: postgres://django:password@localhost:5432/mealchemy-ci-testdb
+                DATABASE_URL: postgres://django:password@localhost:5432/test_db
               run: |
                 python manage.py makemigrations
                 python manage.py migrate
@@ -125,6 +126,6 @@ jobs:
             - name: Run tests
               working-directory: ./backend/
               env:
-                DATABASE_URL: postgres://django:password@localhost:5432/mealchemy-ci-testdb
+                DATABASE_URL: postgres://django:password@localhost:5432/test_db
               run: |
                 python manage.py test

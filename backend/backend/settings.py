@@ -77,29 +77,19 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-if (os.getenv('GITHUB_ACTIONS')):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'test_db',
-            'USER': 'admin',
-            'PASSWORD': 'root',
-            "HOST": 'localhost', # GitHub Actions/local without Docker uses localhost
-            'PORT': '5432'
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB', 'test_db'),
+        'USER': os.getenv('POSTGRES_USER', 'admin'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'root'),
+        'HOST': os.getenv('POSTGRES_HOST', 'localhost' if os.getenv('GITHUB_ACTIONS') else 'db'),
+        'PORT': os.getenv('POSTGRES_PORT', '5432'),
+        'TEST': {
+            'NAME': 'test_db_unittest'
         }
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'test_db',
-            'USER': 'admin',
-            'PASSWORD': 'root',
-            "HOST": 'db',
-            'PORT': '5432' # port inside docker container
-        }
-    }
-
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
