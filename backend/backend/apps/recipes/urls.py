@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.urls import path
-from .views import RecipeViewSet, IngredientViewSet, MealplanViewSet
+from .views import RecipeViewSet, IngredientViewSet, MealplanViewSet, save_scraped_data, recipe_url
 
 urlpatterns = [
+    path('save-scraped-data/', save_scraped_data, name='save-scraped-data'),
+    path('recipe-url/', recipe_url, name='recipe-url'),
     path('recipe', RecipeViewSet.as_view({
         'get': 'list',
         'post': 'create',
