@@ -77,14 +77,21 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'dev',
+    #     'USER': 'admin',
+    #     'PASSWORD': 'root',
+    #     "HOST": 'db',
+    #     'PORT': '5432' # port inside docker container
+    # }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dev',
-        'USER': 'admin',
-        'PASSWORD': 'root',
-        "HOST": 'db',
-        'PORT': '5432' # port inside docker container
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'db.sqlite3',
     }
 }
 
