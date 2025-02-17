@@ -8,14 +8,21 @@ from .producer import publish
 @api_view(['POST'])
 def save_scraped_data(request):
     if request.method == 'POST':
+        ingredients = request.data["ingredients"]
+        
+        # ingredient_data =  [{"name": ingredient["name"]} for ingredient in ingredients] 
+        
+        # ingredient_serializer = IngredientSerializer(data=ingredient_data, many=True)   
         recipe_serialzer = RecipeSerializer(data=request.data["recipe"])
-        ingredient_serializer = IngredientSerializer(data=request.data["ingredients"], many=True)
-        
         recipe_serialzer.is_valid(raise_exception=True)
-        ingredient_serializer.is_valid(raise_exception=True)
+        recipe = recipe_serialzer.save()
         
-        recipe_serialzer.save()
-        ingredient_serializer.save()
+        for ingredient_data in ingredients:
+            ingredient_serializer = IngredientSerializer(data={"name": ingredient_data['name']})
+            if ingredient_serializer.is_valid():
+                ingredient = ingredient_serializer.save()
+                RecipeIngredient.objects.create(recipe=recipe, ingredient=ingredient, quantity=ingredient_data['quantity'], unit=ingredient_data['unit'])            
+ 
         return Response({
             'cart': recipe_serialzer.data,
             'another': ingredient_serializer.data
@@ -60,24 +67,24 @@ class RecipeViewSet(viewsets.ViewSet):
     
 class IngredientViewSet(viewsets.ViewSet):
     def list(self, request): #/api/Recipes
-        Ingredients = Ingredient.objects.all()
-        serializer = IngredientSerializer(Ingredients, many=True)
+        ingredients = Ingredient.objects.all()
+        serializer = IngredientSerializer(ingredients, many=True)
         return Response(serializer.data)
         
     def create(self, request):
-        serializer = IngredientSerializer(data=request.data)
+        serializer = IngredientSerializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     def retrieve(self, request, pk=None): #/api/Recipes/<str:id>
-        Ingredient = Ingredient.objects.get(id=pk)
-        serializer = IngredientSerializer(Recipe)
+        ingredient = Ingredient.objects.get(id=pk)
+        serializer = IngredientSerializer(ingredient)
         return Response(serializer.data)
     
     def update(self, request, pk=None): #/api/Recipes/<str:id>
-        Ingredient = Ingredient.objects.get(id=pk)
-        serializer = IngredientSerializer(instance=Ingredient, data=request.data)
+        ingredient = Ingredient.objects.get(id=pk)
+        serializer = IngredientSerializer(instance=ingredient, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
@@ -85,6 +92,35 @@ class IngredientViewSet(viewsets.ViewSet):
     def destroy(self, request, pk=None): #/api/Recipes/<str:id>
         Ingredient = Ingredient.objects.get(id=pk)
         Ingredient.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class RecipeIngredientViewSet(viewsets.ViewSet):
+    def list(self, request): #/api/Recipes
+        recipe_ingredient = RecipeIngredient.objects.all()
+        serializer = RecipeIngredientSerializer(recipe_ingredient, many=True)
+        return Response(serializer.data)
+        
+    def create(self, request):
+        serializer = RecipeIngredientSerializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def retrieve(self, request, pk=None): #/api/Recipes/<str:id>
+        recipe_ingredient = RecipeIngredient.objects.get(id=pk)
+        serializer = RecipeIngredientSerializer(recipe_ingredient)
+        return Response(serializer.data)
+    
+    def update(self, request, pk=None): #/api/Recipes/<str:id>
+        recipe_ingredient = RecipeIngredient.objects.get(id=pk)
+        serializer = RecipeIngredientSerializer(instance=recipe_ingredient, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+    
+    def destroy(self, request, pk=None): #/api/Recipes/<str:id>
+        recipe_ingredient = RecipeIngredient.objects.get(id=pk)
+        recipe_ingredient.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 class MealplanViewSet(viewsets.ViewSet):
