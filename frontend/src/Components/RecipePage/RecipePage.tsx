@@ -8,7 +8,7 @@ function RecipePage() {
     const recipe: Recipe = {
         title: "Salad",
         cookingTime: 30,
-        tags: ["Healthy", "Vegetarian", "Quick"],
+        tags: ["Chicken", "30 min(s)", "50 min(s)"],
         ingredients:["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
         instructions: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
         imageSrc: "/salad.jpg"

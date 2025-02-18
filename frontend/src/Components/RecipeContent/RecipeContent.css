@@ -56,8 +56,8 @@
     flex-direction: column;
     text-align: left;  
     justify-content: center;
-    align-items: center; /* This centers the container horizontally */
-    width: fit-content;
+    align-items: center; 
+    width: 500px;
     margin: 0 auto;
     border: 3px solid #38793b; 
     border-radius:10px;
@@ -78,4 +78,20 @@
 ol {
     margin-right:10px;
     margin-left:0px;
+}
+
+.editModalContentContainer{
+    display: flex;
+    flex-direction:column;
+    gap: 10px;
+}
+
+div .editModalInputRow{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+label{
+    width: 120px;
 }
