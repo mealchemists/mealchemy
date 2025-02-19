@@ -1,7 +1,10 @@
-from backend.models import TimeStampedModel
 from django.db import models
 from django.contrib.postgres.search import TrigramSimilarity
 import requests
+import fractions
+
+from backend.models import TimeStampedModel
+from .units import Unit, MassUnit, VolumeUnit, CountUnit
 
 class Aisle(TimeStampedModel):
     name = models.CharField(max_length=255, unique=True)  
@@ -51,7 +54,7 @@ class RecipeIngredient(TimeStampedModel):
     recipe = models.ForeignKey("recipes.Recipe", related_name="recipe_ingredients", on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     quantity = models.CharField(max_length=255, null=True)
-    unit = models.CharField(max_length=255, null=True)
+    unit = models.CharField(max_length=255, null=True, blank=True)
     # NOTE: display_name can vary -- this should come from the PDF/website/manual entry
     # ingredient.name should the raw name from the USDA FoodData Central API
     display_name = models.CharField(max_length=255, null=True, blank=False, default=ingredient.name)
@@ -67,4 +70,37 @@ class RecipeIngredient(TimeStampedModel):
         """
 
         unique_together = ("recipe", "ingredient")
+        
+    def save(self, *args, **kwargs):
+        """
+        If an Enum is passed as a unit, then make sure that its
+        label is stored in the database.
+        """
+        if isinstance(self.unit, Unit):
+            self.unit = self.unit.label
+        super().save(*args, **kwargs)
+        
+    def _get_unit_enum(self):
+        for unit_enum in (VolumeUnit, MassUnit, CountUnit):
+            for unit in unit_enum:
+                if unit.label == self.unit:
+                    return unit
+        return LookupError(f"Unknown unit {unit}!")
+    
+    def to_base_unit(self):
+        unit_enum = self._get_unit_enum()
+        if isinstance(unit_enum, CountUnit):
+            return self.quantity
+        return unit_enum.to_base_unit(self.quantity)
 
+    def __str__(self):
+        # Attempt to format the quantity to fraction up to a 16th.
+        fraction = fractions.Fraction(self.quantity).limit_denominator(16)
+        if fraction.denominator == 1:
+            formatted_quantity = fraction.numerator
+        else:
+            formatted_quantity = f"{fraction.numerator}/{fraction.denominator}"
+
+        unit = self.unit if self.quantity <= 1 else f"{self.unit}s"
+        
+        return f"{formatted_quantity} {unit} of {self.display_name}"
