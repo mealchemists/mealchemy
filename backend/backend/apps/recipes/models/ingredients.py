@@ -38,10 +38,10 @@ class Ingredient(models.Model):
             raise ValueError("Not found!")
         return match
     
-    def save(*args, **kwargs):
-        # TODO: Query the FoodData Central API and process the contents.
-        # If the API fails, prompt the user to manually enter the nutrition information.
-        super().save(*args, **kwargs)
+    # def save(*args, **kwargs):
+    #     # TODO: Query the FoodData Central API and process the contents.
+    #     # If the API fails, prompt the user to manually enter the nutrition information.
+    #     super().save(*args, **kwargs)
     
     def __str__(self):
         return f"{self.name}"
@@ -51,9 +51,10 @@ class RecipeIngredient(TimeStampedModel):
     recipe = models.ForeignKey("recipes.Recipe", related_name="recipe_ingredients", on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     quantity = models.CharField(max_length=255, null=True)
+    unit = models.CharField(max_length=255, null=True)
     # NOTE: display_name can vary -- this should come from the PDF/website/manual entry
     # ingredient.name should the raw name from the USDA FoodData Central API
-    display_name = models.CharField(max_length=255, blank=False, default=ingredient.name)
+    display_name = models.CharField(max_length=255, null=True, blank=False, default=ingredient.name)
     
     class Meta:
         """

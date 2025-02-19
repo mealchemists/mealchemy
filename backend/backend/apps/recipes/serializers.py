@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import Recipe, Ingredient, RecipeIngredient, MealPlan
+from .models.recipe import Recipe
+from .models.ingredients import Ingredient, RecipeIngredient
+from .models.meal_plan import MealPlan
 
 class RecipeSerializer(serializers.ModelSerializer):
     class Meta:

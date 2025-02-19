@@ -1,6 +1,8 @@
 from rest_framework import viewsets, status, mixins, generics
 from rest_framework.response import Response
-from .models import Recipe, Ingredient, RecipeIngredient, MealPlan
+from .models.recipe import Recipe
+from .models.ingredients import Ingredient, RecipeIngredient
+from .models.meal_plan import MealPlan
 from .serializers import RecipeSerializer, IngredientSerializer, RecipeIngredientSerializer, MealplanSerializer
 from rest_framework.decorators import api_view
 from .producer import publish
@@ -11,7 +13,6 @@ def save_scraped_data(request):
         ingredients = request.data["ingredients"]
         
         # ingredient_data =  [{"name": ingredient["name"]} for ingredient in ingredients] 
-        
         # ingredient_serializer = IngredientSerializer(data=ingredient_data, many=True)   
         recipe_serialzer = RecipeSerializer(data=request.data["recipe"])
         recipe_serialzer.is_valid(raise_exception=True)
