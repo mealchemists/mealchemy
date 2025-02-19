@@ -1,7 +1,6 @@
-
-
 import { useState, useRef, useEffect } from 'react';
 import './RecipeSearch.css';
+import AddRecipeModal from '../AddRecipeModal/AddRecipeModal';
 import { Chip, Icon } from '@mui/material';
 
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
@@ -12,6 +11,7 @@ import { Recipe } from '../../Models/models'
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
+import { Add } from '@mui/icons-material';
 
 const options = [
     'Select',
@@ -34,7 +34,11 @@ function RecipeSearch({ onSelect }: RecipeSearchProps) {
     const [sliderRange, setSliderRange] = useState<number[]>([0, 10]);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [showCancelButton, setShowCancelButton] = useState(false);
-    
+
+    const [openAddRecipeModal, setOpenAddRecipeModal] = useState(false);
+    const handleOpenAddRecipeModal = () => setOpenAddRecipeModal(true);
+    const handleCloseAddRecipeModal = () => setOpenAddRecipeModal(false);
+    const [addRecipeFormat, setAddRecipeFormat] = useState<number>(null);
     const openOptions = Boolean(anchorEl);
 
     const handleOptionsClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -56,8 +60,22 @@ function RecipeSearch({ onSelect }: RecipeSearchProps) {
             onSelect(option);
             setShowCancelButton(true);
             handleOptionsClose();
+        } else if (option === "Add Manually") {
+            onSelect(option);
+        } else if (option === "Add by URL") {
+            setAddRecipeFormat(0);
+            handleOpenAddRecipeModal()
+
+        } else if (option === "Add by PDF") {
+            setAddRecipeFormat(1);
+            handleOpenAddRecipeModal();
+
         }
     };
+
+    const handleAddRecipe = (recipe:Recipe) => {
+        handleCloseAddRecipeModal();
+    }
     const handleFilterClick = (event?: React.MouseEvent) => {
         event?.stopPropagation();
         setIsFilterPopupOpen((prev) => !prev);
@@ -163,6 +181,14 @@ function RecipeSearch({ onSelect }: RecipeSearchProps) {
                 ))}
 
             </div>
+
+            <AddRecipeModal 
+                addRecipeFormat={addRecipeFormat}  
+                open = {openAddRecipeModal}
+                onClose = {handleCloseAddRecipeModal}
+                onAddRecipe={handleAddRecipe}
+            >
+            </AddRecipeModal>
         </div>
     );
 }

@@ -7,7 +7,7 @@ import Checkbox from '@mui/material/Checkbox';
 
 function ListItem({ recipe, multiSelect, onCheckboxChange }) {
     const [checked, setChecked] = useState(false);
-
+    const tags = [recipe.mainIngredient, recipe.cookTime, recipe.prepTime, recipe.totalTime];
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const isChecked = e.target.checked;
         setChecked(isChecked);
@@ -33,7 +33,7 @@ function ListItem({ recipe, multiSelect, onCheckboxChange }) {
             <div className="contentContainer">
                 <p className="itemTitle">{recipe.title}</p>
                 <div className="tagsContainer">
-                    {recipe.tags.map((tag: string, index: number) => (
+                    {tags.map((tag: string, index: number) => (
                         <Chip
                             key={index}
                             label={tag}

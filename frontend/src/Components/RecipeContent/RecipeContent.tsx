@@ -7,36 +7,12 @@ import IconButton from '@mui/material/IconButton';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import { Autocomplete, Box, Chip, FormControl, InputAdornment, Modal, OutlinedInput, TextField, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import EditTagModal from '../EditTagModal/EditTagModal';
 
 const options = [
     'Edit',
     'Delete'
 ];
-
-const top100Films = [
-    { title: 'The Shawshank Redemption', year: 1994 },
-    { title: 'The Godfather', year: 1972 },
-    { title: 'The Godfather: Part II', year: 1974 },
-    { title: 'The Dark Knight', year: 2008 },
-    { title: '12 Angry Men', year: 1957 },
-    { title: "Schindler's List", year: 1993 },
-    { title: 'Pulp Fiction', year: 1994 },
-    {
-        title: 'The Lord of the Rings: The Return of the King',
-        year: 2003,
-    }
-]
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-};
 
 
 const ITEM_HEIGHT = 48;
@@ -51,8 +27,14 @@ function RecipeContent({ recipe }) {
     const handleOpenTagModal = () => setOpenEditTagModal(true);
     const handleCloseTagModal = () => setOpenEditTagModal(false);
 
-    // Edit Tag Modal seleted tag
-    const [selectedTag, setSelectedTag] = useState("")
+    // For tags
+    const [mainIngredient, setMainIngredient] = useState(recipe.mainIngredient);
+    const [cookTime, setCookTime] = useState(recipe.cookTime);
+    const [prepTime, setPrepTime] = useState(recipe.prepTime);
+    const [totalTime, setTotalTime] = useState(recipe.totalTime);
+
+    const [tags, setTags] = useState([mainIngredient, cookTime, prepTime, totalTime]);
+
 
     // For editing the actual recipe content
     const [title, setTitle] = useState(recipe.title);
@@ -60,6 +42,12 @@ function RecipeContent({ recipe }) {
     const [instructions, setInstructions] = useState<string[]>(recipe.instructions);
 
     const openOptions = Boolean(anchorEl);
+
+    // Keep tags in sync with individual state variables
+    useEffect(() => {
+        setTags([mainIngredient, cookTime, prepTime, totalTime]);
+    }, [mainIngredient, cookTime, prepTime, totalTime]);
+
 
     const handleOptionsClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -79,6 +67,16 @@ function RecipeContent({ recipe }) {
             handleOptionsClose();
         }
     };
+
+    const handleApplyTagChanges = (tempMainIngredient, tempCookTime, tempPrepTime, tempTotalTime) => {
+        setMainIngredient(tempMainIngredient);
+        setCookTime(tempCookTime);
+        setPrepTime(tempPrepTime);
+        setTotalTime(tempTotalTime);
+        handleCloseTagModal();
+
+        // TODO: Update database
+    }
 
     const handleSave = (newTitle = title, newIngredients = ingredients, newInstructions = instructions) => {
         setTitle(newTitle);
@@ -160,7 +158,7 @@ function RecipeContent({ recipe }) {
                         "& .MuiOutlinedInput-root": {
                             fontSize: "24px", // Match h1 size
                             fontWeight: "bold",
-                            textAlign:"center"
+                            textAlign: "center"
                         },
                     }}
                 />
@@ -169,9 +167,9 @@ function RecipeContent({ recipe }) {
             )}
             <div className="tagContainer">
                 <span className="tagLabel">Tags:</span>
-                {recipe.tags.map((tag) => (
+                {tags.map((tag, index) => (
                     <Chip
-                        key={tag}
+                        key={index}
                         label={tag}
                         variant="outlined"
                         sx={{
@@ -192,115 +190,16 @@ function RecipeContent({ recipe }) {
                             color: "#38793b",
                         }} />
                 </IconButton>
-                <Modal
-                    open={openEditTagModal}
-                    onClose={handleCloseTagModal}
-                    aria-labelledby="modal-modal-title"
-                    aria-describedby="modal-modal-description"
-                >
-                    <Box sx={style}>
-                        <div>
-                            <h3>
-                                Edit Tags
-                            </h3>
-                            <div className="editModalContentContainer">
-                                {/* Key Ingredient */}
-                                <div className="editModalInputRow">
-                                    <label>Key Ingredient:</label>
-                                    <Autocomplete
-                                        id="tags-outlined"
-                                        options={top100Films.map((option) => option.title)}
-                                        value={selectedTag}
-                                        onChange={(event, newValue) => setSelectedTag(newValue)}
-                                        freeSolo
-                                        renderTags={() => null}
-                                        renderInput={(params) => (
-                                            <TextField
-                                                sx={{
-                                                    "& .MuiOutlinedInput-root": {
-                                                        height: "40px",
-                                                        width: "150px",
-                                                        border: "2px solid #b0dbb2",
-                                                        borderRadius: "10px",
-                                                        "& fieldset": { border: "none" },
-                                                        "&:hover fieldset": { border: "none" },
-                                                        "&.Mui-focused fieldset": { border: "none" },
-                                                        padding: "5px",
-                                                    },
-                                                }}
-                                                {...params}
-                                            />
-                                        )}
-                                    />
-                                    <button style={{ height: "40px" }}>Add</button>
-                                </div>
 
-                                {/* Cook Time */}
-                                <div className="editModalInputRow">
-                                    <label>Cook Time:</label>
-                                    <TextField
-                                        sx={{
-                                            width: "15ch",
-                                            "& .MuiOutlinedInput-root": {
-                                                height: "40px",
-                                                "& input": { height: "100%", padding: "10px" },
-                                            },
-                                        }}
-                                        slotProps={{
-                                            input: {
-                                                endAdornment: <InputAdornment position="end">min(s)</InputAdornment>,
-                                            },
-                                        }}
-                                    />
-                                </div>
-
-                                {/* Preparation Time */}
-                                <div className="editModalInputRow">
-                                    <label>Preparation Time:</label>
-                                    <TextField
-                                        sx={{
-                                            width: "15ch",
-                                            "& .MuiOutlinedInput-root": {
-                                                height: "40px",
-                                                "& input": { height: "100%", padding: "10px" },
-                                            },
-                                        }}
-                                        slotProps={{
-                                            input: {
-                                                endAdornment: <InputAdornment position="end">min(s)</InputAdornment>,
-                                            },
-                                        }}
-                                    />
-                                </div>
-
-                                {/* Total Time */}
-                                <div className="editModalInputRow">
-                                    <label>Total Time:</label>
-                                    <TextField
-                                        disabled
-                                        type="number"
-                                        sx={{
-                                            width: "15ch",
-                                            "& .MuiOutlinedInput-root": {
-                                                height: "40px",
-                                                "& input": { height: "100%", padding: "10px" },
-                                            },
-                                        }}
-                                        slotProps={{
-                                            input: {
-                                                endAdornment: <InputAdornment position="end" sx={{ fontSize: "20px" }}>min(s)</InputAdornment>,
-                                            },
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <button>Done</button>
-                    </Box>
-                </Modal>
             </div>
-
+            <EditTagModal 
+                mainIngredient={mainIngredient} 
+                cookTime={cookTime} 
+                prepTime={prepTime} 
+                onApplyTagChanges={handleApplyTagChanges}
+                open = {openEditTagModal}
+                onClose = {handleCloseTagModal}
+                ></EditTagModal>
             <div className="imgIngredients">
                 <img src={recipe.imageSrc} alt={recipe.title} className="itemImage" />
                 <div className="ingredientContainer">

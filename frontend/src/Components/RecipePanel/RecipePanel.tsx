@@ -15,7 +15,7 @@ function RecipePanel({ recipes, filterTags = [] }) {
         );
         console.log(recipeName);
     };
-    const handleSelect = (option: string) => {
+    const handleSelectOption = (option: string) => {
         if (option === "") {
             setButtonVisibility(false);
             setMultiSelect(false);
@@ -23,6 +23,8 @@ function RecipePanel({ recipes, filterTags = [] }) {
             console.log(option);
             setButtonVisibility(true);
             setMultiSelect(true);
+        } else if (option === "Add Manually"){
+            console.log("MANUAL");
         }
 
     }
@@ -35,7 +37,7 @@ function RecipePanel({ recipes, filterTags = [] }) {
     }
     return (
         <div className="recipe-container">
-            <RecipeSearch onSelect={handleSelect}></RecipeSearch>
+            <RecipeSearch onSelect={handleSelectOption}></RecipeSearch>
             {recipes.map((recipe, index) => (
                 <ListItem key={index} recipe={recipe} multiSelect={multiSelect} onCheckboxChange={handleCheckboxChange} />
             ))}
