@@ -33,7 +33,11 @@ template = """
             \'{{"name": "garlic", "quantity": 1, "unit": "teaspoon"}}\',
             \'{{"name": "soy sauce", "quantity": 2, "unit": "tablespoons"}}\',
             \'{{"name": "sesame seeds", "quantity": 2, "unit": "tablespoons"}}\'
-        ]
+        ],
+        "steps": [
+            \'{{"step": 1, "descrion":"Beat eggs and sugar in a bowl with an electric mixer on medium speed until well blended. Slowly mix in flour mixture; batter will thicken rather quickly. Slowly blend in milk, then vanilla extract." }}\',
+            \'{{"step": 2, "descrion":"Lightly oil a griddle and heat over medium-high heat. Working in batches as necessary, drop batter by large spoonfuls onto the griddle and cook until bubbles form and the edges are dry, 3 to 4 minutes. Flip and cook until browned on the other side, 2 to 3 minutes." }}\',
+        ],
     }}\'
 
     Note that there is extrenous info, the json blob should look exactly like that example with the data below inputted as values, remove any redudndant info
