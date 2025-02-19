@@ -1,6 +1,7 @@
 from scrapper import Scrapper
 from bs4 import BeautifulSoup
 import requests
+import re
 
 class AllRecipeScrapper(Scrapper):
     def __init__(self, url, parent_tag, child_tag):
@@ -15,7 +16,7 @@ class AllRecipeScrapper(Scrapper):
 
     def find_tags(self, regex=None):
         if regex:
-            return self.soup.find_all(self.has_child_tag, regex)
+            return self.soup.find_all(self.has_child_tag, re.compile(regex))
         return self.soup.find_all(self.has_child_tag)
 
     def process_ingredents(self, matches):
@@ -25,7 +26,7 @@ class AllRecipeScrapper(Scrapper):
             ingredent_tags = child.findChildren(self.child_tag)
             for tag in ingredent_tags:
                 attr_keys = list(tag.attrs.keys())
-                if ( len(attr_keys) > 0 and attr_keys[0] == 'class'):
+                if ( (len(attr_keys) > 0) and (attr_keys[0] == 'class')):
                     ingredent[tag['class'][0]] = tag.text
                 else:
                     ingredent[list(tag.attrs.keys())[0]] = tag.text
