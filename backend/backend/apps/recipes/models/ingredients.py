@@ -54,9 +54,11 @@ class RecipeIngredient(TimeStampedModel):
     recipe = models.ForeignKey("recipes.Recipe", related_name="recipe_ingredients", on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     quantity = models.CharField(max_length=255, null=True)
+    # NOTE: When we are creating a new RecipeIngredient, we explicitly mention the Unit enum,
+    # which is then internally translated to its respective label within the model.
     unit = models.CharField(max_length=255, null=True, blank=True)
-    # NOTE: display_name can vary -- this should come from the PDF/website/manual entry
-    # ingredient.name should the raw name from the USDA FoodData Central API
+    # NOTE: display_name can vary -- this should come from the PDF/website/manual entry.
+    # ingredient.name should be the raw name from the USDA FoodData Central API
     display_name = models.CharField(max_length=255, null=True, blank=False, default=ingredient.name)
     
     class Meta:
@@ -81,6 +83,10 @@ class RecipeIngredient(TimeStampedModel):
         super().save(*args, **kwargs)
         
     def _get_unit_enum(self):
+        """
+        Retrieves the corresponding Unit (enum) instance based
+        on the given instance's unit in string format.
+        """
         for unit_enum in (VolumeUnit, MassUnit, CountUnit):
             for unit in unit_enum:
                 if unit.label == self.unit:
@@ -88,12 +94,22 @@ class RecipeIngredient(TimeStampedModel):
         return LookupError(f"Unknown unit {unit}!")
     
     def to_base_unit(self):
+        """
+        Converts the stored quantity to g or mL if applicable.
+        This will likely be used when it comes to calculating
+        the total nutrition for a selection of RecipeIngredients.
+        """
         unit_enum = self._get_unit_enum()
         if isinstance(unit_enum, CountUnit):
             return self.quantity
         return unit_enum.to_base_unit(self.quantity)
 
     def __str__(self):
+        # TODO: properly handle pluralization (tomato -> tomatoes, pineapple -> pineapples)
+        unit_enum = self._get_unit_enum()
+        if isinstance(unit_enum, CountUnit):
+            return f"{self.quantity}x {self.display_name}"
+        
         # Attempt to format the quantity to fraction up to a 16th.
         fraction = fractions.Fraction(self.quantity).limit_denominator(16)
         if fraction.denominator == 1:
