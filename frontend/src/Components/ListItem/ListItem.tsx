@@ -5,7 +5,7 @@ import { Chip } from '@mui/material';
 import { Recipe } from '../../Models/models'
 import Checkbox from '@mui/material/Checkbox';
 
-function ListItem({ recipe, multiSelect, onCheckboxChange }) {
+function ListItem({ recipe, multiSelect, onCheckboxChange, onClick}) {
     const [checked, setChecked] = useState(false);
     const tags = [recipe.mainIngredient, recipe.cookTime, recipe.prepTime, recipe.totalTime];
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -15,7 +15,7 @@ function ListItem({ recipe, multiSelect, onCheckboxChange }) {
     };
 
     return (
-        <div className="itemContainer">
+        <div className="itemContainer" onClick={onClick}>
             {multiSelect && (
                 <Checkbox
                     sx={{

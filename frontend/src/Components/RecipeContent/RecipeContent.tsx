@@ -16,11 +16,11 @@ const options = [
 
 
 const ITEM_HEIGHT = 48;
-function RecipeContent({ recipe }) {
+function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
 
     // 3 dot menu, edit and delete options
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const [editMode, setEditMode] = useState(false);
+    const [editMode, setEditMode] = useState(initialEditMode);
 
     // Edit Tag Modal
     const [openEditTagModal, setOpenEditTagModal] = useState(false);
@@ -57,6 +57,7 @@ function RecipeContent({ recipe }) {
     };
     const handleCancel = () => {
         setEditMode(false);
+        exitEditMode();
     }
 
     const handleOptionsSelect = (option: string) => {
@@ -84,7 +85,7 @@ function RecipeContent({ recipe }) {
         setInstructions(newInstructions);
         console.log(newIngredients);
         setEditMode(false);
-
+        exitEditMode();
         // TODO: Save to database
     };
 

@@ -5,6 +5,7 @@
     padding: 20px 15px;
     border-radius: 10px;
     width: inherit;
+    margin-bottom:15px;
 }
 
 .itemContainer:hover{

@@ -22,11 +22,9 @@ const options = [
 
 const ITEM_HEIGHT = 48;
 
-interface RecipeSearchProps {
-    onSelect: (option: string) => void,
-}
 
-function RecipeSearch({ onSelect }: RecipeSearchProps) {
+
+function RecipeSearch({ onSelect, searchRecipe }) {
     const [isFilterPopupOpen, setIsFilterPopupOpen] = useState<boolean>(false);
     const [filterChips, setFilterChips] = useState([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -61,15 +59,20 @@ function RecipeSearch({ onSelect }: RecipeSearchProps) {
             setShowCancelButton(true);
             handleOptionsClose();
         } else if (option === "Add Manually") {
+            setAnchorEl(null);
+            handleOptionsClose();
             onSelect(option);
-        } else if (option === "Add by URL") {
-            setAddRecipeFormat(0);
-            handleOpenAddRecipeModal()
 
+        } else if (option === "Add by URL") {
+            setAnchorEl(null);
+            handleOptionsClose();
+            setAddRecipeFormat(0);
+            handleOpenAddRecipeModal();
         } else if (option === "Add by PDF") {
+            setAnchorEl(null);
+            handleOptionsClose();
             setAddRecipeFormat(1);
             handleOpenAddRecipeModal();
-
         }
     };
 
@@ -91,7 +94,9 @@ function RecipeSearch({ onSelect }: RecipeSearchProps) {
         // TODO: Filter the recipes here
     };
 
-
+    const onSearchRecipe = (event: React.ChangeEvent<HTMLInputElement>) =>{
+        searchRecipe(event.target.value);
+    }
     return (
         <div>
             <div className="searchContainer">
@@ -138,7 +143,7 @@ function RecipeSearch({ onSelect }: RecipeSearchProps) {
                 </div>
 
                 <div className="searchMiddle">
-                    <input className="recipeInput"></input>
+                    <input className="recipeInput" onChange = {onSearchRecipe}></input>
                 </div>
 
                 <div className="searchRight" onClick={() => handleFilterClick()}>
@@ -187,8 +192,7 @@ function RecipeSearch({ onSelect }: RecipeSearchProps) {
                 open = {openAddRecipeModal}
                 onClose = {handleCloseAddRecipeModal}
                 onAddRecipe={handleAddRecipe}
-            >
-            </AddRecipeModal>
+            />
         </div>
     );
 }

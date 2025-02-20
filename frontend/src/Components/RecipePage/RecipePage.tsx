@@ -1,27 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import RecipePanel from '../RecipePanel/RecipePanel';
 import RecipeContent from '../RecipeContent/RecipeContent';
 import { Recipe } from '../../Models/models';
 import './RecipePage.css';
+
+
+
 function RecipePage() {
-    const recipe: Recipe = {
-        title: "Salad",
-        cookTime: 30,
-        prepTime:50,
-        totalTime:80,
-        mainIngredient: "Chicken",
-        ingredients:["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-        instructions: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
-        imageSrc: "/salad.jpg"
-    };
+    const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+    const [editMode, setEditMode] = useState(false);
+
+    const handleSelectedRecipe = (recipe: Recipe) => {
+        setSelectedRecipe(null); // Reset first
+        setTimeout(() => {
+            setSelectedRecipe(recipe); // Set the new selection
+        }, 0);
+    }
+
+    const handleExitEditMode = () => {
+        setEditMode(false);
+    }
+
+    const handleChangeRecipeMode = (changeEditMode)=>{
+        setEditMode(changeEditMode);
+    }
+
 
     return (
         <div className="mainContainer">
             <div className="sideContainer">
-                <RecipePanel recipes={[recipe]} />
+                <RecipePanel onRecipeSelect={handleSelectedRecipe} setRecipeEditMode={handleChangeRecipeMode}/>
             </div>
-            <div className="separator"></div> 
-            <RecipeContent recipe={recipe}></RecipeContent>
+            <div className="separator"></div>
+            {selectedRecipe && <RecipeContent recipe={selectedRecipe} initialEditMode={editMode} exitEditMode = {handleExitEditMode}/>}
         </div>
     );
 }
