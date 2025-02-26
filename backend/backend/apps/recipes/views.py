@@ -2,8 +2,8 @@ from rest_framework import viewsets, status, mixins, generics
 from rest_framework.response import Response
 from .models.recipe import Recipe
 from .models.ingredients import Ingredient, RecipeIngredient
-from .models.meal_plan import MealPlan
-from .serializers import RecipeSerializer, IngredientSerializer, RecipeIngredientSerializer, MealplanSerializer
+from ..meal_plan.models.meal_plan import MealPlan
+from .serializers import RecipeSerializer, IngredientSerializer, RecipeIngredientSerializer
 from rest_framework.decorators import api_view
 from .producer import publish
 
