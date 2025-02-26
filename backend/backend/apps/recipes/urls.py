@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from .views import RecipeViewSet, IngredientViewSet, MealplanViewSet, save_scraped_data, recipe_url, RecipeIngredientViewSet
+from .views import RecipeViewSet, IngredientViewSet, save_scraped_data, recipe_url, RecipeIngredientViewSet
 
 urlpatterns = [
     path('save-scraped-data/', save_scraped_data, name='save-scraped-data'),
@@ -28,15 +28,6 @@ urlpatterns = [
         'post': 'create',
     }), name="ingredient-list"),
     path('recipe-ingredient/<str:pk>', RecipeIngredientViewSet.as_view({
-        'get': 'retrieve',
-        'put': 'update',
-        'delete': 'destroy'
-    })),
-        path('mealplan', MealplanViewSet.as_view({
-        'get': 'list',
-        'post': 'create',
-    })),
-    path('mealplan/<str:pk>', MealplanViewSet.as_view({
         'get': 'retrieve',
         'put': 'update',
         'delete': 'destroy'
