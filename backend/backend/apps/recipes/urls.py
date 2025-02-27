@@ -4,6 +4,7 @@ from .views import RecipeViewSet, IngredientViewSet, save_scraped_data, recipe_u
 
 urlpatterns = [
     path('recipe-ingredients/<str:pk>', RecipeIngredientsAPIView.as_view(), name='recipe-ingredients'),
+    path('recipe-ingredients', RecipeIngredientsAPIView.as_view(), name='recipe-ingredients'),
     path('save-scraped-data/', save_scraped_data, name='save-scraped-data'),
     path('recipe-url/', recipe_url, name='recipe-url'),
     path('recipe', RecipeViewSet.as_view({
