@@ -1,6 +1,4 @@
-from django.shortcuts import render
-from rest_framework import viewsets, status, mixins, generics
-from rest_framework.response import Response
+from rest_framework import viewsets
 from .models.meal_plan import MealPlan
 from .serializers import MealPlanSerializer
 

@@ -5,6 +5,7 @@ from .models.ingredients import Ingredient, RecipeIngredient
 from ..meal_plan.models.meal_plan import MealPlan
 from .serializers import RecipeSerializer, IngredientSerializer, RecipeIngredientSerializer
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from .producer import publish
 
 @api_view(['POST'])
@@ -36,7 +37,35 @@ def recipe_url(request):
         print(data['url'])
         publish(data['url'])
         return Response(data, status=status.HTTP_201_CREATED)
+    
+        
+class RecipeIngredientsAPIView(generics.ListAPIView):
+    serializer_class = RecipeIngredientSerializer
 
+    def get_queryset(self):
+        recipe_id = self.kwargs["pk"]
+        return RecipeIngredient.objects.prefetch_related("recipe", "ingredient").filter(recipe_id=recipe_id)
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        
+        recipe = queryset.first().recipe
+        recipe_serializer = RecipeSerializer(recipe)
+        
+        ingredients = [ri.ingredient for ri in queryset]
+        ingredient_serializer = IngredientSerializer(ingredients, many=True)
+        
+        recipe_data = {
+            "recipe": recipe_serializer.data,
+            "ingredients": ingredient_serializer.data
+        }
+        
+        return Response(recipe_data, status=status.HTTP_200_OK)
+        
+        
+        
+        
+    
 class RecipeViewSet(viewsets.ModelViewSet):
     def list(self, request): #/api/Recipes
         Recipes = Recipe.objects.all()
@@ -109,7 +138,7 @@ class RecipeIngredientViewSet(viewsets.ViewSet):
     
     def retrieve(self, request, pk=None): #/api/Recipes/<str:id>
         recipe_ingredient = RecipeIngredient.objects.get(id=pk)
-        serializer = RecipeIngredientSerializer(recipe_ingredient)
+        serializer = RecipeIngredientSerializer(recipe_ingredient, many=True)
         return Response(serializer.data)
     
     def update(self, request, pk=None): #/api/Recipes/<str:id>
