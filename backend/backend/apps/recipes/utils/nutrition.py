@@ -1,5 +1,4 @@
 import re
-import json
 import os
 import requests
 from dotenv import load_dotenv
@@ -93,6 +92,7 @@ def query_fdc_api(params):
         print(
             f"({i + 1}/{len(data.get('foods'))}): {food_name} ({food_fdc_id}, {food_dtype})"
         )
+        print("\t--Nutrients per 100g--")
 
         food_nutrients = food.get("foodNutrients", None)
         if food_nutrients is not None:
@@ -112,9 +112,10 @@ def query_fdc_api(params):
                     nutrient_name = nutrient.get("nutrientName", None)
                     nutrient_value = nutrient.get("value", None)
                     nutrient_unit = nutrient.get("unitName", None)
+
                     print(f"\t{nutrient_name}: {nutrient_value} {nutrient_unit}")
                 else:
-                    print(f"\t[{internal_name} N/A]")
+                    print(f"\t[{internal_name} was not found")
 
         else:
             raise ValueError("No nutrients found!")
@@ -125,17 +126,12 @@ def query_fdc_api(params):
     return results
 
 
-def normalize_portion_size():
-    # normalize nutrition information to 100g
-    # usually only for branded foods, where fields 'servingSize' and 'servingSizeUnit' are given
-
-    # iff. serving_size is not 100 then
-    # (value / serving_size) * 100
-    return
-
-
 if __name__ == "__main__":
     while True:
         search_term = input("Search up something: ")
         preprocess_food_name(search_term)
-        search_fdc(search_term)
+
+        try:
+            search_fdc(search_term)
+        except Exception as e:
+            print(e)
