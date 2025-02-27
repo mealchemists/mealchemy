@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.postgres.search import TrigramSimilarity
-import requests
 import fractions
 
 from backend.models import TimeStampedModel
@@ -22,13 +21,18 @@ class Ingredient(models.Model):
 
     # NOTE: USDA FoodData Central API uses kcal; this is the same thing as actual Calories.
     calories_per_100g = models.FloatField(
-        help_text="Energy in kcal per 100g", null=True
+        help_text="energy in kcal per 100g", null=True
     )
-    protein_per_100g = models.FloatField(help_text="Protein per 100g", null=True)
-    carbs_per_100g = models.FloatField(help_text="Carbohydrates per 100g", null=True)
-    sugar_per_100g = models.FloatField(help_text="Sugar per 100g", null=True)
-    fat_per_100g = models.FloatField(help_text="Total fat per 100g", null=True)
-    fiber_per_100g = models.FloatField(help_text="Fiber per 100g", null=True)
+    protein_per_100g = models.FloatField(
+        help_text="grams of protein per 100g", null=True
+    )
+    carbs_per_100g = models.FloatField(
+        help_text="grams of carbohydrates per 100g", null=True
+    )
+    sugar_per_100g = models.FloatField(help_text="grams of sugar per 100g", null=True)
+    fat_per_100g = models.FloatField(help_text="grams of total fat per 100g", null=True)
+    fiber_per_100g = models.FloatField(help_text="grams of fiber per 100g", null=True)
+    sodium_per_100mg = models.FloatField(help_text="mg of sodium per 100g")
 
     aisle = models.ForeignKey(Aisle, on_delete=models.SET_NULL, null=True, blank=True)
 
