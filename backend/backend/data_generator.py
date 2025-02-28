@@ -2,8 +2,10 @@ import random
 import django
 from faker import Faker
 from backend.apps.recipes.models.recipe import Recipe
+from backend.apps.meal_plan.models.meal_plan import MealPlan
 from backend.apps.recipes.models.ingredients import Aisle, Ingredient, RecipeIngredient
 from django.contrib.auth.models import User
+from datetime import timedelta, date
 
 # Initialize Faker
 fake = Faker()
@@ -86,6 +88,26 @@ def create_recipe_ingredients(recipes, ingredients):
             )
             used_ingredients.add(ingredient)
 
+def create_meal_plans(n=20, recipes=None):
+    meal_types = ["breakfast", "lunch", "dinner"]
+    meal_plans = []
+
+    for _ in range(n):
+        recipe = random.choice(recipes)
+        
+        # Generate a date within the past or next 30 days
+        random_days_offset = random.randint(-30, 30)
+        day_planned = date.today() + timedelta(days=random_days_offset)
+
+        meal_plan = MealPlan.objects.create(
+            day_planned=day_planned,
+            meal_type=random.choice(meal_types),
+            recipe=recipe
+        )
+        meal_plans.append(meal_plan)
+
+    return meal_plans
+
 
 def generate_fake_data():
     print("Generating test data...")
@@ -94,6 +116,7 @@ def generate_fake_data():
     ingredients = create_ingredients(aisles=aisles)
     recipes = create_recipes(users=users)
     create_recipe_ingredients(recipes, ingredients)
+    create_meal_plans(recipes=recipes)  # Add meal plans
     print("Test data generated successfully!")
 
 generate_fake_data()

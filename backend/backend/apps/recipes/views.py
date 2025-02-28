@@ -72,7 +72,6 @@ class RecipeIngredientsAPIView(generics.ListAPIView):
                         "recipe": recipe_serializer.data,
                         "ingredients": ingredient_serializer.data
                     })
-
         else:
             recipe_id = self.kwargs["pk"]
             queryset= queryset.filter(recipe_id=recipe_id)
