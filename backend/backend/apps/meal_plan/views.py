@@ -11,6 +11,9 @@ class MealPlanViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['GET'])
     def by_week(self, request):
+        """
+        Returns only the meals plans for the current week. Includes serialized recipe data
+        """
         queryset = MealPlan.get_week_meals()
         meal_plan_serializer = MealPlanSerializer(queryset, many=True) 
         return Response({"meal_plan": meal_plan_serializer.data}, status=status.HTTP_200_OK)
