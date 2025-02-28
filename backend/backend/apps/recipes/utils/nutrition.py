@@ -14,9 +14,11 @@ BASE_URL = "https://api.nal.usda.gov/fdc/v1"
 # USDA FoodData Central (FDC) nutrient IDs
 # https://www.ars.usda.gov/ARSUserFiles/80400530/pdf/fndds/2021_2023_FNDDS_Doc.pdf
 FDC_NUTRITION_IDS = {
-    "CALORIES_ID": 2047,  # Atwater general factors
+    "CALORIES_ID_ATWATER": 2047,  # Atwater general factors
+    "CALORIES_ID_ENERGY": 1008,  # figure out
     "PROTEIN_ID": 1003,
     "CARBOHYDRATE_ID": 1005,
+    "SUGAR_ID_2": 2000,  # figure out
     "SUGAR_ID": 1063,  # Total sugars
     "FAT_ID": 1004,
     "FIBER_ID": 1079,  # Total dietary - not used in calculation
@@ -115,7 +117,7 @@ def query_fdc_api(params):
 
                     print(f"\t{nutrient_name}: {nutrient_value} {nutrient_unit}")
                 else:
-                    print(f"\t[{internal_name} was not found")
+                    print(f"\t[{internal_name} N/A]")
 
         else:
             raise ValueError("No nutrients found!")
