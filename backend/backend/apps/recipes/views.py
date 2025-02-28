@@ -39,7 +39,10 @@ def recipe_url(request):
         print(data['url'])
         publish(data['url'])
         return Response(data, status=status.HTTP_201_CREATED)
-    
+
+# class RecipeIngredientsAPIView(generics.ListAPIView):
+#     queryset = RecipeIngredient.objects.all()
+#     serializer_class = RecipeIngredientSerializer
         
 class RecipeIngredientsAPIView(generics.ListAPIView):
     serializer_class = RecipeIngredientSerializer
@@ -53,41 +56,44 @@ class RecipeIngredientsAPIView(generics.ListAPIView):
         # TODO We need to filter the results to only the recipes/ingredients created by the user
         queryset = self.get_queryset() 
         if not self.kwargs:
-            # We have multiple recipe objects
-            recipe_data = []
             
-            for ri in queryset:
-                recipe_ingredients = queryset.filter(recipe=ri.id)
-                
-                if hasattr(recipe_ingredients.first(), "recipe"):
-
-                    recipe = recipe_ingredients.first().recipe
-                    recipe_serializer = RecipeSerializer(recipe)
-                
-                    ingredients = [recipe_ingredient.ingredient for recipe_ingredient in recipe_ingredients]
-                    ingredient_serializer = IngredientSerializer(ingredients, many=True)
-
-
-                    recipe_data.append ({
-                        "recipe": recipe_serializer.data,
-                        "ingredients": ingredient_serializer.data
-                    })
+            return Response(self.serialize_many() , status=status.HTTP_200_OK)
         else:
             recipe_id = self.kwargs["pk"]
             queryset= queryset.filter(recipe_id=recipe_id)
-
-            recipe = queryset.first().recipe
-            recipe_serializer = RecipeSerializer(recipe)
+            ri = queryset.first()
+            ri_serializer = RecipeIngredientSerializer(ri)
             
             ingredients = [ri.ingredient for ri in queryset]
             ingredient_serializer = IngredientSerializer(ingredients, many=True)
             
-            recipe_data = {
-                "recipe": recipe_serializer.data,
-                "ingredients": ingredient_serializer.data
-            }
-        
-        return Response(recipe_data, status=status.HTTP_200_OK)
+            ri_data = ri_serializer.data
+            del ri_data["ingredient"]
+            ri_data["ingredients"] = ingredient_serializer.data
+
+            return Response(ri_data , status=status.HTTP_200_OK)
+    
+    def serialize_many(self):
+        queryset = self.get_queryset()
+        recipe_data = []
+            
+        for ri in queryset:
+            recipe_ingredients = queryset.filter(recipe=ri.id)
+    
+            if hasattr(recipe_ingredients.first(), "recipe"):
+                recipe_ingredient = recipe_ingredients.first()
+                ri_serializer = RecipeIngredientSerializer(recipe_ingredient)
+            
+                ingredients = [recipe_ingredient.ingredient for recipe_ingredient in recipe_ingredients]
+                ingredient_serializer = IngredientSerializer(ingredients, many=True)
+                
+                ri_data = ri_serializer.data
+                del ri_data["ingredient"]
+                ri_data["ingredients"] = ingredient_serializer.data
+
+                recipe_data.append(ri_data)
+
+        return recipe_data
         
 class RecipeViewSet(viewsets.ModelViewSet):
     def list(self, request): #/api/Recipes

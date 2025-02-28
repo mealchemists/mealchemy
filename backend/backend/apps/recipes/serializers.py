@@ -13,6 +13,9 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class RecipeIngredientSerializer(serializers.ModelSerializer):
+    recipe = RecipeSerializer()
+    # ingredient = IngredientSerializer(many=True)
+
     class Meta:
         model = RecipeIngredient
         fields = '__all__'
