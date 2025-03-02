@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from .producer import publish
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+import random
 
 @api_view(['POST'])
 def save_scraped_data(request):
@@ -39,6 +40,12 @@ def recipe_url(request):
         print(data['url'])
         publish(data['url'])
         return Response(data, status=status.HTTP_201_CREATED)
+    
+        
+class RecipeIngredientsAPIView(generics.ListAPIView):
+    serializer_class = RecipeIngredientSerializer
+    filter_backends = [DjangoFilterBackend]
+    filter_set_fields = ["id"]
 
 class RecipeIngredientsAPIView(APIView):
     def get_queryset(self):
@@ -118,8 +125,25 @@ class RecipeIngredientsAPIView(APIView):
                     return Response({"error": "Missing ingredient data"}, status=status.HTTP_400_BAD_REQUEST)
 
                 # TODO handle nutrition information
+                # TODO handle Aisle
+                calories_per_100g=random.uniform(50, 500),
+                protein_per_100g=random.uniform(1, 30),
+                carbs_per_100g=random.uniform(1, 50),
+                sugar_per_100g=random.uniform(0, 30),
+                fat_per_100g=random.uniform(0, 20),
+                sodium_per_100mg=random.uniform(0,1500),
+                fiber_per_100g=random.uniform(0, 15),
                 
-                ingredient, _ = Ingredient.objects.get_or_create(name=ingredient_name)  # Ensure ingredient exists
+                ingredient, _ = Ingredient.objects.get_or_create(
+                    name=ingredient_name,
+                    calories_per_100g=random.uniform(50, 500),
+                    protein_per_100g=random.uniform(1, 30),
+                    carbs_per_100g=random.uniform(1, 50),
+                    sugar_per_100g=random.uniform(0, 30),
+                    fat_per_100g=random.uniform(0, 20),
+                    sodium_per_100mg=random.uniform(0,1500),
+                    fiber_per_100g=random.uniform(0, 15),
+                )
                 RecipeIngredient.objects.create(recipe=recipe, ingredient=ingredient, quantity=quantity, unit=unit, display_name=display_name)  # Create relationship
 
             return Response(RecipeSerializer(recipe).data, status=status.HTTP_201_CREATED)
@@ -180,8 +204,8 @@ class IngredientViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
     
     def destroy(self, request, pk=None): #/api/Recipes/<str:id>
-        Ingredient = Ingredient.objects.get(id=pk)
-        Ingredient.delete()
+        ingredient = Ingredient.objects.get(id=pk)
+        ingredient.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 class RecipeIngredientViewSet(viewsets.ViewSet):

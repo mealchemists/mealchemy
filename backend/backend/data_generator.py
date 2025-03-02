@@ -6,6 +6,7 @@ from backend.apps.meal_plan.models.meal_plan import MealPlan
 from backend.apps.recipes.models.ingredients import Aisle, Ingredient, RecipeIngredient
 from django.contrib.auth.models import User
 from datetime import timedelta, date
+import uuid
 
 # Initialize Faker
 fake = Faker()
@@ -37,12 +38,13 @@ def create_ingredients(n=20, aisles=None):
     for _ in range(n):
         aisle = random.choice(aisles) if aisles else None
         ingredient, _ = Ingredient.objects.get_or_create(
-            name=fake.word().capitalize(),
+            name="TEST-OBJECT-" + str(uuid.uuid4()),
             calories_per_100g=random.uniform(50, 500),
             protein_per_100g=random.uniform(1, 30),
             carbs_per_100g=random.uniform(1, 50),
             sugar_per_100g=random.uniform(0, 30),
             fat_per_100g=random.uniform(0, 20),
+            sodium_per_100mg=random.uniform(0,1500),
             fiber_per_100g=random.uniform(0, 15),
             aisle=aisle
         )
@@ -119,4 +121,4 @@ def generate_fake_data():
     create_meal_plans(recipes=recipes)  # Add meal plans
     print("Test data generated successfully!")
 
-generate_fake_data()
+
