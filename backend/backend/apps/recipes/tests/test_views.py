@@ -1,67 +1,33 @@
-from django.contrib.auth.models import User
-from rest_framework.test import APIClient, APITestCase
-from django.urls import reverse
 from rest_framework import status
-from backend.apps.recipes.models import Recipe
-import json
-class RecipeApiTest(APITestCase):
-    def setUp(self):
-        # Create a user
-        self.user = User.objects.create_user(username='testuser', password='password')
+from backend.apps.recipes.models.recipe import Recipe
+from backend.apps.test_utils.test_base_api import BaseApiTest
 
-        # Log in the client with the user
-        self.client.login(username='testuser', password='password')
-
-        # Create a Recipe instance
-        self.my_model = Recipe.objects.create(
-            user=self.user,  # Link the Recipe to the created user
-            name="Test Object", 
-            description="This is a test object.",
-            prep_time=10, 
-            cook_time=10, 
-            total_time=20,
-            cuisine="Japanese",
-            source_url="www.allrecipes.com"
-        )
-        
-        self.data = {
-            'name': 'New Object', 
-            'description': 'This is a new object.',
-            'prep_time': 15, 
-            'cook_time': 15, 
-            'total_time': 30, 
-            'cuisine': 'Italian', 
-            'source_url': 'https://www.allrecipes.com/recipe/21014/good-old-fashioned-pancakes/'
-        }
-
-        # Define the URLs for list and detail views
-        self.list_url = reverse('recipe-list')  # Replace with your actual URL name for the list view
-        self.detail_url = reverse('recipe-detail', args=[self.my_model.id])  # Replace with your actual URL name for the detail view
+class RecipeApiTest(BaseApiTest):
 
     def test_get_list(self):
-        response = self.client.get(self.list_url)
+        response = self.client.get(self.recipe_list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)  # Assuming one recipe exists
 
     def test_get_detail(self):
-        response = self.client.get(self.detail_url)
+        response = self.client.get(self.recipe_detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.my_model.name)
+        self.assertEqual(response.data['name'], self.recipe_model.name)
 
     def test_create_object(self):
-        response = self.client.post(self.list_url, self.data, format='json')
+        response = self.client.post(self.recipe_list_url, self.recipe_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Recipe.objects.count(), 2)  # Check that a new object was created
 
     def test_update_object(self):
-        data = self.data
+        data = self.recipe_data
         data["name"] = 'Updated Object'
-        response = self.client.put(self.detail_url, data, format='json')
+        response = self.client.put(self.recipe_detail_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
-        self.my_model.refresh_from_db()
-        self.assertEqual(self.my_model.name, 'Updated Object')
+        self.recipe_model.refresh_from_db()
+        self.assertEqual(self.recipe_model.name, 'Updated Object')
 
     def test_delete_object(self):
-        response = self.client.delete(self.detail_url)
+        response = self.client.delete(self.recipe_detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Recipe.objects.count(), 0)  # Verify the object was deleted

@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.urls import path
-from .views import RecipeViewSet, IngredientViewSet, MealplanViewSet, save_scraped_data, recipe_url, RecipeIngredientViewSet
+from .views import RecipeViewSet, IngredientViewSet, save_scraped_data, recipe_url, RecipeIngredientsAPIView
 
 urlpatterns = [
+    path('recipe-ingredients/<str:pk>', RecipeIngredientsAPIView.as_view(), name='recipe-ingredients'),
+    path('recipe-ingredients', RecipeIngredientsAPIView.as_view(), name='recipe-ingredients'),
     path('save-scraped-data/', save_scraped_data, name='save-scraped-data'),
     path('recipe-url/', recipe_url, name='recipe-url'),
     path('recipe', RecipeViewSet.as_view({
@@ -23,22 +25,5 @@ urlpatterns = [
         'put': 'update',
         'delete': 'destroy'
     })),
-    path('recipe-ingredient', RecipeIngredientViewSet.as_view({
-        'get': 'list',
-        'post': 'create',
-    }), name="ingredient-list"),
-    path('recipe-ingredient/<str:pk>', RecipeIngredientViewSet.as_view({
-        'get': 'retrieve',
-        'put': 'update',
-        'delete': 'destroy'
-    })),
-        path('mealplan', MealplanViewSet.as_view({
-        'get': 'list',
-        'post': 'create',
-    })),
-    path('mealplan/<str:pk>', MealplanViewSet.as_view({
-        'get': 'retrieve',
-        'put': 'update',
-        'delete': 'destroy'
-    })),
+    
 ]
