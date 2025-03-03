@@ -15,7 +15,6 @@ class Aisle(TimeStampedModel):
         default=False
     )  # To track if a user modified the tag
 
-
 class Ingredient(models.Model):
     name = models.CharField(max_length=255, unique=True)
 
