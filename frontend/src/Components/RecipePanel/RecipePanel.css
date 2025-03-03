@@ -1,0 +1,17 @@
+.recipe-container {
+    display: flex;
+    flex-direction: column;
+    position: relative; /* Allows absolute positioning */
+    height: -webkit-fill-available;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 10px;
+}
+

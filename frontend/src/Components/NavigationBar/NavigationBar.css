@@ -1,0 +1,43 @@
+.navContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+    background-color: #b0dbb2; 
+    height: inherit;
+    /* padding: 20px 40px; */
+    border-radius: 10px; 
+}
+
+.navContainer ul {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 20px; 
+    justify-content: space-between;
+    width: -webkit-fill-available;
+}
+
+/* Style the list items */
+.navContainer li {
+    cursor: pointer;
+    font-weight: bold;
+    width: 30%; 
+    flex-grow: 1; 
+    text-align: center;
+    font-size:x-large;
+}
+
+.navContainer button{
+    background-color:transparent;
+}
+.userProfile {
+    display: flex;
+    align-items: center;
+    color: black;
+}
+.middleNav{
+    flex-grow:1;
+    display:flex;
+    justify-content:center;
+}

@@ -1,0 +1,75 @@
+.filter-container {
+    position: relative;
+    display: inline-block;
+}
+  
+.popup {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 20px;
+    z-index: 1000;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    width: 200px;
+}
+.filterPopup {
+    position: absolute; 
+    top: 100%; 
+    left: 0; 
+    width: 300px; 
+    z-index: 100;
+    background-color: white; 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+    border-radius: 8px; 
+    padding: 10px; 
+    cursor:default;
+}
+
+
+.popupButtonContainer {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.popupFirst,
+.popupLast{
+    width:auto;
+}
+.popupMiddle {
+  flex:1;
+  justify-content: space-between; 
+}
+
+.xContainer {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+}
+
+.xContainer:hover {
+    cursor: pointer;
+}
+
+.popupTitleContainer {
+    text-align:center;
+}
+
+.popupTitleContainer h3 {
+    margin-top:0px;
+    margin-bottom:0px;
+}
+
+.sliderContainer {
+    display:flex;
+}
+
+.radioContainer{
+    display:flex
+}
+
+.popupContentContainer > p:first-of-type {
+    margin-top: 5px;
+}
+
