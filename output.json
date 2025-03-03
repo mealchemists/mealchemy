@@ -1,0 +1,72 @@
+{
+    "recipe": {
+        "id": 1,
+        "created_at": "2025-02-27T16:48:15.641953Z",
+        "updated_at": "2025-02-27T16:48:15.641995Z",
+        "name": "Here trouble foot.",
+        "prep_time": 11,
+        "cook_time": 18,
+        "total_time": 29,
+        "source_url": "http://www.smith.com/",
+        "image_url": null,
+        "steps": "Security second make local hear real four office. Beautiful example finish interesting imagine. Enough us billion result. Top analysis father drive together hot name. Culture interview understand modern good. Tax action environmental buy thank.",
+        "user": 5
+    },
+    "ingredients": [
+        {
+            "id": 15,
+            "name": "Term",
+            "calories_per_100g": 297.07100846662297,
+            "protein_per_100g": 11.74345433409364,
+            "carbs_per_100g": 13.060831789925805,
+            "sugar_per_100g": 12.050958506657617,
+            "fat_per_100g": 0.10770626288897578,
+            "fiber_per_100g": 13.536063884431274,
+            "aisle": 8
+        },
+        {
+            "id": 5,
+            "name": "Policy",
+            "calories_per_100g": 485.0585840566065,
+            "protein_per_100g": 24.776008888128143,
+            "carbs_per_100g": 11.809586070568,
+            "sugar_per_100g": 24.998061502280656,
+            "fat_per_100g": 18.28894161118128,
+            "fiber_per_100g": 14.815468081147914,
+            "aisle": 7
+        },
+        {
+            "id": 7,
+            "name": "Best",
+            "calories_per_100g": 334.88651021748205,
+            "protein_per_100g": 28.87787059361567,
+            "carbs_per_100g": 10.737071310708009,
+            "sugar_per_100g": 11.992327385208512,
+            "fat_per_100g": 1.011066417824631,
+            "fiber_per_100g": 12.926659881867627,
+            "aisle": 8
+        },
+        {
+            "id": 8,
+            "name": "Data",
+            "calories_per_100g": 346.8727215532845,
+            "protein_per_100g": 29.27506069759517,
+            "carbs_per_100g": 8.838520402950929,
+            "sugar_per_100g": 25.703744707866115,
+            "fat_per_100g": 9.99216116336764,
+            "fiber_per_100g": 0.9576588905478783,
+            "aisle": 3
+        },
+        {
+            "id": 2,
+            "name": "Very",
+            "calories_per_100g": 291.20106329138537,
+            "protein_per_100g": 24.7196955711181,
+            "carbs_per_100g": 44.44592200407924,
+            "sugar_per_100g": 12.975300684399855,
+            "fat_per_100g": 13.908973012338562,
+            "fiber_per_100g": 10.163637804077831,
+            "aisle": 3
+        }
+    ]
+},
