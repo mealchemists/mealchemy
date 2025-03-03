@@ -1,0 +1,73 @@
+{
+    "recipe-data": {
+        "name": "beef-stirfry",
+        "prep_time": 15,
+        "cook_time": 15,
+        "total_time": 15,
+        "description": "stirfry",
+        "source_url": "https://www.google.com",
+        "servings": 5
+    },
+    "ingredient-data": [
+        {
+            "data-ingredient-quantity": "4",
+            "data-ingredient-unit": "",
+            "name": "skinless, boneless chicken breast halves"
+        },
+        {
+            "data-ingredient-quantity": "8",
+            "data-ingredient-unit": "",
+            "name": "carrots, sliced into 1/2-inch rounds"
+        },
+        {
+            "data-ingredient-quantity": "8",
+            "data-ingredient-unit": "stalks",
+            "name": "celery, chopped"
+        },
+        {
+            "data-ingredient-quantity": "8",
+            "data-ingredient-unit": "",
+            "name": "green onions, chopped"
+        },
+        {
+            "data-ingredient-quantity": "4",
+            "data-ingredient-unit": "",
+            "name": "green bell peppers, sliced"
+        },
+        {
+            "data-ingredient-quantity": "¼",
+            "data-ingredient-unit": "cup",
+            "name": "chopped fresh flat-leaf parsley"
+        },
+        {
+            "data-ingredient-quantity": "½",
+            "data-ingredient-unit": "cup",
+            "name": "olive oil"
+        },
+        {
+            "data-ingredient-quantity": "1",
+            "data-ingredient-unit": "teaspoon",
+            "name": "Italian seasoning"
+        },
+        {
+            "data-ingredient-quantity": "1",
+            "data-ingredient-unit": "teaspoon",
+            "name": "chili powder"
+        },
+        {
+            "data-ingredient-quantity": "1",
+            "data-ingredient-unit": "teaspoon",
+            "name": "lemon pepper"
+        },
+        {
+            "data-ingredient-quantity": "1",
+            "data-ingredient-unit": "teaspoon",
+            "name": "salt"
+        },
+        {
+            "data-ingredient-quantity": "4",
+            "data-ingredient-unit": "pinches",
+            "name": "freshly ground black pepper, or to taste"
+        }
+    ]
+}

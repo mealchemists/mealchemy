@@ -1,7 +1,0 @@
-__pycache__/
-*.py[cod]
-
-# IDE files
-.vscode/
-.idea/
-venv/

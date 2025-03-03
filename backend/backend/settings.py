@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-99qei#smfu0763xsl#hf^ln$52gj8o-es99dl2t@e(0i=%uk3k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost"]
 
 
 # Application definition
@@ -38,8 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'django_filters',
     'rest_framework',
-    'backend.apps.recipes'
+    'backend.apps.recipes',
+    'backend.apps.meal_plan'
 ]
 
 MIDDLEWARE = [
@@ -76,24 +79,25 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": "db.sqlite3",
     }
 }
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'test_db',
-#         'USER': 'admin',
-#         'PASSWORD': 'root',
-#         "HOST": 'db',
-#         'PORT': '5432' # port inside docker container
+#         'NAME': os.getenv('POSTGRES_DB', 'test_db'),
+#         'USER': os.getenv('POSTGRES_USER', 'admin'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'root'),
+#         'HOST': os.getenv('POSTGRES_HOST', 'localhost' if os.getenv('GITHUB_ACTIONS') else 'db'),
+#         'PORT': os.getenv('POSTGRES_PORT', '5432'),
+#         'TEST': {
+#             'NAME': 'test_db_unittest'
+#         }
 #     }
 # }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

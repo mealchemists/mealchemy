@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*.deb
+
+# IDE files
+.vscode/
+.idea/
+
+# Virtual environments
+.venv/
