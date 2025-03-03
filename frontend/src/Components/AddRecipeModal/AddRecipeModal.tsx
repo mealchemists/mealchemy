@@ -101,7 +101,7 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                     )}
                 </div>
 
-                <button onClick={sendRecipeToParent}>Done</button>
+                <button className = "done-button" onClick={sendRecipeToParent}>Done</button>
             </Box>
         </Modal>
     );

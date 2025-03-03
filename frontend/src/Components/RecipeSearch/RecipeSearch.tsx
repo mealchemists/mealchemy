@@ -12,6 +12,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
+import Button from '@mui/material';
 
 const options = [
     'Select',
@@ -24,7 +25,7 @@ const ITEM_HEIGHT = 48;
 
 
 
-function RecipeSearch({ onSelect, searchRecipe }) {
+function RecipeSearch({ onSelect = null, searchRecipe=null }) {
     const [isFilterPopupOpen, setIsFilterPopupOpen] = useState<boolean>(false);
     const [filterChips, setFilterChips] = useState([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -102,9 +103,11 @@ function RecipeSearch({ onSelect, searchRecipe }) {
             <div className="searchContainer">
                 <div className="searchLeft">
                     {showCancelButton ? (
-                        <button onClick={handleCancel} autoFocus>Cancel</button>
+                        <button className="cancel-button" onClick={handleCancel} autoFocus>Cancel</button>
                     ) : (
-                        <IconButton
+
+                        onSelect &&
+                        (<IconButton
                             aria-label="more"
                             id="long-button"
                             aria-controls={openOptions ? 'long-menu' : undefined}
@@ -113,9 +116,10 @@ function RecipeSearch({ onSelect, searchRecipe }) {
                             onClick={handleOptionsClick}
                         >
                             <MoreHorizOutlinedIcon sx={{ color: "#38793b" }} />
-                        </IconButton>
+                        </IconButton>)
                     )}
 
+                        
                     <Menu
                         id="long-menu"
                         MenuListProps={{

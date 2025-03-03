@@ -2,7 +2,6 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    /* Full viewport height */
 }
 
 .navigation-bar {
@@ -12,6 +11,53 @@
 .content {
     flex: 1;
     padding: 20px;
-    min-height: 500px;
+    min-height: 100%;
     background-color: #f0f0f0;
+}
+button {
+    padding: 8px 15px;
+    border-radius: 7px;
+    border: none;
+
+}
+
+button:hover {
+    cursor:pointer;
+}
+
+.add-button{
+    background-color:#b0dbb2;
+}
+
+.delete-button {
+    background-color: red;
+    color: white;
+}
+
+.shopping-list-button {
+    background-color: #6bb2f4;
+    color: white;
+}
+
+.save-button {
+    background-color: #6bb2f4;
+    color: white;
+}
+
+.reset-button{
+    background-color:#d2d2d2;
+}
+
+.apply-button{
+    background-color: #6bb2f4;
+    color: white;
+}
+
+.cancel-button{
+    background-color: #d2d2d2;
+}
+
+.done-button{
+    background-color: #6bb2f4;
+    color: white;
 }

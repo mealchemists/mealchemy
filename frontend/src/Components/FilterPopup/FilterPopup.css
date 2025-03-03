@@ -73,14 +73,3 @@
     margin-top: 5px;
 }
 
-.popupButtonContainer button {
-    background-color: white;
-    padding: 10px 15px;
-    margin-top:15px;
-    border-radius: 10px;
-}
-
-.popupButtonContainer button:hover {
-    cursor:pointer;
-    
-}

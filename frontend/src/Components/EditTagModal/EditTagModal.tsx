@@ -79,7 +79,7 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
                                     />
                                 )}
                             />
-                            <button style={{ height: "40px" }}>Add</button>
+                            <button className = "add-button" style={{ height: "40px" }}>Add</button>
                         </div>
 
                         {/* Cook Time */}
@@ -148,7 +148,7 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
                     </div>
                 </div>
 
-                <button onClick={sendTagsToParent}>Done</button>
+                <button className = "done-button" onClick={sendTagsToParent}>Done</button>
             </Box>
         </Modal>
     )

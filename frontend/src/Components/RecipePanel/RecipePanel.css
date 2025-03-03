@@ -15,20 +15,3 @@
     padding: 10px;
 }
 
-.delete-button {
-    background-color: red;
-    color: white;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.shopping-list-button {
-    background-color: green;
-    color: white;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}

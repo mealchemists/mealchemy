@@ -1,10 +1,10 @@
 export interface Recipe{
-    title:String,
+    title:string,
     cookTime: Number;
     prepTime: Number;
     totalTime: Number;
-    mainIngredient:String;
-    ingredients: Array<String>;
-    instructions: Array<String>;
-    imageSrc: String; //Change later
+    mainIngredient:string;
+    ingredients: Array<string>;
+    instructions: Array<string>;
+    imageSrc: string; //Change later
 }

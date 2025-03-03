@@ -1,0 +1,34 @@
+.gridItemContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: #b0dbb2;
+    width:fit-content;
+    padding: 10px 7px;
+    border-radius: 10px;
+}
+
+.contentContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.gridItemTitle {
+    text-align: center;
+}
+
+.gridItemImage {
+    width: 80px;
+}
+
+.gridItemContainer h3{
+    margin-bottom:0;
+}
+
+.tagsContainer {
+    display: flex;
+    justify-content: center;
+}

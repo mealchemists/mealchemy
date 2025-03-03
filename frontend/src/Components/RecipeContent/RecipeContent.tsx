@@ -5,9 +5,11 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
-import { Autocomplete, Box, Chip, FormControl, InputAdornment, Modal, OutlinedInput, TextField, Typography } from '@mui/material';
+import { Chip, TextField } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import EditTagModal from '../EditTagModal/EditTagModal';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+
 
 const options = [
     'Edit',
@@ -27,6 +29,11 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
     const handleOpenTagModal = () => setOpenEditTagModal(true);
     const handleCloseTagModal = () => setOpenEditTagModal(false);
 
+    // Add Ingredient Modal
+    const [openAddIngredientModal, setOpenAddIngredientModal] = useState(false);
+    const handleOpenIngredientModal = () => setOpenAddIngredientModal(true);
+    const handleCloseIngredientModal = () => setOpenAddIngredientModal(false);
+    
     // For tags
     const [mainIngredient, setMainIngredient] = useState(recipe.mainIngredient);
     const [cookTime, setCookTime] = useState(recipe.cookTime);
@@ -80,10 +87,12 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
     }
 
     const handleSave = (newTitle = title, newIngredients = ingredients, newInstructions = instructions) => {
+        const filteredIngredients = newIngredients.filter(ingredient => ingredient.trim() !== "");
+        const filteredInstructions = newInstructions.filter(instruction => instruction.trim() !== "");
+
         setTitle(newTitle);
-        setIngredients(newIngredients);
-        setInstructions(newInstructions);
-        console.log(newIngredients);
+        setIngredients(filteredIngredients);
+        setInstructions(filteredInstructions);
         setEditMode(false);
         exitEditMode();
         // TODO: Save to database
@@ -95,17 +104,26 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
         setIngredients(newIngredients);
     };
 
+    const handleAddIngredient = () => {
+        setIngredients([...ingredients, ""]); // Add an empty ingredient field
+
+    };
+
     const handleInstructionChange = (index, value) => {
         const newInstructions = [...instructions];
         newInstructions[index] = value;
         setInstructions(newInstructions);
     };
 
+    const handleAddInstruction = () => {
+        setInstructions([...instructions, ""]); // Add an empty ingredient field
+    };
+
     return (
         <div className="recipeContent">
             <div className="buttonContainer">
                 {editMode ? (
-                    <button onClick={handleCancel} autoFocus>Cancel</button>
+                    <button className = "cancel-button" onClick={handleCancel} autoFocus>Cancel</button>
                 ) : (
                     <IconButton
                         aria-label="more"
@@ -145,7 +163,7 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
                 </Menu>
 
                 {editMode && (
-                    <button onClick={() => handleSave(title, ingredients, instructions)}>Save</button>
+                    <button className = "save-button" onClick={() => handleSave(title, ingredients, instructions)}>Save</button>
                 )}
 
             </div>
@@ -193,35 +211,39 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
                 </IconButton>
 
             </div>
-            <EditTagModal 
-                mainIngredient={mainIngredient} 
-                cookTime={cookTime} 
-                prepTime={prepTime} 
+            <EditTagModal
+                mainIngredient={mainIngredient}
+                cookTime={cookTime}
+                prepTime={prepTime}
                 onApplyTagChanges={handleApplyTagChanges}
-                open = {openEditTagModal}
-                onClose = {handleCloseTagModal}
-                ></EditTagModal>
+                open={openEditTagModal}
+                onClose={handleCloseTagModal}
+            ></EditTagModal>
             <div className="imgIngredients">
                 <img src={recipe.imageSrc} alt={recipe.title} className="itemImage" />
                 <div className="ingredientContainer">
                     <h2>Ingredients</h2>
                     {editMode ? (
-                        <ul>
-                            {ingredients.map((ingredient, index) => (
-                                <li key={index}>
-                                    <TextField
-                                        value={ingredient}
-                                        onChange={(e) => handleIngredientChange(index, e.target.value)}
-                                        variant="outlined"
-                                        sx={{
-                                            "& .MuiOutlinedInput-root": {
-                                                fontSize: "14px",
-                                            },
-                                        }}
-                                    />
-                                </li>
-                            ))}
-                        </ul>
+                        <>
+                            <ul>
+                                {ingredients.map((ingredient, index) => (
+                                    <li key={index}>
+                                        <TextField
+                                            value={ingredient}
+                                            onChange={(e) => handleIngredientChange(index, e.target.value)}
+                                            variant="outlined"
+                                            sx={{
+                                                "& .MuiOutlinedInput-root": {
+                                                    fontSize: "14px",
+                                                },
+                                            }}
+                                        />
+                                    </li>
+                                ))}
+                            </ul>
+                            <button className = "add-button" onClick={handleAddIngredient}>Add Ingredient</button>
+
+                        </>
                     ) : (
                         <ul>
                             {ingredients.map((ingredient) => (
@@ -236,26 +258,30 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
                 <h2>Instructions</h2>
                 <div className="instructionContent">
                     {editMode ? (
-                        <ul>
-                            {instructions.map((instruction, index) => (
-                                <li key={index}>
-                                    <TextField
-                                        value={instruction}
-                                        onChange={(e) => handleInstructionChange(index, e.target.value)}
-                                        variant="outlined"
-                                        sx={{
-                                            "& .MuiOutlinedInput-root": {
-                                                fontSize: "14px",
-                                                width: "100%",
-                                            },
-                                            "& .MuiInputBase-input": {
-                                                width: "350px",
-                                            },
-                                        }}
-                                    />
-                                </li>
-                            ))}
-                        </ul>
+                        <>
+                            <ul>
+                                {instructions.map((instruction, index) => (
+                                    <li key={index}>
+                                        <TextField
+                                            value={instruction}
+                                            onChange={(e) => handleInstructionChange(index, e.target.value)}
+                                            variant="outlined"
+                                            sx={{
+                                                "& .MuiOutlinedInput-root": {
+                                                    fontSize: "14px",
+                                                    width: "100%",
+                                                },
+                                                "& .MuiInputBase-input": {
+                                                    width: "350px",
+                                                },
+                                            }}
+                                        />
+                                    </li>
+                                ))}
+                            </ul>
+                            <button className = "add-button" onClick={handleAddInstruction}>Add Instruction</button>
+
+                        </>
                     ) : (
                         <ul>
                             {instructions.map((instruction) => (

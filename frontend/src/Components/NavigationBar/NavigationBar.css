@@ -28,11 +28,12 @@
     font-size:x-large;
 }
 
-/* Ensure user icon is aligned properly */
+.navContainer button{
+    background-color:transparent;
+}
 .userProfile {
     display: flex;
     align-items: center;
-    text-decoration: none;
     color: black;
 }
 .middleNav{

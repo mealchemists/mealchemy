@@ -7,14 +7,13 @@
 .searchContainer{
     display: flex;
     align-items: center; 
-    gap: 10px;
 }
 
 .searchLeft, .searchRight {
     display: flex;
     justify-content: center; 
     align-items: center;
-    width: 20px;
+    width: 35px;
     position: relative;
 }
 
