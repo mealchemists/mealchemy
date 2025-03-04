@@ -1,12 +1,15 @@
-import { MenuItem, Select, FormControl, Stack } from "@mui/material";
-import React, { useState, useEffect } from 'react';
+import { MenuItem, Select, FormControl, Stack, IconButton } from "@mui/material";
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import './MealPlanningPage.css';
 import RecipeSearch from "../RecipeSearch/RecipeSearch";
 import GridItem from "../GridItem/GridItem";
-import Grid from '@mui/material/Grid2';
+import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import { Recipe } from "../../Models/models";
+import { CollectionsOutlined } from "@mui/icons-material";
+import DeleteIcon from "@mui/icons-material/Delete"; 
+
 // const events = [
 //   {
 //     'title': 'All Day 1',
@@ -26,7 +29,7 @@ import { Recipe } from "../../Models/models";
 // ]
 
 const blankRecipe: Recipe = {
-  title: "Enter Recipe Title",
+  title: "Salad",
   cookTime: 0,
   prepTime: 0,
   totalTime: 0,
@@ -36,8 +39,20 @@ const blankRecipe: Recipe = {
   imageSrc: "/salad.jpg"
 };
 
-const recipes = [blankRecipe, blankRecipe, blankRecipe, blankRecipe, blankRecipe];
+const blankRecipe2: Recipe = {
+  title: "Chicken",
+  cookTime: 0,
+  prepTime: 0,
+  totalTime: 0,
+  mainIngredient: "Chicken",
+  ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
+  instructions: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
+  imageSrc: "/salad.jpg"
+};
+
+const recipes = [blankRecipe, blankRecipe2, blankRecipe, blankRecipe2, blankRecipe];
 const localizer = momentLocalizer(moment);
+const DragAndDropCalendar = withDragAndDrop(Calendar)
 
 const CustomToolbar = ({ label, onNavigate }) => (
   <div className="rbc-toolbar">
@@ -53,43 +68,156 @@ const CustomToolbar = ({ label, onNavigate }) => (
   </div>
 );
 
+
+
 function MealPlanningPage() {
   const [myEventsList, setMyEventsList] = useState([]);
   const [selectedMeals, setSelectedMeals] = useState({});
+  const [draggedRecipe, setDraggedRecipe] = useState(null);
 
+  const CustomEvent = ({ event }) => {
+    const handleDelete = () => {
+      // Call a function to reset the event to a placeholder
+      resetEventToPlaceholder(event);
+    };
+  
+    return (
+      <div>
+        <span>{event.title}</span>
+        <IconButton
+          size="small"
+          onClick={handleDelete}
+          style={{ marginLeft: "5px", padding: "2px" }}
+        >
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+      </div>
+    );
+  };
+  
+  //Function to Reset Event to Placeholder
+  // const resetEventToPlaceholder = (event) => {
+  //   setMyEventsList((prevEvents) =>
+  //     prevEvents.map((ev) =>
+  //       ev.id === event.id
+  //         ? { ...ev, title: "Drag meal here", placeholder: true }
+  //         : ev
+  //     )
+  //   );
+  // };
+
+  const handleDragStart = (recipe) => {
+    setDraggedRecipe(recipe);
+  };
+  const onDropFromOutside = useCallback(
+    ({ event, start, end }) => {
+      if (!draggedRecipe) return;
+
+      setMyEventsList((prevEvents) => {
+        return prevEvents.map((ev) => {
+          if (ev.id === event.id && ev.placeholder) {
+            return { ...ev, title: draggedRecipe.title, placeholder: false };
+          }
+          return ev;
+        });
+      });
+
+      setDraggedRecipe(null);
+    },
+    [draggedRecipe]
+  );
+  const moveEvent = useCallback(
+    ({ event, start, end }) => {
+      setMyEventsList((prevEvents) =>
+        prevEvents.map((ev) => (ev.id === event.id ? { ...ev, start, end } : ev))
+      );
+    },
+    []
+  );
   // Get the days of the current week
   const weekDays = Array.from({ length: 7 }, (_, i) =>
     moment().startOf("week").add(i, "days")
   );
 
-  // Handles meal selection for each day
   const handleMealChange = (day, mealCount) => {
     setSelectedMeals((prev) => ({ ...prev, [day]: mealCount }));
-
-    const newEvents = Array.from({ length: mealCount }, (_, i) => ({
-      start: moment(day).startOf("day").toDate(),
-      end: moment(day).endOf("day").toDate(),
-      allDay: true,
-      title: `Meal ${i + 1}`,
-    }));
-
+  
     setMyEventsList((prevEvents) => {
-      const filteredEvents = prevEvents.filter(event => moment(event.start).format("YYYY-MM-DD") !== day);
-      return [...filteredEvents, ...newEvents];
+      // Separate non-placeholder and placeholder events for the current day
+      const existingNonPlaceholderEvents = prevEvents.filter(
+        (event) => moment(event.start).isSame(day, "day") && !event.placeholder
+      );
+  
+      const existingPlaceholderEvents = prevEvents.filter(
+        (event) => moment(event.start).isSame(day, "day") && event.placeholder
+      );
+  
+      // Calculate the difference between the new meal count and the current number of placeholders
+      const difference = mealCount - existingNonPlaceholderEvents.length - existingPlaceholderEvents.length;
+  
+      // Create new placeholder events if the difference is positive
+      const newPlaceholderEvents =
+        difference > 0
+          ? Array.from({ length: difference }, (_, i) => ({
+              id: `${day}-slot-${existingNonPlaceholderEvents.length+existingPlaceholderEvents.length + i}`,
+              start: moment(day).startOf("day").toDate(),
+              end: moment(day).startOf("day").toDate(),
+              allDay: true,
+              title: "Drag meal here",
+              placeholder: true,
+            }))
+          : [];
+  
+      // Remove excess placeholders if the difference is negative
+      const updatedPlaceholderEvents =
+        difference < 0
+          ? existingPlaceholderEvents.slice(0, mealCount)
+          : [...existingPlaceholderEvents, ...newPlaceholderEvents];
+  
+      // Combine the non-placeholder events with the updated placeholder events
+      return [
+        ...prevEvents.filter((event) => !moment(event.start).isSame(day, "day")), // Keep events for other days
+        ...existingNonPlaceholderEvents, // Keep existing non-placeholder events
+        ...updatedPlaceholderEvents, // Update placeholders
+      ];
     });
   };
-
+  
+  const resetEventToPlaceholder = (event) => {
+    console.log(event);
+    setMyEventsList((prevEvents) =>
+      prevEvents.map((ev) =>
+        ev.id === event.id
+          ? { ...ev, title: "Drag meal here", placeholder: true }
+          : ev
+      )
+    );
+  };
+  
   return (
     <>
       <div className="calendarContainer">
-        <Calendar
+        <DragAndDropCalendar
           localizer={localizer}
           events={myEventsList}
-          startAccessor="start"
-          endAccessor="end"
           defaultView="week"
           views={{ week: true }}
-          components={{ toolbar: CustomToolbar }}
+          components={{       event: CustomEvent, 
+            toolbar: CustomToolbar }}
+          onEventDrop={moveEvent}
+          onDropFromOutside={({ start, end }) => {
+            // Find the placeholder event at the dropped position
+            const targetEvent = myEventsList.find(
+              (event) =>
+                event.placeholder &&
+                moment(event.start).isSame(start, "day")
+            );
+            if (targetEvent) {
+              onDropFromOutside({ event: targetEvent, start, end });
+            }
+          }}
+          selectable
+          resizable
           style={{ height: '300px', width: '1000px' }}
         />
       </div>
@@ -124,7 +252,7 @@ function MealPlanningPage() {
         <RecipeSearch></RecipeSearch>
         <div className="recipe-grid">
           {recipes.map((recipe, index) => (
-            <div key={index} className="grid-item">
+            <div key={index} className="grid-item" draggable onDragStart={() => handleDragStart(recipe)}>
               <GridItem recipe={recipe} />
             </div>
           ))}

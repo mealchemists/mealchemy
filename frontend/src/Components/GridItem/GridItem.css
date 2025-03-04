@@ -9,6 +9,10 @@
     border-radius: 10px;
 }
 
+.gridItemContainer:hover {
+    background-color: rgba(56, 121, 59, 0.5); 
+    cursor:pointer;
+}
 .contentContainer {
     display: flex;
     flex-direction: column;
