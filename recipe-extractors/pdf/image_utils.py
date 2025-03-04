@@ -1,6 +1,6 @@
+from logging import debug
 import cv2
 import numpy as np
-from pytesseract.pytesseract import get_pandas_output
 
 # Implementation for image related utilities.
 # TODO: (for utility) Implement a previewer (WSL2 should be fine with this)
@@ -25,6 +25,9 @@ DEBUG_IDENTIFY = True
 
 
 def debug_show_image(image, window_name="debug_image"):
+    """
+    Displays an image for debugging purposes.
+    """
     cv2.imshow(window_name, image)
 
     cv2.waitKey(0)
@@ -32,6 +35,15 @@ def debug_show_image(image, window_name="debug_image"):
 
 
 def threshold_image(image):
+    """
+    Applies adaptive thresholding to the given image, as
+    electronic printouts / hardcopy scans are less complex, making
+    Otsu's method a bit overkill (maybe).
+
+    Should be used right before OCR.
+    """
+
+    # Adaptive threshold using a Gaussian-weighted sum
     binary = cv2.adaptiveThreshold(
         image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
     )
@@ -42,6 +54,8 @@ def classify_image(image, threshold=500):
     """
     Classifies an image as an hardcopy scan or an electronic printout
     based on the background intensity variance.
+
+    Usually electronic printouts have cleaner backgrounds.
     """
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -94,8 +108,11 @@ def prepare_hardcopy_scan(image):
 def deskew_image(image):
     """
     Deskews a unprocessed image using Canny edge detection, and a Hough line transform.
+    NOTE: might be better to dilate text blocks and then identify the largest contour, minarearect, ...
     """
-    edges = cv2.Canny(image, 50, 150, apertureSize=3)
+    original = image.copy()
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 50, 150, apertureSize=3)
     lines = cv2.HoughLines(edges, 1, np.pi / 180, 200)
 
     if lines is not None:
@@ -109,16 +126,17 @@ def deskew_image(image):
             (h, w) = image.shape[:2]
             center = (w // 2, h // 2)
             M = cv2.getRotationMatrix2D(center, median_angle, 1.0)
+
             # INTER_CUBIC and INTER_LINEAR both enlarge the original image when we are enlarging it
             # note that INTER_CUBIC is more computationally expensive but has better quality
-            image = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_LINEAR)
+            image = cv2.warpAffine(original, M, (w, h), flags=cv2.INTER_LINEAR)
 
-    return image
+    return original
 
 
 def preprocess_image(image):
     """
-    Tesseract-OCR already performs a bit of image processing interanally, but we can
+    Tesseract-OCR already performs a bit of image processing internally, but we can
     (at least try to) improve the quality of the output by a bit when we are performing
     the following operations.
     """
@@ -133,7 +151,7 @@ def preprocess_image(image):
     return image
 
 
-def identify_text_regions(image, dim=(320, 320), min_confidence=0.3):
+def identify_text_regions(image, dim=(320, 320), min_confidence=0.5):
     """
     Identifies regions of text from an image using OpenCV's
     (Efficient and Accurate Scene Text) detector.
@@ -148,7 +166,7 @@ def identify_text_regions(image, dim=(320, 320), min_confidence=0.3):
     original = image.copy()
     (H, W) = image.shape[:2]
 
-    # The EAST model would expect the input dimensions of the image to be a multiple of 32
+    # The EAST model requires the input dimensions of the image to be a multiple of 32
     #  - larger sizes increase accuracy at the cost of speed
     # Use scaling factors to ensure aspect ratio preservation
     newW, newH = dim
@@ -174,8 +192,44 @@ def identify_text_regions(image, dim=(320, 320), min_confidence=0.3):
     confidences = []
 
     for y in range(0, geometry.shape[2]):
-        pass
+        scores_data = scores[0, 0, y]
+        x_data0 = geometry[0, 0, y]
+        x_data1 = geometry[0, 1, y]
+        x_data2 = geometry[0, 2, y]
+        x_data3 = geometry[0, 3, y]
+        angles_data = geometry[0, 4, y]
 
         for x in range(0, geometry.shape[3]):
-            pass
+            if scores_data[x] <= min_confidence:
+                continue
+
+            offset_x, offset_y = (x * 4.0, y * 4.0)
+
+            # obtain the cosines and sines of the rotation angles for prediction
+            cos, sin = (np.cos(angles_data[x]), np.sin(angles_data[x]))
+
+            w, h = (x_data0[x] + x_data2[x], x_data1[x] + x_data3[x])
+
+            # bounding box
+            end_x = int(offset_x + (cos * x_data1[x]) + (sin * x_data2[x]))
+            end_y = int(offset_y + (sin * x_data1[x]) + (cos * x_data2[x]))
+            start_x = int(end_x - w)
+            start_y = int(end_y - h)
+
+            rects.append((start_x, start_y, end_x, end_y))
+            confidences.append(scores_data[x])
+
+        # TODO: Non-max suppression for `rects` to suppress weak, overlapping bounding boxes
+
+    # if DEBUG_IDENTIFY:
+    #     for start_x, start_y, end_x, end_y in rects:
+    #         start_x = int(start_x * rW)
+    #         start_y = int(start_y * rH)
+    #         end_x = int(end_x * rW)
+    #         end_y = int(end_y * rH)
+    #
+    #         cv2.rectangle(original, (start_x, start_y), (end_x, end_y), (0, 255, 0), 2)
+    #
+    #         debug_show_image(original)
+
     return
