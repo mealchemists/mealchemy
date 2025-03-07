@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 import argparse
 
+import image_utils
+
 TEST_SINGLE = False  # single-page PDFs
 TEST_MULTI = False  # multi-page PDFs
 TEST_HARDCOPY_SCANS = False
@@ -80,5 +82,16 @@ def parse_args():
     return
 
 
+def test_image_utils():
+    # for now just test an electronic printout of a single image
+
+    pages = image_utils.load_pdf_pages(
+        "./source_material/hardcopy_scans/multi/White Binder Recipes.pdf",
+    )
+
+    return
+
+
 if __name__ == "__main__":
+    test_image_utils()
     main()

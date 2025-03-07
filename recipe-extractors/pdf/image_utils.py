@@ -1,6 +1,8 @@
-from logging import debug
 import cv2
 import numpy as np
+import pypdfium2
+
+import math
 
 # Implementation for image related utilities.
 # TODO: (for utility) Implement a previewer (WSL2 should be fine with this)
@@ -22,6 +24,42 @@ import numpy as np
 
 DEBUG_PRINT = False
 DEBUG_IDENTIFY = True
+
+
+def load_pdf_pages(path, scale_factor=1.5):
+    pdf = pypdfium2.PdfDocument(path)
+    return [p.render(scale=scale_factor).to_numpy() for p in pdf]
+
+
+def load_pdf_concatenated(path, scale_factor=1.5):
+    pdf = pypdfium2.PdfDocument(path)
+
+    max_width = max([math.ceil(p.get_size()[0] * scale_factor) for p in pdf])
+    print(max_width)
+    concatenated_image = np.empty((0, max_width, 3), dtype=np.uint8)
+
+    for i, page in enumerate(pdf):
+        print(f"page {i + 1} of {len(pdf)}")
+        page_array = page.render(scale=scale_factor).to_numpy()
+
+        page_array = zero_pad_by_width(page_array, max_width)
+
+        concatenated_image = np.vstack((concatenated_image, page_array))
+
+    return concatenated_image
+
+
+def get_pdf_metadata()
+
+
+def zero_pad_by_width(image, target_width):
+    """
+    Horizontally pad the image to match the target width.
+    """
+    pad_width = target_width - image.shape[1]
+    if pad_width > 0:
+        return np.pad(image, ((0, 0), (0, pad_width), (0, 0)), mode="constant")
+    return image
 
 
 def debug_show_image(image, window_name="debug_image"):
@@ -50,7 +88,9 @@ def threshold_image(image):
     return binary
 
 
-def classify_image(image, threshold=500):
+def classify_image(
+    image, threshold=500, edge_threshold=50, contour_area_threshold=1000
+):
     """
     Classifies an image as an hardcopy scan or an electronic printout
     based on the background intensity variance.
@@ -61,8 +101,20 @@ def classify_image(image, threshold=500):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
+    edges = cv2.Canny(blurred, threshold1=edge_threshold, threshold2=edge_threshold * 2)
+    edge_variance = np.var(edges)
+
     # Variance represents background noise and background
     # scans have higher variance
+
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    large_contours = [
+        cnt for cnt in contours if cv2.contourArea(cnt) > contour_area_threshold
+    ]
+
+    if large_contours:
+        return "hardcopy"
+
     if np.var(blurred) > threshold:
         return "hardcopy"
     else:
@@ -159,6 +211,8 @@ def identify_text_regions(image, dim=(320, 320), min_confidence=0.5):
     Implementation source: https://github.com/gifflet/opencv-text-detection
     Model source: https://github.com/oyyd/frozen_east_text_detection.pb
     """
+
+    # TODO: We want to connect text regions a bit more (test this first)
 
     if any([d % 32 != 0 for d in dim]):
         raise (ValueError("Dimensions must be a given as a multiple of 32!"))
