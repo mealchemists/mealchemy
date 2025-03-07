@@ -115,10 +115,10 @@ def generate_fake_data():
     print("Generating test data...")
     users = create_users()
     aisles = create_aisles()
-    ingredients = create_ingredients(aisles=aisles)
+    ingredients = create_ingredients()
     recipes = create_recipes(users=users)
     create_recipe_ingredients(recipes, ingredients)
     create_meal_plans(recipes=recipes)  # Add meal plans
     print("Test data generated successfully!")
 
-
+generate_fake_data()

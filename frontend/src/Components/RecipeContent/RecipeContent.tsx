@@ -46,7 +46,7 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
     // For editing the actual recipe content
     const [title, setTitle] = useState(recipe.title);
     const [ingredients, setIngredients] = useState<string[]>(recipe.ingredients);
-    const [instructions, setInstructions] = useState<string[]>(recipe.instructions);
+    const [instructions, setInstructions] = useState<string[]>(recipe.steps);
 
     const openOptions = Boolean(anchorEl);
 

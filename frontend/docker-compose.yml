@@ -9,7 +9,8 @@ services:
       - ./public/assets:/app/public/assets
       - /app/node_modules  
     environment:
-      - NODE_OPTIONS=--openssl-legacy-provider  
+      - NODE_OPTIONS=--openssl-legacy-provider 
+      - CHOKIDAR_USEPOLLING=true 
     stdin_open: true
     tty: true
     restart: unless-stopped

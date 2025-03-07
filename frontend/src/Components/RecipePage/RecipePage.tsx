@@ -9,7 +9,7 @@ import './RecipePage.css';
 function RecipePage() {
     const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
     const [editMode, setEditMode] = useState(false);
-
+    
     const handleSelectedRecipe = (recipe: Recipe) => {
         setSelectedRecipe(null); // Reset first
         setTimeout(() => {

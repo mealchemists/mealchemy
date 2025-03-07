@@ -33,14 +33,21 @@ const VisuallyHiddenInput = styled('input')({
 function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
     const [newRecipe, setNewRecipe] = useState<Recipe>(null);
     const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
-
+    const [recipeUrl, setRecipeUrl] = useState("");
+    console.log('Hello');
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             setSelectedFiles(Array.from(event.target.files));
         }
     };
     const sendRecipeToParent = () => {
+        if (addRecipeFormat) {
+
+        } else {
+            console.log(recipeUrl);
+        }
         onAddRecipe(newRecipe);
+
     }
 
     return (
@@ -67,6 +74,8 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                                         "& input": { height: "100%", padding: "10px" },
                                     },
                                 }}
+                                value={(recipeUrl)}
+                                onChange={(e) => setRecipeUrl(e.target.value)} 
                             />
                         </div>
                     )}
