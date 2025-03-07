@@ -5,7 +5,7 @@
     flex-direction: column;
     background-color: #b0dbb2;
     width:fit-content;
-    padding: 10px 7px;
+    padding: 10px 5px;
     border-radius: 10px;
 }
 
@@ -26,6 +26,8 @@
 
 .gridItemImage {
     width: 80px;
+    border-radius: 10px; 
+
 }
 
 .gridItemContainer h3{
@@ -35,4 +37,8 @@
 .tagsContainer {
     display: flex;
     justify-content: center;
+}
+
+.contentContainer h3{
+    margin-top:0px;
 }

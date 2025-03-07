@@ -1,4 +1,4 @@
-import { MenuItem, Select, FormControl, Stack, IconButton } from "@mui/material";
+import { Stack, FormControl, MenuItem, Select, IconButton, Box, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
@@ -7,9 +7,9 @@ import RecipeSearch from "../RecipeSearch/RecipeSearch";
 import GridItem from "../GridItem/GridItem";
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import { Recipe } from "../../Models/models";
-import { CollectionsOutlined } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete"; 
 
+import NutritionalAccordion from "../NutritionAccordion/NutritionAccordion";
 // const events = [
 //   {
 //     'title': 'All Day 1',
@@ -50,7 +50,7 @@ const blankRecipe2: Recipe = {
   imageSrc: "/salad.jpg"
 };
 
-const recipes = [blankRecipe, blankRecipe2, blankRecipe, blankRecipe2, blankRecipe];
+const recipes = [blankRecipe, blankRecipe2, blankRecipe, blankRecipe2, blankRecipe, blankRecipe, blankRecipe, blankRecipe, blankRecipe];
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar)
 
@@ -74,6 +74,25 @@ function MealPlanningPage() {
   const [myEventsList, setMyEventsList] = useState([]);
   const [selectedMeals, setSelectedMeals] = useState({});
   const [draggedRecipe, setDraggedRecipe] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const recipesPerPage = 8; // Show 8 recipes per page (4 columns x 2 rows)
+  const [view, setView] = useState("recipes");
+  const totalPages = Math.ceil(recipes.length / recipesPerPage);
+
+  const handleNext = () => {
+      if (currentPage < totalPages - 1) {
+          setCurrentPage(currentPage + 1);
+      }
+  };
+
+  const handlePrev = () => {
+      if (currentPage > 0) {
+          setCurrentPage(currentPage - 1);
+      }
+  };
+
+  const startIndex = currentPage * recipesPerPage;
+  const visibleRecipes = recipes.slice(startIndex, startIndex + recipesPerPage);
 
   const CustomEvent = ({ event }) => {
     const handleDelete = () => {
@@ -95,21 +114,17 @@ function MealPlanningPage() {
     );
   };
   
-  //Function to Reset Event to Placeholder
-  // const resetEventToPlaceholder = (event) => {
-  //   setMyEventsList((prevEvents) =>
-  //     prevEvents.map((ev) =>
-  //       ev.id === event.id
-  //         ? { ...ev, title: "Drag meal here", placeholder: true }
-  //         : ev
-  //     )
-  //   );
-  // };
-
   const handleDragStart = (recipe) => {
     setDraggedRecipe(recipe);
   };
+  
+  const dragFromOutsideItem = useCallback(() => {
+    // Return the dragged recipe if it's droppable, otherwise return null
+    return draggedRecipe ? draggedRecipe : null;
+  }, [draggedRecipe]);
+
   const onDropFromOutside = useCallback(
+
     ({ event, start, end }) => {
       if (!draggedRecipe) return;
 
@@ -126,6 +141,7 @@ function MealPlanningPage() {
     },
     [draggedRecipe]
   );
+
   const moveEvent = useCallback(
     ({ event, start, end }) => {
       setMyEventsList((prevEvents) =>
@@ -193,9 +209,13 @@ function MealPlanningPage() {
       )
     );
   };
-  
+  const handleViewChange = (event, newView) => {
+    if (newView !== null) {
+      setView(newView);
+    }
+  };
   return (
-    <>
+    <div>
       <div className="calendarContainer">
         <DragAndDropCalendar
           localizer={localizer}
@@ -206,6 +226,10 @@ function MealPlanningPage() {
             toolbar: CustomToolbar }}
           onEventDrop={moveEvent}
           onDropFromOutside={({ start, end }) => {
+            if (!start || !end) {
+              console.warn("Dropped outside valid area. Ignoring.");
+              return;
+          }
             // Find the placeholder event at the dropped position
             const targetEvent = myEventsList.find(
               (event) =>
@@ -216,6 +240,7 @@ function MealPlanningPage() {
               onDropFromOutside({ event: targetEvent, start, end });
             }
           }}
+          dragFromOutsideItem={dragFromOutsideItem} 
           selectable
           resizable
           style={{ height: '300px', width: '1000px' }}
@@ -246,21 +271,66 @@ function MealPlanningPage() {
           </FormControl>
         ))}
       </Stack>
+      <Box
+      sx={{
+        width: "1000px",
+        margin: "0 auto",
+        marginTop: "10px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+      <ToggleButtonGroup
+          value={view}
+          exclusive
+          onChange={handleViewChange}
+          aria-label="view toggle"
+        >
+          <ToggleButton value="recipes" aria-label="recipes">
+            Recipes
+          </ToggleButton>
+          <ToggleButton value="nutrition" aria-label="nutrition">
+            Nutrition Details
+          </ToggleButton>
+        </ToggleButtonGroup>
+        <button className="done-button">DONE</button>
+      </Box>
+
+      {view === "recipes" ? (
 
       <div className="recipeGrid">
         <h3>Recipes</h3>
         <RecipeSearch></RecipeSearch>
         <div className="recipe-grid">
-          {recipes.map((recipe, index) => (
-            <div key={index} className="grid-item" draggable onDragStart={() => handleDragStart(recipe)}>
-              <GridItem recipe={recipe} />
-            </div>
-          ))}
+        {visibleRecipes.map((recipe, index) => (
+                    <div key={index} className="grid-item" draggable onDragStart={() => handleDragStart(recipe)}>
+                        <GridItem recipe={recipe} />
+                    </div>
+                ))}
+                {visibleRecipes.length < recipesPerPage &&
+                    Array.from({ length: recipesPerPage - visibleRecipes.length }).map((_, index) => (
+                        <div key={`empty-${index}`} className="grid-item empty"></div>
+                    ))
+                }
         </div>
+        <div className="pagination">
+                <button onClick={handlePrev} disabled={currentPage === 0}>←</button>
+                <span>Page {currentPage + 1} of {totalPages}</span>
+                <button onClick={handleNext} disabled={currentPage === totalPages - 1}>→</button>
+            </div>
       </div>
-
-
-    </>
+    ):(
+<Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: "20px",
+          }}
+        >
+          <NutritionalAccordion />
+        </Box>    )}
+    </div>
   );
 }
 
