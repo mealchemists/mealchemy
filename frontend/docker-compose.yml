@@ -1,0 +1,15 @@
+services:
+  frontend:
+    build: .
+    container_name: frontend
+    ports:
+      - "3000:3000"  
+    volumes: 
+      - ./src:/app/src
+      - ./public/assets:/app/public/assets
+      - /app/node_modules  
+    environment:
+      - NODE_OPTIONS=--openssl-legacy-provider  
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
