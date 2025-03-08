@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Recipe } from '../../Models/models';
+import { Ingredient, Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipeContent.css';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
@@ -18,8 +18,20 @@ const options = [
 
 
 const ITEM_HEIGHT = 48;
-function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
 
+
+interface RecipeContentProps {
+    recipeIngredient: RecipeIngredient;
+    initialEditMode?: boolean;
+    exitEditMode: () => void;
+}
+
+const RecipeContent: React.FC<RecipeContentProps> = ({ 
+    recipeIngredient, 
+    initialEditMode = false, 
+    exitEditMode 
+}) => {
+    const recipe = recipeIngredient.recipe;
     // 3 dot menu, edit and delete options
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [editMode, setEditMode] = useState(initialEditMode);
@@ -35,17 +47,26 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
     const handleCloseIngredientModal = () => setOpenAddIngredientModal(false);
     
     // For tags
-    const [mainIngredient, setMainIngredient] = useState(recipe.mainIngredient);
-    const [cookTime, setCookTime] = useState(recipe.cookTime);
-    const [prepTime, setPrepTime] = useState(recipe.prepTime);
-    const [totalTime, setTotalTime] = useState(recipe.totalTime);
+    const [mainIngredient, setMainIngredient] = useState("Chicken");
+    const [cookTime, setCookTime] = useState(String(recipe.cook_time));
+    const [prepTime, setPrepTime] = useState(String(recipe.prep_time));
+    const [totalTime, setTotalTime] = useState(String(recipe.total_time));
 
     const [tags, setTags] = useState([mainIngredient, cookTime, prepTime, totalTime]);
+
+    useEffect(() => {
+        setTags([
+            mainIngredient, 
+            String(cookTime), 
+            String(prepTime), 
+            String(totalTime)
+        ]);
+    }, [mainIngredient, cookTime, prepTime, totalTime]);
 
 
     // For editing the actual recipe content
     const [title, setTitle] = useState(recipe.title);
-    const [ingredients, setIngredients] = useState<string[]>(recipe.ingredients);
+    const [ingredients, setIngredients] = useState<Ingredient[]>(recipeIngredient.ingredients);
     const [instructions, setInstructions] = useState<string[]>(recipe.steps);
 
     const openOptions = Boolean(anchorEl);
@@ -76,25 +97,28 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
         }
     };
 
-    const handleApplyTagChanges = (tempMainIngredient, tempCookTime, tempPrepTime, tempTotalTime) => {
+    const handleApplyTagChanges = (
+        tempMainIngredient: string, 
+        tempCookTime: number, 
+        tempPrepTime: number, 
+        tempTotalTime: number
+    ) => {
         setMainIngredient(tempMainIngredient);
-        setCookTime(tempCookTime);
-        setPrepTime(tempPrepTime);
-        setTotalTime(tempTotalTime);
+        setCookTime(String(tempCookTime));
+        setPrepTime(String(tempPrepTime));
+        setTotalTime(String(tempTotalTime));
         handleCloseTagModal();
-
-        // TODO: Update database
-    }
+    };
 
     const handleSave = (newTitle = title, newIngredients = ingredients, newInstructions = instructions) => {
-        const filteredIngredients = newIngredients.filter(ingredient => ingredient.trim() !== "");
-        const filteredInstructions = newInstructions.filter(instruction => instruction.trim() !== "");
+        // const filteredIngredients = newIngredients.filter(ingredient => ingredient.trim() !== "");
+        // const filteredInstructions = newInstructions.filter(instruction => instruction.trim() !== "");
 
-        setTitle(newTitle);
-        setIngredients(filteredIngredients);
-        setInstructions(filteredInstructions);
-        setEditMode(false);
-        exitEditMode();
+        // setTitle(newTitle);
+        // setIngredients(filteredIngredients);
+        // setInstructions(filteredInstructions);
+        // setEditMode(false);
+        // exitEditMode();
         // TODO: Save to database
     };
 
@@ -105,7 +129,7 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
     };
 
     const handleAddIngredient = () => {
-        setIngredients([...ingredients, ""]); // Add an empty ingredient field
+        // setIngredients([...ingredients, ""]); // Add an empty ingredient field
 
     };
 
@@ -227,10 +251,10 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
                         <>
                             <ul>
                                 {ingredients.map((ingredient, index) => (
-                                    <li key={index}>
+                                    <li key={ingredient.name}> {/* Use id as the key */}
                                         <TextField
-                                            value={ingredient}
-                                            onChange={(e) => handleIngredientChange(index, e.target.value)}
+                                            value={ingredient.name}  // Display ingredient name
+                                            onChange={(e) => handleIngredientChange(index, e.target.value)}  // Update ingredient name
                                             variant="outlined"
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
@@ -241,13 +265,12 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
                                     </li>
                                 ))}
                             </ul>
-                            <button className = "add-button" onClick={handleAddIngredient}>Add Ingredient</button>
-
+                            <button className="add-button" onClick={handleAddIngredient}>Add Ingredient</button>
                         </>
                     ) : (
                         <ul>
                             {ingredients.map((ingredient) => (
-                                <li key={ingredient}>{ingredient}</li>
+                                <li key={ingredient.name}>{ingredient.name}</li> 
                             ))}
                         </ul>
                     )}
@@ -260,7 +283,7 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
                     {editMode ? (
                         <>
                             <ul>
-                                {instructions.map((instruction, index) => (
+                                {/* {instructions.map((instruction, index) => (
                                     <li key={index}>
                                         <TextField
                                             value={instruction}
@@ -277,16 +300,16 @@ function RecipeContent({ recipe, initialEditMode = false, exitEditMode }) {
                                             }}
                                         />
                                     </li>
-                                ))}
+                                ))} */}
                             </ul>
                             <button className = "add-button" onClick={handleAddInstruction}>Add Instruction</button>
 
                         </>
                     ) : (
                         <ul>
-                            {instructions.map((instruction) => (
+                            {/* {instructions.map((instruction) => (
                                 <li key={instruction}>{instruction}</li>
-                            ))}
+                            ))} */}
                         </ul>
                     )}
                 </div>

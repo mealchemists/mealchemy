@@ -1,9 +1,9 @@
 export interface Recipe{
     title:string,
-    cookTime: Number;
-    prepTime: Number;
-    totalTime: Number;
-    mainIngredient:string;
+    cook_time: Number;
+    prep_time: Number;
+    total_time: Number;
+    main_ingredient?:string | null;
     ingredients: Array<string>;
     steps: Array<string> | null;
     imageSrc: string; //Change later

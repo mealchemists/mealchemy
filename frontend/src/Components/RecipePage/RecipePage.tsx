@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import RecipePanel from '../RecipePanel/RecipePanel';
 import RecipeContent from '../RecipeContent/RecipeContent';
-import { Recipe } from '../../Models/models';
+import { Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipePage.css';
 
 
 
 function RecipePage() {
-    const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+    const [selectedRecipeIngredient, setSelectedRecipeIngredient] = useState<RecipeIngredient | null>(null);
     const [editMode, setEditMode] = useState(false);
     
-    const handleSelectedRecipe = (recipe: Recipe) => {
-        setSelectedRecipe(null); // Reset first
+    const handleSelectedRecipe = (recipe: RecipeIngredient) => {
+        setSelectedRecipeIngredient(null); // Reset first
         setTimeout(() => {
-            setSelectedRecipe(recipe); // Set the new selection
+            setSelectedRecipeIngredient(recipe); // Set the new selection
         }, 0);
     }
 
@@ -32,7 +32,7 @@ function RecipePage() {
                 <RecipePanel onRecipeSelect={handleSelectedRecipe} setRecipeEditMode={handleChangeRecipeMode}/>
             </div>
             <div className="separator"></div>
-            {selectedRecipe && <RecipeContent recipe={selectedRecipe} initialEditMode={editMode} exitEditMode = {handleExitEditMode}/>}
+            {selectedRecipeIngredient && <RecipeContent recipeIngredient={selectedRecipeIngredient} initialEditMode={editMode} exitEditMode = {handleExitEditMode}/>}
         </div>
     );
 }
