@@ -48,13 +48,6 @@ def main():
     return
 
 
-def run_image_tests():
-    # operations for testing single, multi, hardcopy, electronic printouts
-    # hardcopy/electronic first and then single/multi
-
-    return
-
-
 def parse_args():
     global TEST_SINGLE, TEST_MULTI, TEST_HARDCOPY_SCANS, TEST_ELECTRONIC_PRINTOUTS
 
@@ -82,16 +75,5 @@ def parse_args():
     return
 
 
-def test_image_utils():
-    # for now just test an electronic printout of a single image
-
-    pages = image_utils.load_pdf_pages(
-        "./source_material/hardcopy_scans/multi/White Binder Recipes.pdf",
-    )
-
-    return
-
-
 if __name__ == "__main__":
-    test_image_utils()
     main()
