@@ -6,7 +6,7 @@ from ..meal_plan.models.meal_plan import MealPlan
 from .serializers import RecipeSerializer, IngredientSerializer, RecipeIngredientSerializer
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
-# from .producer import publish
+from .producer import publish
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 
@@ -37,7 +37,7 @@ def recipe_url(request):
     if request.method == 'POST':
         data = request.data
         print(data['url'])
-        # publish(data['url'])
+        publish(data['url'])
         return Response(data, status=status.HTTP_201_CREATED)
 
 # class RecipeIngredientsAPIView(generics.ListAPIView):

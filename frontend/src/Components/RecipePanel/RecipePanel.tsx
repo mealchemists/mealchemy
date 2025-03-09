@@ -29,8 +29,6 @@ function RecipePanel({ onRecipeSelect, setRecipeEditMode }) {
     const fetchRecipes = async () => { 
       try {
             const response = await getRecipeIngredients();
-            if (response.status != 200) throw new Error("Failed to fetch recipes");
-
             const data: RecipeIngredient[] = response.data; 
             setRecipeIngredients(data);
         } catch (error) {

@@ -3,6 +3,7 @@ import { Recipe } from '../../Models/models';
 import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, Typography } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
+import { postRecipeUrl } from '../../api/recipeAddUrl.js';
 
 
 const style = {
@@ -29,7 +30,6 @@ const VisuallyHiddenInput = styled('input')({
     width: 1,
 });
 
-const addRecipeUrlApi = `${process.env.REACT_APP_DEV_API_URL}:${process.env.REACT_APP_DEV_PORT}${process.env.REACT_APP_RECIPE_URL}`;
 
 function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
     const [newRecipe, setNewRecipe] = useState<Recipe>(null);
@@ -40,12 +40,22 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
             setSelectedFiles(Array.from(event.target.files));
         }
     };
+
+    const addByUrl = async () => {
+      try {
+        const response = await postRecipeUrl(recipeUrl);
+      } catch (error) {
+        console.error(error);
+      }
+
+    }
+
     const sendRecipeToParent = () => {
         if (addRecipeFormat) {
 
         } else {
             console.log(recipeUrl);
-            console.log(addRecipeUrlApi);
+            addByUrl();
         }
         onAddRecipe(newRecipe);
 
