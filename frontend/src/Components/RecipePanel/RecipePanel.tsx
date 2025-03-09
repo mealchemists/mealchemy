@@ -3,6 +3,7 @@ import ListItem from '../ListItem/ListItem';
 import RecipeSearch from '../RecipeSearch/RecipeSearch';
 import { Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipePanel.css';
+import {getRecipeIngredients} from '../../api/recipeIngredientApi.js';
 
 const blankRecipe: Recipe = {
     title: "Enter Recipe Title",
@@ -15,8 +16,6 @@ const blankRecipe: Recipe = {
     imageSrc: "/salad.jpg"
 };
 
-const GET_RECIPE = 'http://localhost:8001/api/recipe-ingredients'; // Replace with your actual API endpoint
-
 function RecipePanel({ onRecipeSelect, setRecipeEditMode }) {
     const [recipes, setRecipes] = useState<Recipe[]>([]);
     const [recipeIngredient, setRecipeIngredients] = useState<RecipeIngredient[]>([]);
@@ -28,11 +27,11 @@ function RecipePanel({ onRecipeSelect, setRecipeEditMode }) {
     const [error, setError] = useState<string | null>(null);
 
     const fetchRecipes = async () => { 
-        try {
-            const response = await fetch(GET_RECIPE);
-            if (!response.ok) throw new Error("Failed to fetch recipes");
+      try {
+            const response = await getRecipeIngredients();
+            if (response.status != 200) throw new Error("Failed to fetch recipes");
 
-            const data: RecipeIngredient[] = await response.json(); 
+            const data: RecipeIngredient[] = response.data; 
             setRecipeIngredients(data);
         } catch (error) {
             setError("Error fetching recipes");

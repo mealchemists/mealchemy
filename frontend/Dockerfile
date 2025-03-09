@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install dependencies before copying everything else
 COPY package*.json tsconfig.json ./
-
+COPY .env .env
 RUN npm install
 
 # Copy the entire frontend directory

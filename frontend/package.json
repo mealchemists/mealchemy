@@ -9,6 +9,7 @@
     "@mui/material": "^6.4.1",
     "@types/react-modal": "^3.16.3",
     "@types/react-router-dom": "^5.3.3",
+    "axios": "^1.8.2",
     "cra-template-typescript": "1.2.0",
     "moment": "^2.30.1",
     "react": "^18.3.1",

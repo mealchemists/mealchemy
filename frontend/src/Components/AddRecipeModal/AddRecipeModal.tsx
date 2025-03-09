@@ -29,6 +29,7 @@ const VisuallyHiddenInput = styled('input')({
     width: 1,
 });
 
+const addRecipeUrlApi = `${process.env.REACT_APP_DEV_API_URL}:${process.env.REACT_APP_DEV_PORT}${process.env.REACT_APP_RECIPE_URL}`;
 
 function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
     const [newRecipe, setNewRecipe] = useState<Recipe>(null);
@@ -44,6 +45,7 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
 
         } else {
             console.log(recipeUrl);
+            console.log(addRecipeUrlApi);
         }
         onAddRecipe(newRecipe);
 
