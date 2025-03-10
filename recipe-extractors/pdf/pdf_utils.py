@@ -42,19 +42,44 @@ def load_pdf_text(path):
     return extracted_text
 
 
-# this should be done before we do any text recognition
+# this should be done before we do any text segmentation
 def deskew_image(image):
-    # TODO: Use morphological operations to dilate text regions and then
-    # use minAreaRect of each of the detected regions to obtain the rotation angle of a bounding box.
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(image, (3, 3), 0)
+    edges = cv2.Canny(gray, 50, 150, apertureSize=3)
 
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    blur = cv2.GaussianBlur(image, (5, 5), 0)
+    lines = cv2.HoughLinesP(
+        edges, 1, np.pi / 180, threshold=100, minLineLength=100, maxLineGap=10
+    )
 
-    # get blobs of text somehow (might need to perform thresholding)
-    # dilate the blobs
-    #
-    # from each contour get the minimum area bounding rect, obtain the rotation angle of
-    # the largest one, and then get the angle
+    angles = []
+    if lines is not None:
+        for line in lines:
+            x0, y0, x1, y1 = line[0]
+            angle = np.degrees(np.arctan2(y1 - y0, x1 - x0))
+
+            angles.append(angle)
+
+        median_angle = np.median(angles).astype(float)
+        print(f"{median_angle:.2f}")
+
+        (h, w) = image.shape[:2]
+        center = (w // 2, h // 2)
+        rotation_matrix = cv2.getRotationMatrix2D(center, median_angle, 1.0)
+        rotated = cv2.warpAffine(
+            image,
+            rotation_matrix,
+            (w, h),
+            flags=cv2.INTER_CUBIC,
+            borderMode=cv2.BORDER_REPLICATE,
+        )
+
+        display_image = image.copy()
+        for line in lines:
+            x0, y0, x1, y1 = line[0]
+            cv2.line(display_image, (x0, y0), (x1, y1), (255, 0, 0), 2)
+
+        debug_show_image(cv2.hconcat([display_image, rotated]))
 
     return
 
@@ -215,9 +240,10 @@ if __name__ == "__main__":
     ELECTRONIC_SINGLE_PATH = "./source_material/electronic_printouts/single/Slow Cooker Pineapple Pork Chops.pdf"
 
     print("Loading pages")
-    pages = load_pdf_pages(HARDCOPY_MULTI_PATH_1)
+    pages = load_pdf_pages(HARDCOPY_MULTI_PATH_2)
     print("Pages loaded")
     for page in pages:
-        identify_text_regions_mser(page)
+        # identify_text_regions_mser(page)
+        deskew_image(page)
 
     cv2.destroyAllWindows()
