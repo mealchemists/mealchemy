@@ -18,10 +18,19 @@ template = """
         "recipe": \'{{
             "name": "stirfry,"
             "description": "recipe description\","
+            "main-ingredient": chicken"
             "source_url": "https://www.simplyrecipes.com/million-dollar-ravioli-casserole-recipe-8774485\","
             "cook_time": 10,
             "prep_time": 15,
             "total_time": 25
+        }}\',
+        "nutrition": \'{{
+            "calories": "145"
+            "fat": "6g\","
+            "carbs": "6g\","
+            "protein": "45g\","
+            "sugar": "25g\","
+            "fiber": "78g\","
         }}\',
         "ingredients": [
             \'{{"name": "vegetable oil", "quantity": 2, "unit": "tablespoons"}}\',
@@ -46,6 +55,8 @@ template = """
     Recipe with a valid name, url, cook_time, prep_time, total_time
     List of ingredients
     name quanity and unit
+
+    You Should also guess the main ingredient
 
     The text is {dom_content}
 """

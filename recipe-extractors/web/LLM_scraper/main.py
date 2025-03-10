@@ -7,19 +7,17 @@ import validators
 
 django_url = "http://localhost:8001/api/save-scraped-data/"
 
-
 def get_recipe_data(url):
     if validators.url(url):
-        scraper = Scraper(url)
-        result = scraper.scrape_website(url)
-        body_content = scraper.extract_body_content(result)
-        cleaned_content = scraper.clean_body_content(body_content)
-        with open("cleanedcontent.txt", "w") as f:
-            f.write(cleaned_content)
-        with open("cleanedcontent.txt", "r") as f:
+        # scraper = Scraper(url)
+        # result = scraper.scrape_website(url)
+        # body_content = scraper.extract_body_content(result)
+        # cleaned_content = scraper.clean_body_content(body_content)
+        # with open("cleanedcontent.txt", "w") as f:
+            # f.write(cleaned_content)
+        with open("cleanedcontent1.txt", "r") as f:
             cleaned_content = f.read()
         result = parse_with_ollame(cleaned_content)
-        print("IM here")
         start_idx = result.find("{")
         end_idx = result.rfind("}") + 1
 
@@ -32,8 +30,8 @@ def get_recipe_data(url):
 
         # auto categorize ingredients
 
-        response = requests.post(url=django_url, json=data)
-        print(response)
+        # response = requests.post(url=django_url, json=data)
+        # print(response)
 
         with open("output.json", "w") as f:
             json.dump(data, f)
@@ -45,4 +43,4 @@ def get_recipe_data(url):
 # url = "https://techwithtim.net"
 if len(sys.argv) > 1:
     url = sys.argv[1]
-#    get_recipe_data(url)
+    get_recipe_data( url)

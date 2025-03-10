@@ -1,5 +1,4 @@
 # this is our master dictionary of supported websites
-import re
 lookup_data = {
     "allrecipes": {
         "ingredient": {"tag": "ul", "attrs": {"class": "mm-recipes-structured-ingredients__list"}},
