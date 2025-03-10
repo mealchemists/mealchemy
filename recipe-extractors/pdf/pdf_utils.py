@@ -11,13 +11,15 @@ import math
 # TODO: Identify and extract text regions of the PDF using OCR.
 # If we are dealing with a printed PDF, then there is most likely highlightable text.
 
+DEBUG_PERFORM_OCR = True
+
 
 def debug_show_image(image, window_name="test"):
     cv2.imshow(window_name, image)
     cv2.waitKey(0)
 
 
-def load_pdf_pages(path, scale_factor=1.5):
+def load_pdf_pages(path, scale_factor=1.75):
     """
     Loads the pages of a PDF to numpy format.
     Some additional upscaling is performed to help with text identification.
@@ -47,7 +49,7 @@ def deskew_image(image):
 
 
 # TODO: Identify regions of text. (either via contour detection with morphological operations, SWT or MSER)
-def identify_text_regions_mser(image):
+def identify_text_regions_mser(image, pad_amount=7):
     display_image = image.copy()
     original_image = image.copy()
 
@@ -97,52 +99,50 @@ def identify_text_regions_mser(image):
     # that we can slice from the image, and perform OCR on. OCR will perform better on more specific
     # regions of text.
     # TODO: Handle nested regions from findContours.
+    #       Handle the order on which contours are recognized (columnwise/rowwise read order)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
     rects = []
 
     height, width, _ = original_image.shape
 
     min_area = 150
-    padding = 10
-    for i, contour in enumerate(reversed(contours)):
+    region_no = 1
+    for contour in reversed(contours):
         x, y, w, h = cv2.boundingRect(contour)
 
         area = w * h
         if area > min_area:
-            x0_pad = max(x - padding, 0)
-            y0_pad = max(y - padding, 0)
-            x1_pad = min(width, x + w + padding)
-            y1_pad = min(height, y + h + padding)
-
-            # cv2.rectangle(original_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            # rects.append([x, y, w, h])
-
+            x0_pad = max(x - pad_amount, 0)
+            y0_pad = max(y - pad_amount, 0)
+            x1_pad = min(width, x + w + pad_amount)
+            y1_pad = min(height, y + h + pad_amount)
             cv2.rectangle(
                 display_image, (x0_pad, y0_pad), (x1_pad, y1_pad), (0, 255, 0), 2
             )
 
             cv2.putText(
                 display_image,
-                f"{i + 1}",
+                f"{region_no}",
                 (x, y + 30),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                1,
+                0.75,
                 (0, 255, 0),
                 2,
                 cv2.LINE_AA,
             )
 
             rects.append([x0_pad, y0_pad, x1_pad, y1_pad])
+            region_no += 1
 
-    import pytesseract
+    if DEBUG_PERFORM_OCR:
+        import pytesseract
 
-    for i, r in enumerate(rects):
-        x0, y0, x1, y1 = r
-        slice = original_image[y0:y1, x0:x1]
-        print(
-            f"region {i + 1}/{len(rects)}:\n{pytesseract.image_to_string(slice).strip()}\n"
-        )
+        for i, r in enumerate(rects):
+            x0, y0, x1, y1 = r
+            slice = original_image[y0:y1, x0:x1]
+            print(
+                f"region {i + 1}/{len(rects)}:\n{pytesseract.image_to_string(slice).strip()}\n"
+            )
 
     # debug: show the original image side by side with the masked out text
     text_regions = cv2.bitwise_and(image, image, mask=mask)
@@ -161,10 +161,11 @@ if __name__ == "__main__":
         "./source_material/hardcopy_scans/multi/White Binder Recipes.pdf"
     )
     ELECTRONIC_SINGLE_PATH = "./source_material/electronic_printouts/single/Slow Cooker Pineapple Pork Chops.pdf"
-    pages = load_pdf_pages(HARDCOPY_MULTI_PATH_2)
+
+    print("Loading pages")
+    pages = load_pdf_pages(HARDCOPY_MULTI_PATH_1)
     print("Pages loaded")
     for page in pages:
         identify_text_regions_mser(page)
 
     cv2.destroyAllWindows()
-    pass
