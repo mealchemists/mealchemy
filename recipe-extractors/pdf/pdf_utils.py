@@ -1,3 +1,4 @@
+from os import close
 import pypdfium2
 import cv2
 import numpy as np
@@ -136,18 +137,17 @@ def deskew_image(image, mser):
         return rotated
 
 
-def identify_text_regions_mser(original_image, mser, pad_amount=5):
+def identify_text_regions(original_image, mser, pad_amount=3):
     display_image = original_image.copy()
     image = original_image.copy()
 
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     gamma = 1.7
     blur_kernel = (5, 5)
-    image = cv2.GaussianBlur(image, blur_kernel, 0)
-    image = np.uint8(
-        cv2.pow(image / 255.0, gamma) * 255
-    )  # Emphasize dark regions (such as text) more
+    blurred = cv2.GaussianBlur(gray, blur_kernel, 0)
+    # Emphasize dark regions (such as text) more
+    enhanced = (cv2.pow(blurred / 255.0, gamma) * 255).astype(np.uint8)
 
     # Some notes on MSER parameters:
     # delta: controls step size between intensity thresholds
@@ -161,23 +161,41 @@ def identify_text_regions_mser(original_image, mser, pad_amount=5):
     # min_diversity: controls the minimum diversity between regions
     #   - smaller value allows for more overlapping regions
     #   - larger value reduces redundancy by favoring more diverse regions
-    regions, _ = mser.detectRegions(image)
+    regions, _ = mser.detectRegions(enhanced)
 
-    mask = np.zeros_like(image)
+    mser_mask = np.zeros_like(enhanced)
 
     for region in regions:
         # each contour that is drawn is a likely region of text (such as a word) from MSER
         hull = cv2.convexHull(region.reshape(-1, 1, 2))
-        cv2.drawContours(mask, [hull], -1, (255, 255, 255), -1)
+        cv2.drawContours(mser_mask, [hull], -1, (255, 255, 255), -1)
 
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 3))  # (width, height)
-    mask = cv2.morphologyEx(
-        mask, cv2.MORPH_CLOSE, kernel, iterations=6
+    mser_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 7))  # (width, height)
+    closed_mask = cv2.morphologyEx(
+        mser_mask, cv2.MORPH_CLOSE, mser_kernel, iterations=2
     )  # connect identified regions of text
+
+    edges = cv2.Canny(enhanced, 10, 50, L2gradient=True)
+
+    # refine text region detection with the MSER mask as well as Canny edges
+    combined_mask = cv2.bitwise_and(closed_mask, edges)
+
+    # merge nearby text regions of the mask
+    edge_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 5))
+    merge_text_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 3))
+    dilated_combined_mask = cv2.dilate(combined_mask, edge_kernel, iterations=3)
+    detected_regions = cv2.morphologyEx(
+        dilated_combined_mask,
+        cv2.MORPH_OPEN,
+        merge_text_kernel,
+        iterations=3,  # clean up
+    )
 
     # TODO: Handle nested regions from findContours.
     #       Handle the order on which contours are recognized (columnwise/rowwise read order)
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(
+        detected_regions, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+    )
     rects = []
 
     # obtain and draw the regions to perform OCR on
@@ -194,10 +212,11 @@ def identify_text_regions_mser(original_image, mser, pad_amount=5):
             y0_pad = max(y - pad_amount, 0)
             x1_pad = min(width, x + w + pad_amount)
             y1_pad = min(height, y + h + pad_amount)
+
+            # highlight for debugging
             cv2.rectangle(
                 display_image, (x0_pad, y0_pad), (x1_pad, y1_pad), (0, 255, 0), 2
             )
-
             cv2.putText(
                 display_image,
                 f"{region_no}",
@@ -223,9 +242,15 @@ def identify_text_regions_mser(original_image, mser, pad_amount=5):
             )
 
     # debug: show the original image side by side with the masked out text
-    text_regions = cv2.bitwise_and(image, image, mask=mask)  # type: ignore
+    text_regions = cv2.bitwise_and(enhanced, enhanced, mask=detected_regions)  # type: ignore
     debug_show_image(
-        cv2.hconcat([display_image, cv2.cvtColor(text_regions, cv2.COLOR_GRAY2RGB)])
+        # cv2.hconcat([display_image, cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)])
+        cv2.hconcat(
+            [
+                display_image,
+                cv2.cvtColor(text_regions, cv2.COLOR_GRAY2BGR),
+            ]
+        )
     )
 
     return rects
@@ -243,7 +268,7 @@ if __name__ == "__main__":
     ELECTRONIC_SINGLE_PATH = "./source_material/electronic_printouts/single/Slow Cooker Pineapple Pork Chops.pdf"
 
     print("Loading pages")
-    pages = load_pdf_pages(HARDCOPY_MULTI_PATH_2)
+    pages = load_pdf_pages(HARDCOPY_MULTI_PATH_1)
     print("Pages loaded")
 
     mser = cv2.MSER_create(  # type: ignore
@@ -256,7 +281,7 @@ if __name__ == "__main__":
     )
 
     for page in pages:
-        # identify_text_regions_mser(page, mser)
-        deskew_image(page, mser)
+        rotated = deskew_image(page, mser)
+        identify_text_regions(rotated, mser)
 
     cv2.destroyAllWindows()
