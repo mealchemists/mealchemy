@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import argparse
 
-import image_utils
+import pdf_utils
 
 TEST_SINGLE = False  # single-page PDFs
 TEST_MULTI = False  # multi-page PDFs
