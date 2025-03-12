@@ -64,7 +64,6 @@ def create_recipes(n=10, users=None):
             cook_time=cook_time,
             total_time=prep_time + cook_time,
             source_url=fake.url(),
-            image_url=None,  # Can be replaced with an actual image path
             steps=fake.paragraph(nb_sentences=5)
         )
         recipes.append(recipe)
