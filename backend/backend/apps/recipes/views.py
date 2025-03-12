@@ -1,14 +1,17 @@
-from rest_framework import viewsets, status, mixins, generics
-from rest_framework.response import Response
-from .models.recipe import Recipe
-from .models.ingredients import Ingredient, RecipeIngredient
-from ..meal_plan.models.meal_plan import MealPlan
-from .serializers import RecipeSerializer, IngredientSerializer, RecipeIngredientSerializer
-from rest_framework.decorators import api_view
-from rest_framework.views import APIView
-from .producer import publish
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
+from rest_framework import filters, generics, mixins, status, viewsets
+from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from ..meal_plan.models.meal_plan import MealPlan
+from .models.ingredients import Ingredient, RecipeIngredient
+from .models.recipe import Recipe
+from .producer import publish
+from .serializers import (IngredientSerializer, RecipeIngredientSerializer,
+                          RecipeSerializer)
+
 
 @api_view(['POST'])
 def save_scraped_data(request):
@@ -95,8 +98,10 @@ class RecipeIngredientsAPIView(generics.ListAPIView):
         return recipe_data
         
 class RecipeViewSet(viewsets.ModelViewSet):
+    permission_classes=[IsAuthenticated]
+
     def list(self, request): #/api/Recipes
-        Recipes = Recipe.objects.all()
+        Recipes = Recipe.objects.filter(user=self.request.user)
         serializer = RecipeSerializer(Recipes, many=True)
         return Response(serializer.data)
         

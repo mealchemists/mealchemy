@@ -1,7 +1,9 @@
 from django.contrib.auth.models import User
-from rest_framework.test import APITestCase
 from django.urls import reverse
+from rest_framework.test import APITestCase
+
 from backend.apps.recipes.models.recipe import Recipe
+
 
 class BaseApiTest(APITestCase):
     """

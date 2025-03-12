@@ -1,9 +1,9 @@
-import re
 import os
-import requests
-from dotenv import load_dotenv
+import re
 from pathlib import Path
 
+import requests
+from dotenv import load_dotenv
 
 # load API key
 load_dotenv(Path("./.env"))

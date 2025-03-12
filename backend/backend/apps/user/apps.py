@@ -1,7 +1,6 @@
-
 from django.apps import AppConfig
 
 
-class MealPlanConfig(AppConfig):
+class UserConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'backend.apps.meal_plan'
+    name = 'backend.apps.user'

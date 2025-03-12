@@ -1,4 +1,5 @@
 import pika
+
 params = pika.URLParameters("amqps://njslbjoh:sBepSHwzktvaxnpm9-5kcCAtJR63rzJ0@horse.lmq.cloudamqp.com/njslbjoh")
 
 connection = pika.BlockingConnection(params)

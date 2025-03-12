@@ -1,7 +1,8 @@
-from backend.models import TimeStampedModel
 from django.db import models
 
 from backend.apps.recipes.models.recipe import Recipe
+from backend.models import TimeStampedModel
+
 
 class ShoppingList(TimeStampedModel):
     day_planned = models.TimeField(null=True)

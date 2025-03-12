@@ -1,12 +1,15 @@
 import random
-import django
-from faker import Faker
-from backend.apps.recipes.models.recipe import Recipe
-from backend.apps.meal_plan.models.meal_plan import MealPlan
-from backend.apps.recipes.models.ingredients import Aisle, Ingredient, RecipeIngredient
-from django.contrib.auth.models import User
-from datetime import timedelta, date
 import uuid
+from datetime import date, timedelta
+
+import django
+from django.contrib.auth.models import User
+from faker import Faker
+
+from backend.apps.meal_plan.models.meal_plan import MealPlan
+from backend.apps.recipes.models.ingredients import (Aisle, Ingredient,
+                                                     RecipeIngredient)
+from backend.apps.recipes.models.recipe import Recipe
 
 # Initialize Faker
 fake = Faker()

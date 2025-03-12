@@ -1,8 +1,10 @@
 from django.urls import reverse
 from rest_framework import status
+
 from backend.apps.recipes.models.ingredients import Ingredient
 from backend.apps.test_utils.test_base_api import BaseApiTest
 from backend.data_generator import create_ingredients
+
 
 class RecipeIngredientApiTest(BaseApiTest):
     def setUp(self):
