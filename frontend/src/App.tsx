@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import MealPlanningPage from './Components/MealPlanningPage/MealPlanningPage';
 import ShoppingListPage from './Components/ShoppingListPage/ShoppingListPage';
 import RecipePage from './Components/RecipePage/RecipePage';
@@ -9,20 +9,23 @@ import UserProfile from './Components/UserProfile/UserProfile';
 import LoginPage from './Components/LoginPage/LoginPage';
 import NavigationBar from './Components/NavigationBar/NavigationBar';
 import ProtectedRoute from './routes/ProtectedRoute';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const nav = useNavigate();
+  const location = useLocation();
 
   return (
     <div className="app-container">
-        <div className="navigation-bar">
-          <NavigationBar onClick={(item) => nav(`/${item}`)} />
-        </div>
-
+        {location.pathname !== "/Home" && (
+            <div className="navigation-bar">
+                <NavigationBar onClick={(item) => nav(`/${item}`)} />
+            </div>
+        )} 
         <div className="content">
           <Routes>
             <Route path="/Login" element={<LoginPage />} />
-                {/* Protect all routes inside this */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/home" element={<HomePage />} />
@@ -32,6 +35,7 @@ function App() {
                 <Route path="/userprofile" element={<UserProfile />} />
             </Route>
           </Routes>
+          <ToastContainer position="bottom-right" autoClose={3000} />
         </div>
     </div>
   );

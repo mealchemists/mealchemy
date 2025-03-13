@@ -4,6 +4,8 @@ import {loginUser, getCsrfToken, registerUser} from '../../api/login.js';
 import { Container, TextField, Button, Typography, Box, Paper } from "@mui/material";
 import LoginForm from '../Forms/LoginForm'
 import RegisterForm from '../Forms/RegisterForm';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 function LoginPage() {
     const [email, setEmail] = useState("");
@@ -13,13 +15,18 @@ function LoginPage() {
 
     const [csrfToken, setCsrfToken] = useState("");
     const [error, setError] = useState("");
+    const navigate = useNavigate();
+
+    const showNotification = () => {
+        toast.success('Hello from another component!');
+    };
     
 
     const handleLogin = async (creds) => {
-        console.log(creds);
         try {
             const response = await loginUser(creds);
-            console.log("Login successful:", response);
+            navigate("/Recipes");
+            toast.success('Login successful! 🎉'); // Success toast
         } catch (error) {
             setError("Login failed: " + (error.response?.data?.error));
             console.error("Login failed:", error.request);
@@ -32,11 +39,11 @@ function LoginPage() {
     };
 
     const handleSignup = async (creds) => {
-        console.log("Signup clicked");
-        console.log(creds);
         try {
             const response = await registerUser(creds);
-            console.log("Registration successful:", response);
+            toast.success('Registration successful! Please Login'); // Success toast
+            setIsRegistering(false);
+            console.log("Registration successful", response);
         } catch (error) {
             console.error("Registration failed:", error);
         }

@@ -12,11 +12,12 @@ from django.utils.decorators import method_decorator
 
 # Create your views here.
 class RegisterView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            login(request, user)
+            # login(request, user)
             return Response({"message": "Account Created Login"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
