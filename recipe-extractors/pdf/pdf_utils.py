@@ -4,11 +4,10 @@ import numpy as np
 import pytesseract
 
 
-# TODO: Identify any stopwords (such as links, etc) and remove them.
+# TODO: Identify and extract text regions of the PDF using OCR.
+# If we are dealing with a printed PDF, then there is most likely highlightable text.
 
-# TODO: Handle text extraction, as well as determining the type of the input document.
 
-DEBUG_PREVIEW_TEXT_DETECTION = True
 DEBUG_PERFORM_OCR = False
 DEBUG_DESKEW = False
 
@@ -43,12 +42,6 @@ def load_pdf_text(path):
 
 # this should be done before we do any text segmentation
 def deskew_image(image, mser):
-    """
-    Deskews an image using MSER to filter out regions that are likely text,
-    and then obtains the rough rotation angle of the document using Hough
-    Lines Transform.
-    """
-
     # preprocess image with MSER to help with identifying the Hough lines
     # which basically represent the orientation of the document
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -163,25 +156,21 @@ def create_mser_mask(image, mser, kernel=(5, 5), iterations=3):
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, kernel)
     mask = cv2.morphologyEx(
         mask, cv2.MORPH_CLOSE, kernel, iterations=iterations
-    )  # connect likely regions of text (but not too much, since that can connect noise regions)
+    )  # connect likely regions of text (but not too much)
 
     return mask
 
 
 def identify_text_regions(original_image, mser, pad_amount=3):
-    """
-    Identifies regions that are likely text with a hybrid MSER approach,
-    returning bounding boxes of defined by the coordinates [x0, y0, x1, y1].
-    """
-
     display_image = original_image.copy()
-    gray = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
+    image = original_image.copy()
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     gamma = 1.7
-    # Denoise a little bit
     blur_kernel = (5, 5)
     blurred = cv2.GaussianBlur(gray, blur_kernel, 0)
-    # emphasize dark regions (such as text) more
+    # Emphasize dark regions (such as text) more
     enhanced = (cv2.pow(blurred / 255.0, gamma) * 255).astype(np.uint8)
     mask = create_mser_mask(enhanced, mser, kernel=(5, 7), iterations=2)
 
@@ -252,16 +241,16 @@ def identify_text_regions(original_image, mser, pad_amount=3):
             )
 
     # debug: show the original image side by side with the masked out text
-    if DEBUG_PREVIEW_TEXT_DETECTION:
-        text_regions = cv2.bitwise_and(enhanced, enhanced, mask=detected_regions)  # type: ignore
-        debug_show_image(
-            cv2.hconcat(
-                [
-                    display_image,
-                    cv2.cvtColor(text_regions, cv2.COLOR_GRAY2BGR),
-                ]
-            )
+    text_regions = cv2.bitwise_and(enhanced, enhanced, mask=detected_regions)  # type: ignore
+    debug_show_image(
+        # cv2.hconcat([display_image, cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)])
+        cv2.hconcat(
+            [
+                display_image,
+                cv2.cvtColor(text_regions, cv2.COLOR_GRAY2BGR),
+            ]
         )
+    )
 
     return rects
 
@@ -272,7 +261,9 @@ def extract_text(text_regions, original_image):
     slices = [original_image[r[1] : r[3], r[0] : r[2]] for r in text_regions]
 
     # TODO: maybe get a RGB histogram of each of the slices and filter out the outliers
-    # since text is usually given as outliers
+    # since histograms of RGB values for ideal slices are usually bimodal
+    # - ignore bright backgrounds and try to ignore some of the values?
+    # - apply Otsu thresholding on each of the slices?
 
     # TODO: API reference and usage - needs testing
     # slices_denoised = cv2.fastNlMeansDenoisingColoredMulti(slices, )
