@@ -1,21 +1,16 @@
 import axios from "axios";
 import { handleAxiosError } from "./handleAxiosError.js"
 
-const API_BASE_URL = "http://localhost:8001/api";
+const API_BASE_URL = "http://localhost:8000/api";
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+    baseURL: API_BASE_URL,
+    headers: {'Content-Type': 'application/json'},
+    withCredentials: true
 });
 
-// Make sure to handle errors globally for each request
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    return Promise.reject(handleAxiosError(error));
-  }
 );
 
 export default apiClient;
