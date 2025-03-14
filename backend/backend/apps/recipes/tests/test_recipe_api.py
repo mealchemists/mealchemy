@@ -1,5 +1,5 @@
 from rest_framework import status
-
+from django.contrib.auth import logout
 from backend.apps.recipes.models.recipe import Recipe
 from backend.apps.test_utils.test_base_api import BaseApiTest
 
@@ -33,3 +33,9 @@ class RecipeApiTest(BaseApiTest):
         response = self.client.delete(self.recipe_detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Recipe.objects.count(), 0)  # Verify the object was deleted
+        
+    def test_logout(self):
+        self.client.logout()
+        response = self.client.get(self.recipe_list_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
