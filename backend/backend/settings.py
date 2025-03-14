@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     'rest_framework',
-    'rest_framework_simplejwt',
     'backend.apps.recipes',
     'backend.apps.meal_plan',
     'backend.apps.user'

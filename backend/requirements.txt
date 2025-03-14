@@ -70,7 +70,6 @@ PyYAML==6.0.2
 referencing==0.36.1
 requests==2.32.3
 requests-toolbelt==1.0.0
-rest-framework-simplejwt==0.0.2
 rich==13.9.4
 rpds-py==0.22.3
 selenium==4.28.0
