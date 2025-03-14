@@ -1,3 +1,4 @@
+// TODO: maybe we can delete this I was trying to make global errors for axios but not sure if this is useful
 export const handleAxiosError = (error) => {
   if (error.response) {
     // Server responded with a status other than 2xx

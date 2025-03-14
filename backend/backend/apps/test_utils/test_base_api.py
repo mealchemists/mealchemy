@@ -1,7 +1,10 @@
 from django.contrib.auth.models import User
-from rest_framework.test import APITestCase
 from django.urls import reverse
+from rest_framework.test import APITestCase
+from django.contrib.auth import login, authenticate, logout
+
 from backend.apps.recipes.models.recipe import Recipe
+
 
 class BaseApiTest(APITestCase):
     """
@@ -10,8 +13,10 @@ class BaseApiTest(APITestCase):
     """
     def setUp(self):
         # Create a user
-        self.user = User.objects.create_user(username='testuser', password='password')
-
+        username = 'testuser'
+        password = 'password'
+        self.user = User.objects.create_user(username=username, password=password)
+        
         # Log in the client with the user
         self.client.login(username='testuser', password='password')
 
