@@ -18,7 +18,7 @@ function App() {
 
   return (
     <div className="app-container">
-        {location.pathname !== "/Home" && (
+        {location.pathname !== "/login" && (
             <div className="navigation-bar">
                 <NavigationBar onClick={(item) => nav(`/${item}`)} />
             </div>

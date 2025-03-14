@@ -39,7 +39,7 @@ def create_aisles(n=10):
 def create_ingredients(n=20, aisles=None):
     ingredients = []
     for _ in range(n):
-        aisle = random.choice(aisles) if aisles else None
+        aisle = None
         ingredient, _ = Ingredient.objects.get_or_create(
             name="TEST-OBJECT-" + str(uuid.uuid4()),
             calories_per_100g=random.uniform(50, 500),
@@ -54,14 +54,15 @@ def create_ingredients(n=20, aisles=None):
         ingredients.append(ingredient)
     return ingredients
 
-def create_recipes(n=10, users=None):
+def create_recipes(n=4, users=None):
     recipes = []
     for _ in range(n):
         user = random.choice(users) if users else None
+        my_user =User.objects.filter(id=6).first()
         prep_time = random.randint(5, 30)
         cook_time = random.randint(10, 60)
         recipe = Recipe.objects.create(
-            user=user,
+            user=my_user,
             name=fake.sentence(nb_words=3),
             prep_time=prep_time,
             cook_time=cook_time,

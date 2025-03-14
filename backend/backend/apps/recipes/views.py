@@ -53,16 +53,14 @@ class RecipeIngredientsAPIView(generics.ListAPIView):
     filter_set_fields = ["id"]
 
     def get_queryset(self):
-        return RecipeIngredient.objects.prefetch_related("recipe", "ingredient")
+        return RecipeIngredient.objects.filter(recipe__user=self.request.user).prefetch_related("recipe", "ingredient")
     
     def list(self, request, *args, **kwargs):
-        # TODO We need to filter the results to only the recipes/ingredients created by the user
-        queryset = self.get_queryset() 
         if not self.kwargs:
             return Response(self.serialize_many() , status=status.HTTP_200_OK)
         
         recipe_id = self.kwargs["pk"]
-        queryset= queryset.filter(recipe_id=recipe_id)
+        queryset= self.get_queryset().filter(recipe_id=recipe_id)
         ri = queryset.first()
         ri_serializer = RecipeIngredientSerializer(ri)
         
@@ -80,10 +78,10 @@ class RecipeIngredientsAPIView(generics.ListAPIView):
         recipe_data = []
             
         for ri in queryset:
-            recipe_ingredients = queryset.filter(recipe=ri.id)
+            recipe_ingredients = ri
     
-            if hasattr(recipe_ingredients.first(), "recipe"):
-                recipe_ingredient = recipe_ingredients.first()
+            if hasattr(recipe_ingredients, "recipe"):
+                recipe_ingredient = recipe_ingredients
                 ri_serializer = RecipeIngredientSerializer(recipe_ingredient)
             
                 ingredients = [recipe_ingredient.ingredient for recipe_ingredient in recipe_ingredients]

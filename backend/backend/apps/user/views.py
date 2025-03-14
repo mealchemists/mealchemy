@@ -47,6 +47,7 @@ class CsrfView(APIView):
         return response
 
 class CheckAuth(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         if request.user.is_authenticated:
             print("User is authenticated")
