@@ -9,6 +9,7 @@ import { Chip, TextField } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import EditTagModal from '../EditTagModal/EditTagModal';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import {deleteRecipeIngredients} from '../../api/recipeIngredientApi.js';
 
 
 const options = [
@@ -53,6 +54,18 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const [totalTime, setTotalTime] = useState(String(recipe.total_time));
 
     const [tags, setTags] = useState([mainIngredient, cookTime, prepTime, totalTime]);
+    const [error, setError] = useState("");
+
+    const deleteRecipe = async (id) => {
+         try {
+            const response = await deleteRecipeIngredients(id);
+            console.log(response)
+            const data: RecipeIngredient[] = response.data; 
+        } catch (error) {
+            setError("Error fetching recipes");
+            console.error("Error fetching recipes:", error);
+        }
+    }
 
     useEffect(() => {
         setTags([
@@ -94,6 +107,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             setAnchorEl(null);
             setEditMode(true);
             handleOptionsClose();
+        } else if (option == "Delete") {
+            deleteRecipe(recipeIngredient.id);
+            console.log(recipeIngredient.id)
         }
     };
 

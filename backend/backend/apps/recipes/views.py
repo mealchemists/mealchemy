@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import random
+from django.http import Http404
 from ..meal_plan.models.meal_plan import MealPlan
 from .models.ingredients import Ingredient, RecipeIngredient
 from .models.recipe import Recipe
@@ -42,8 +43,15 @@ def recipe_url(request):
         return Response(data, status=status.HTTP_201_CREATED)
         
 class RecipeIngredientsAPIView(APIView):
+    permission_classes=[IsAuthenticated]
     def get_queryset(self):
         return RecipeIngredient.objects.filter(recipe__user=self.request.user).prefetch_related("recipe", "ingredient")
+    
+    def get_object(self, pk):
+        try:
+            return RecipeIngredient.objects.get(pk=pk)
+        except RecipeIngredient.DoesNotExist:
+            raise Http404
     
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -55,7 +63,7 @@ class RecipeIngredientsAPIView(APIView):
                 recipe_id = ri.recipe.id
                 if recipe_id not in recipes:
                     recipes[recipe_id] = {
-                        "id": recipe_id,
+                        "id": ri.id,
                         "recipe": RecipeSerializer(ri.recipe).data,
                         "ingredients": []
                     }
@@ -93,7 +101,7 @@ class RecipeIngredientsAPIView(APIView):
 
         return Response(
             {
-                "id": recipe_id,
+                "id": ri.id,
                 "recipe": recipe_data,
                 "ingredients": ingredients_data
             },
@@ -144,7 +152,19 @@ class RecipeIngredientsAPIView(APIView):
             return Response(RecipeSerializer(recipe).data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, *args, **kwargs):
+        pk = kwargs.get("pk")
+        print(pk)
+        if pk:
+            recipe_ingredient = self.get_object(pk=pk)
+            recipe = recipe_ingredient.recipe
+            recipe_ingredient.delete()
+            recipe.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response("Failes", status=status.HTTP_400_BAD_REQUEST)
         
+    
 class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes=[IsAuthenticated]
 
