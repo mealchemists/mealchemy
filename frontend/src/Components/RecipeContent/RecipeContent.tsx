@@ -25,14 +25,17 @@ interface RecipeContentProps {
     recipeIngredient: RecipeIngredient;
     initialEditMode?: boolean;
     exitEditMode: () => void;
+    onDeleteRecipe: (recipe: RecipeIngredient) => void; // Adjusted prop type
 }
 
 const RecipeContent: React.FC<RecipeContentProps> = ({ 
     recipeIngredient, 
     initialEditMode = false, 
-    exitEditMode 
+    exitEditMode,
+    onDeleteRecipe
 }) => {
-    const recipe = recipeIngredient.recipe;
+    const [recipe, setRecipe] = useState(recipeIngredient.recipe)
+    console.log({"Recipe": recipe})
     // 3 dot menu, edit and delete options
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [editMode, setEditMode] = useState(initialEditMode);
@@ -60,7 +63,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
          try {
             const response = await deleteRecipeIngredients(id);
             console.log(response)
-            const data: RecipeIngredient[] = response.data; 
+            // Notify parent to delete the recipe from the list
+            onDeleteRecipe(recipeIngredient);
         } catch (error) {
             setError("Error fetching recipes");
             console.error("Error fetching recipes:", error);
