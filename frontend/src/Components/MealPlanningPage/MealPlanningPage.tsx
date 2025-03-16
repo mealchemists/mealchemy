@@ -7,8 +7,7 @@ import RecipeSearch from "../RecipeSearch/RecipeSearch";
 import GridItem from "../GridItem/GridItem";
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import { Recipe } from "../../Models/models";
-import DeleteIcon from "@mui/icons-material/Delete";
-
+import { CustomToolbar,CustomEvent, CustomDayHeader } from "./CalendarComponents";
 import NutritionalAccordion from "../NutritionAccordion/NutritionAccordion";
 // const events = [
 //   {
@@ -53,21 +52,6 @@ const blankRecipe2: Recipe = {
 const recipes = [blankRecipe, blankRecipe2, blankRecipe, blankRecipe2, blankRecipe, blankRecipe, blankRecipe, blankRecipe, blankRecipe];
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar)
-
-const CustomToolbar = ({ label, onNavigate }) => (
-  <div className="rbc-toolbar">
-    <div className="rbc-toolbar-label">{label}</div>
-    <div className="rbc-btn-group rbc-btn-group-left">
-      <button type="button" onClick={() => onNavigate('TODAY')}>Today</button>
-      <button type="button" onClick={() => onNavigate('PREV')}>Back</button>
-      <button type="button" onClick={() => onNavigate('NEXT')}>Next</button>
-    </div>
-    <div className="rbc-btn-group rbc-btn-group-right">
-      <button type="button" className="shopping-list-button">Add to Shopping List</button>
-    </div>
-  </div>
-);
-
 
 
 function MealPlanningPage() {
@@ -116,49 +100,6 @@ function MealPlanningPage() {
   };
 
 
-  const CustomEvent = ({ event }) => {
-    const handleDelete = () => {
-      // Call a function to reset the event to a placeholder
-      resetEventToPlaceholder(event);
-    };
-
-    return (
-      <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
-        <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          {event.title}
-        </span>
-        <IconButton
-          size="small"
-          onClick={handleDelete}
-          style={{
-            marginLeft: "auto", padding: "1px"
-          }}
-        >
-          <DeleteIcon fontSize="small" sx={{
-            color: "white",
-          }} />
-        </IconButton>
-      </div>
-    );
-  };
-
-  const CustomDayHeader = ({ label }) => {
-    return (
-      <div
-        style={{
-          height: "30px", // Larger height for the header
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "16px",
-          fontWeight: "bold",
-        }}
-      >
-        {label}
-      </div>
-    );
-  };
-
   const handleDragStart = (recipe) => {
     setDraggedRecipe(recipe);
   };
@@ -202,6 +143,8 @@ function MealPlanningPage() {
 
   const handleMealChange = (day, mealCount) => {
     setSelectedMeals((prev) => ({ ...prev, [day]: mealCount }));
+
+    // TODO: do a check for if meals are more than number of meal slots
 
     setMyEventsList((prevEvents) => {
       // Separate non-placeholder and placeholder events for the current day
@@ -259,6 +202,12 @@ function MealPlanningPage() {
       setView(newView);
     }
   };
+
+  const saveMealPlan = ()=>{
+    // TODO: Save the meal plan to database
+    console.log(myEventsList);
+  };
+  
   return (
     <div>
       <div className="calendarContainer">
@@ -268,7 +217,7 @@ function MealPlanningPage() {
           defaultView="week"
           views={{ week: true }}
           components={{
-            event: CustomEvent,
+            event: (props) => <CustomEvent {...props} resetEventToPlaceholder={resetEventToPlaceholder} />,
             toolbar: CustomToolbar,
             week: {
               header: CustomDayHeader,
@@ -394,7 +343,7 @@ function MealPlanningPage() {
             Nutrition Details
           </ToggleButton>
         </ToggleButtonGroup>
-        <button className="shopping-list-button">SAVE</button>
+        <button className="shopping-list-button" onClick = {saveMealPlan}>SAVE</button>
       </Box>
 
       {view === "recipes" ? (

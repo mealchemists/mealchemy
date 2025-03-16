@@ -32,7 +32,7 @@
   margin: 1px auto;
 }
 
-.rbc-row .rbc-event{
+.rbc-row .rbc-event,  .rbc-event.rbc-selected{
   background-color:#38793b;
   height:fit-content;
 }
