@@ -9,7 +9,8 @@ import pytesseract
 
 
 DEBUG_PERFORM_OCR = False
-DEBUG_DESKEW = False
+DEBUG_SHOW_DESKEW = False
+DEBUG_SHOW_IDENTIFY = True
 
 
 def debug_show_image(image, window_name="test"):
@@ -45,20 +46,20 @@ def deskew_image(image, mser):
     # preprocess image with MSER to help with identifying the Hough lines
     # which basically represent the orientation of the document
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    blur = cv2.GaussianBlur(gray, (3, 3), 0)
+    blur = cv2.GaussianBlur(gray, (3, 3), 1.0)
 
     mask = create_mser_mask(blur, mser, kernel=(7, 3), iterations=5)
-    edges = cv2.Canny(blur, 50, 150, apertureSize=3)
+    edges = cv2.Canny(blur, 50, 150)
     masked_edges = cv2.bitwise_and(edges, edges, mask=mask)
 
     lines = cv2.HoughLinesP(
         masked_edges, 1, np.pi / 180, threshold=80, minLineLength=120, maxLineGap=20
-    ).astype(float)
+    )
 
     angles = []
     if lines is not None:
         for line in lines:
-            x0, y0, x1, y1 = line[0]
+            x0, y0, x1, y1 = line[0]  # type: ignore
             angle = np.degrees(np.arctan2(y1 - y0, x1 - x0))
             angles.append(angle)
 
@@ -85,14 +86,14 @@ def deskew_image(image, mser):
             rotation_matrix,
             (new_w, new_h),
             flags=cv2.INTER_CUBIC,
-            borderMode=cv2.BORDER_REPLICATE,
+            borderMode=cv2.BORDER_CONSTANT,
         )
 
-        if DEBUG_DESKEW:
+        if DEBUG_SHOW_DESKEW:
             # debug test
             display_image = image.copy()
             for line in lines:
-                x0, y0, x1, y1 = line[0]
+                x0, y0, x1, y1 = line[0]  # type: ignore
                 cv2.line(
                     display_image,
                     (int(x0), int(y0)),
@@ -122,7 +123,6 @@ def deskew_image(image, mser):
                 value=[0, 0, 0],
             )
 
-            # debug_show_image(cv2.hconcat([display_image, rotated]))
             debug_show_image(cv2.hconcat([padded_display, padded_rotated]))
 
         return rotated
@@ -166,15 +166,19 @@ def identify_text_regions(original_image, mser, pad_amount=3):
     image = original_image.copy()
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 1.0)
 
-    gamma = 1.7
-    blur_kernel = (5, 5)
-    blurred = cv2.GaussianBlur(gray, blur_kernel, 0)
-    # Emphasize dark regions (such as text) more
-    enhanced = (cv2.pow(blurred / 255.0, gamma) * 255).astype(np.uint8)
-    mask = create_mser_mask(enhanced, mser, kernel=(5, 7), iterations=2)
+    # enhance contrast
+    clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
+    enhanced = clahe.apply(blurred)
+    # adaptive gamma correction
+    mean_intensity = np.mean(enhanced)
+    gamma = np.interp(mean_intensity, [50, 200], [0.8, 2.0])
+    enhanced = (cv2.pow(enhanced / 255.0, gamma) * 255).astype(np.uint8)
 
-    edges = cv2.Canny(enhanced, 10, 50, L2gradient=True)
+    mask = create_mser_mask(enhanced, mser, kernel=(3, 7), iterations=3)
+
+    edges = cv2.Canny(enhanced, 50, 200, L2gradient=True)
 
     # refine text region detection with the MSER mask as well as Canny edges
     combined_mask = cv2.bitwise_and(mask, edges)
@@ -190,8 +194,6 @@ def identify_text_regions(original_image, mser, pad_amount=3):
         iterations=3,  # clean up
     )
 
-    # TODO: Handle nested regions from findContours.
-    #       Handle the order on which contours are recognized (columnwise/rowwise read order)
     contours, _ = cv2.findContours(
         detected_regions, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
     )
@@ -212,20 +214,21 @@ def identify_text_regions(original_image, mser, pad_amount=3):
             x1_pad = min(width, x + w + pad_amount)
             y1_pad = min(height, y + h + pad_amount)
 
-            # highlight for debugging
-            cv2.rectangle(
-                display_image, (x0_pad, y0_pad), (x1_pad, y1_pad), (0, 255, 0), 2
-            )
-            cv2.putText(
-                display_image,
-                f"{region_no}",
-                (x, y + 30),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.75,
-                (0, 255, 0),
-                2,
-                cv2.LINE_AA,
-            )
+            if DEBUG_SHOW_IDENTIFY:
+                # highlight for debugging
+                cv2.rectangle(
+                    display_image, (x0_pad, y0_pad), (x1_pad, y1_pad), (0, 255, 0), 2
+                )
+                cv2.putText(
+                    display_image,
+                    f"{region_no}",
+                    (x, y + 30),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.75,
+                    (0, 255, 0),
+                    2,
+                    cv2.LINE_AA,
+                )
 
             rects.append([x0_pad, y0_pad, x1_pad, y1_pad])
             region_no += 1
@@ -240,17 +243,18 @@ def identify_text_regions(original_image, mser, pad_amount=3):
                 f"region {i + 1}/{len(rects)}:\n{pytesseract.image_to_string(slice).strip()}\n"
             )
 
-    # debug: show the original image side by side with the masked out text
-    text_regions = cv2.bitwise_and(enhanced, enhanced, mask=detected_regions)  # type: ignore
-    debug_show_image(
-        # cv2.hconcat([display_image, cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)])
-        cv2.hconcat(
-            [
-                display_image,
-                cv2.cvtColor(text_regions, cv2.COLOR_GRAY2BGR),
-            ]
+    if DEBUG_SHOW_IDENTIFY:
+        # debug: show the original image side by side with the masked out text
+        text_regions = cv2.bitwise_and(enhanced, enhanced, mask=detected_regions)  # type: ignore
+        debug_show_image(
+            # cv2.hconcat([display_image, cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)])
+            cv2.hconcat(
+                [
+                    display_image,
+                    cv2.cvtColor(text_regions, cv2.COLOR_GRAY2BGR),
+                ]
+            )
         )
-    )
 
     return rects
 
@@ -284,17 +288,26 @@ if __name__ == "__main__":
     pages = load_pdf_pages(HARDCOPY_MULTI_PATH_2)
     print("Pages loaded")
 
-    mser = cv2.MSER_create(  # type: ignore
-        delta=4,
-        min_area=45,
-        max_area=1000,
+    mser_deskew = cv2.MSER_create(  # type: ignore
+        delta=2,
+        min_area=20,
+        max_area=2000,
         max_variation=0.2,
-        min_diversity=0.2,
         max_evolution=1000,
     )
 
+    mser_identify = cv2.MSER_create(  # type: ignore
+        delta=4,
+        min_area=45,
+        max_area=1000,
+        max_variation=0.1,
+        max_evolution=1000,
+    )
     for page in pages:
-        rotated = deskew_image(page, mser)
-        identify_text_regions(rotated, mser)
+        rotated = deskew_image(page, mser_deskew)
+        if rotated is not None:
+            regions = identify_text_regions(rotated, mser_identify)
+        else:
+            print("COULD NOT ROTATE")
 
     cv2.destroyAllWindows()
