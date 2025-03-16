@@ -152,9 +152,18 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Forgot password email
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST_USER = os.getenv("EMAIL_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_EMAIL")
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',  # Your frontend domain
 ]
+
 CORS_ALLOW_CREDENTIALS = True  # Allow credentials (cookies, authorization headers)
 CORS_ORIGIN_ALLOW_ALL = True
