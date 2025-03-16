@@ -29,14 +29,34 @@
   width: auto;
   display: block;
   text-align: center;
-  margin: 2px auto;
+  margin: 1px auto;
 }
 
+.rbc-row .rbc-event{
+  background-color:#38793b;
+  height:fit-content;
+}
 
+.rbc-header{
+  background-color:#38793b;
+  color:white;
+  border-bottom:1px solid #38793b  !important;
+}
+.rbc-row.rbc-time-header-cell .rbc-header:first-child{
+  border-top-left-radius: 10px;
+}
+
+.rbc-row.rbc-time-header-cell .rbc-header:last-child{
+  border-top-right-radius: 10px;
+}
+
+.rbc-header.rbc-today, .rbc-day-bg.rbc-today{
+  background-color:rgb(176, 219, 178, 0.3);
+  color:black;
+}
 .calendarContainer {
   display: flex;
   justify-content: center;
-  /* padding: 10px; */
 }
 
 /* Style the toolbar container to stack label and buttons vertically */
@@ -52,7 +72,7 @@
   font-size: 16px;
   text-align: center;
   width: 100%;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 
 .rbc-btn-group {
@@ -62,6 +82,46 @@
 
 .rbc-btn-group-right {
   display: flex;
+}
+
+
+.rbc-time-view {
+  border: 2px solid #38793b  !important;
+  border-radius:10px;
+}
+.rbc-time-header.rbc-overflowing{
+  border-right:none!important;
+}
+.rbc-time-content{
+  border-top:none!important;
+}
+
+.rbc-time-header-content{
+  border-left:none!important;
+}
+
+div.rbc-toolbar-label{
+  font-weight:bold;
+  font-size:large;
+}
+
+div.rbc-toolbar{
+  padding-top:0;
+}
+
+div.rbc-btn-group.rbc-btn-group-left button{
+  color:#38793b !important;
+  border: 2px solid #38793b;
+  border-radius: 10px;
+}
+
+div.rbc-btn-group.rbc-btn-group-left button:hover{
+  background-color:#38793b !important;
+  color:white!important;
+}
+.rbc-btn-group > button:not(:first-child):not(:last-child){
+  border-left:none;
+  border-right:none;
 }
 
 .recipeGrid {
@@ -102,7 +162,7 @@
   font-size: 18px;
   cursor: pointer;
   border: none;
-  background-color: #007bff;
+  background-color: #38793b;
   color: white;
   border-radius: 5px;
   transition: 0.3s;
@@ -138,3 +198,4 @@
   margin-top:0px;
   margin-bottom:0px;
 }
+

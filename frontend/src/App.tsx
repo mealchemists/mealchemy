@@ -14,21 +14,20 @@ function App() {
 
   return (
     <div className="app-container">
-        <div className="navigation-bar">
-          <NavigationBar onClick={(item) => nav(`/${item}`)} />
-        </div>
-
-        <div className="content">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/Home" element={<HomePage />} />
-            <Route path="/MealPlanning" element={<MealPlanningPage />} />
-            <Route path="/Recipes" element={<RecipePage />} />
-            <Route path="/ShoppingList" element={<ShoppingListPage />} />
-            <Route path="/UserProfile" element={<UserProfile />} />
-            <Route path="/Login" element={<LoginPage />} />
-          </Routes>
-        </div>
+      <div className="navigation-bar">
+        <NavigationBar onClick={(item) => nav(`/${item}`)} />
+      </div>
+      <div className="content">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/Home" element={<HomePage />} />
+          <Route path="/MealPlanning" element={<MealPlanningPage />} />
+          <Route path="/Recipes" element={<RecipePage />} />
+          <Route path="/ShoppingList" element={<ShoppingListPage />} />
+          <Route path="/UserProfile" element={<UserProfile />} />
+          <Route path="/Login" element={<LoginPage />} />
+        </Routes>
+      </div>
     </div>
   );
 }

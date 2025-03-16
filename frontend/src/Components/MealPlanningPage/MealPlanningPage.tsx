@@ -7,7 +7,7 @@ import RecipeSearch from "../RecipeSearch/RecipeSearch";
 import GridItem from "../GridItem/GridItem";
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import { Recipe } from "../../Models/models";
-import DeleteIcon from "@mui/icons-material/Delete"; 
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import NutritionalAccordion from "../NutritionAccordion/NutritionAccordion";
 // const events = [
@@ -63,7 +63,7 @@ const CustomToolbar = ({ label, onNavigate }) => (
       <button type="button" onClick={() => onNavigate('NEXT')}>Next</button>
     </div>
     <div className="rbc-btn-group rbc-btn-group-right">
-      <button type="button" className="add-to-shopping-list-btn">Add to Shopping List</button>
+      <button type="button" className="shopping-list-button">Add to Shopping List</button>
     </div>
   </div>
 );
@@ -78,49 +78,94 @@ function MealPlanningPage() {
   const recipesPerPage = 8; // Show 8 recipes per page (4 columns x 2 rows)
   const [view, setView] = useState("recipes");
   const totalPages = Math.ceil(recipes.length / recipesPerPage);
+  const [searchRecipes, setSearchRecipes] = useState<Recipe[]>(recipes); //TODO: pass the recipes from database
+  const [visibleRecipes, setVisibleRecipes] = useState([]);
 
+  useEffect(() => {
+    const startIndex = currentPage * recipesPerPage;
+    const newVisibleRecipes = searchRecipes.slice(startIndex, startIndex + recipesPerPage);
+    setVisibleRecipes(newVisibleRecipes);
+  }, [currentPage, recipesPerPage, recipes,searchRecipes]);
+
+  useEffect(() => {
+    setSearchRecipes(recipes); // Ensure filtered list updates when recipes change
+  }, [recipes]);
+
+  const handleSearchRecipe = (searchInput) => {
+    console.log(searchInput);
+    if (searchInput.trim() === "") {
+      setSearchRecipes(recipes);
+    } else {
+      const filtered = recipes.filter((recipe) =>
+        recipe.title.toLowerCase().includes(searchInput.toLowerCase())
+      );
+      console.log(filtered);
+      setSearchRecipes(filtered);
+    }
+  }
   const handleNext = () => {
-      if (currentPage < totalPages - 1) {
-          setCurrentPage(currentPage + 1);
-      }
+    if (currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1);
+    }
   };
 
   const handlePrev = () => {
-      if (currentPage > 0) {
-          setCurrentPage(currentPage - 1);
-      }
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
   };
 
-  const startIndex = currentPage * recipesPerPage;
-  const visibleRecipes = recipes.slice(startIndex, startIndex + recipesPerPage);
 
   const CustomEvent = ({ event }) => {
     const handleDelete = () => {
       // Call a function to reset the event to a placeholder
       resetEventToPlaceholder(event);
     };
-  
+
     return (
-      <div>
-        <span>{event.title}</span>
+      <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+        <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {event.title}
+        </span>
         <IconButton
           size="small"
           onClick={handleDelete}
-          style={{ marginLeft: "5px", padding: "2px" }}
+          style={{
+            marginLeft: "auto", padding: "1px"
+          }}
         >
-          <DeleteIcon fontSize="small" />
+          <DeleteIcon fontSize="small" sx={{
+            color: "white",
+          }} />
         </IconButton>
       </div>
     );
   };
-  
+
+  const CustomDayHeader = ({ label }) => {
+    return (
+      <div
+        style={{
+          height: "30px", // Larger height for the header
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "16px",
+          fontWeight: "bold",
+        }}
+      >
+        {label}
+      </div>
+    );
+  };
+
   const handleDragStart = (recipe) => {
     setDraggedRecipe(recipe);
   };
-  
+
   const dragFromOutsideItem = useCallback(() => {
     // Return the dragged recipe if it's droppable, otherwise return null
-    return draggedRecipe ? draggedRecipe : null;
+    return null;
   }, [draggedRecipe]);
 
   const onDropFromOutside = useCallback(
@@ -157,39 +202,39 @@ function MealPlanningPage() {
 
   const handleMealChange = (day, mealCount) => {
     setSelectedMeals((prev) => ({ ...prev, [day]: mealCount }));
-  
+
     setMyEventsList((prevEvents) => {
       // Separate non-placeholder and placeholder events for the current day
       const existingNonPlaceholderEvents = prevEvents.filter(
         (event) => moment(event.start).isSame(day, "day") && !event.placeholder
       );
-  
+
       const existingPlaceholderEvents = prevEvents.filter(
         (event) => moment(event.start).isSame(day, "day") && event.placeholder
       );
-  
+
       // Calculate the difference between the new meal count and the current number of placeholders
       const difference = mealCount - existingNonPlaceholderEvents.length - existingPlaceholderEvents.length;
-  
+
       // Create new placeholder events if the difference is positive
       const newPlaceholderEvents =
         difference > 0
           ? Array.from({ length: difference }, (_, i) => ({
-              id: `${day}-slot-${existingNonPlaceholderEvents.length+existingPlaceholderEvents.length + i}`,
-              start: moment(day).startOf("day").toDate(),
-              end: moment(day).startOf("day").toDate(),
-              allDay: true,
-              title: "Drag meal here",
-              placeholder: true,
-            }))
+            id: `${day}-slot-${existingNonPlaceholderEvents.length + existingPlaceholderEvents.length + i}`,
+            start: moment(day).startOf("day").toDate(),
+            end: moment(day).startOf("day").toDate(),
+            allDay: true,
+            title: "Drag meal here",
+            placeholder: true,
+          }))
           : [];
-  
+
       // Remove excess placeholders if the difference is negative
       const updatedPlaceholderEvents =
         difference < 0
           ? existingPlaceholderEvents.slice(0, mealCount)
           : [...existingPlaceholderEvents, ...newPlaceholderEvents];
-  
+
       // Combine the non-placeholder events with the updated placeholder events
       return [
         ...prevEvents.filter((event) => !moment(event.start).isSame(day, "day")), // Keep events for other days
@@ -198,7 +243,7 @@ function MealPlanningPage() {
       ];
     });
   };
-  
+
   const resetEventToPlaceholder = (event) => {
     console.log(event);
     setMyEventsList((prevEvents) =>
@@ -222,14 +267,19 @@ function MealPlanningPage() {
           events={myEventsList}
           defaultView="week"
           views={{ week: true }}
-          components={{       event: CustomEvent, 
-            toolbar: CustomToolbar }}
+          components={{
+            event: CustomEvent,
+            toolbar: CustomToolbar,
+            week: {
+              header: CustomDayHeader,
+            }
+          }}
           onEventDrop={moveEvent}
           onDropFromOutside={({ start, end }) => {
             if (!start || !end) {
               console.warn("Dropped outside valid area. Ignoring.");
               return;
-          }
+            }
             // Find the placeholder event at the dropped position
             const targetEvent = myEventsList.find(
               (event) =>
@@ -240,10 +290,10 @@ function MealPlanningPage() {
               onDropFromOutside({ event: targetEvent, start, end });
             }
           }}
-          dragFromOutsideItem={dragFromOutsideItem} 
+          dragFromOutsideItem={dragFromOutsideItem}
           selectable
           resizable
-          style={{ height: '300px', width: '1000px' }}
+          style={{ height: '350px', width: '1000px' }}
         />
       </div>
 
@@ -254,12 +304,29 @@ function MealPlanningPage() {
         style={{ width: "1000px", margin: "0 auto", marginTop: "10px" }}
       >
         {weekDays.map((day) => (
-          <FormControl key={day.format("YYYY-MM-DD")} style={{ width: "calc(100% / 7 - 1px)" }}>
+          <FormControl key={day.format("YYYY-MM-DD")} style={{
+            width: "calc(100% / 7 - 1px)",
+          }}>
             <Select
               value={selectedMeals[day.format("YYYY-MM-DD")] || ""}
               onChange={(e) => handleMealChange(day.format("YYYY-MM-DD"), Number(e.target.value))}
               displayEmpty
-              style={{ height: '40px' }}
+              sx={{
+                height: '40px',
+                '.MuiOutlinedInput-notchedOutline': {
+                  borderRadius: '10px',
+                  border: '2px solid #38793b'
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#38793b!important'
+                },
+                '&:Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#38793b!important'
+                },
+                '.MuiSvgIcon-root ': {
+                  fill: "#38793b !important",
+                }
+              }}
             >
               <MenuItem value={0}>None</MenuItem>
               {[1, 2, 3, 4, 5].map((number) => (
@@ -272,55 +339,89 @@ function MealPlanningPage() {
         ))}
       </Stack>
       <Box
-      sx={{
-        width: "1000px",
-        margin: "0 auto",
-        marginTop: "10px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-      }}>
-      <ToggleButtonGroup
+        sx={{
+          width: "1000px",
+          margin: "0 auto",
+          marginTop: "10px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}>
+        <ToggleButtonGroup
           value={view}
           exclusive
           onChange={handleViewChange}
           aria-label="view toggle"
+          sx={{
+            height: "40px",
+            '& .MuiToggleButtonGroup-grouped': {
+              border: "2px solid #38793b",
+            },
+          }}
         >
-          <ToggleButton value="recipes" aria-label="recipes">
+          <ToggleButton value="recipes" aria-label="recipes"
+            sx={{
+              color: '#38793b',
+              borderTopLeftRadius: "10px",
+              borderBottomLeftRadius: "10px",
+              "&.Mui-selected": {
+                backgroundColor: "#38793b",
+                color: "white",
+              },
+              "&:hover": {
+                backgroundColor: "#38793b !important",
+                color: "white !important",
+              }
+            }}
+          >
             Recipes
           </ToggleButton>
-          <ToggleButton value="nutrition" aria-label="nutrition">
+          <ToggleButton value="nutrition" aria-label="nutrition"
+            sx={{
+              color: '#38793b',
+              borderTopRightRadius: "10px",
+              borderBottomRightRadius: "10px",
+              "&.Mui-selected": {
+                backgroundColor: "#38793b",
+                color: "white",
+              },
+              "&:hover": {
+                backgroundColor: "#38793b !important",
+                color: "white !important",
+              }
+            }}
+          >
             Nutrition Details
           </ToggleButton>
         </ToggleButtonGroup>
-        <button className="done-button">DONE</button>
+        <button className="shopping-list-button">SAVE</button>
       </Box>
 
       {view === "recipes" ? (
 
-      <div className="recipeGrid">
-        <h3>Recipes</h3>
-        <RecipeSearch></RecipeSearch>
-        <div className="recipe-grid">
-        {visibleRecipes.map((recipe, index) => (
-                    <div key={index} className="grid-item" draggable onDragStart={() => handleDragStart(recipe)}>
-                        <GridItem recipe={recipe} />
-                    </div>
-                ))}
-                {visibleRecipes.length < recipesPerPage &&
-                    Array.from({ length: recipesPerPage - visibleRecipes.length }).map((_, index) => (
-                        <div key={`empty-${index}`} className="grid-item empty"></div>
-                    ))
-                }
+        <div className="recipeGrid">
+          <h3>Recipes</h3>
+          <RecipeSearch searchRecipe = {handleSearchRecipe}></RecipeSearch>
+          <div className="recipe-grid">
+            {visibleRecipes.map((recipe, index) => (
+              <div key={index} className="grid-item" draggable onDragStart={() => handleDragStart(recipe)}>
+                <GridItem recipe={recipe} />
+              </div>
+            ))}
+            {visibleRecipes.length < recipesPerPage &&
+              Array.from({ length: recipesPerPage - visibleRecipes.length }).map((_, index) => (
+                <div key={`empty-${index}`} className="grid-item empty"></div>
+              ))
+            }
+          </div>
+          <div className="pagination">
+            <button onClick={handlePrev} disabled={currentPage === 0}>←</button>
+            <span>Page {currentPage + 1} of {totalPages}</span>
+            <button onClick={handleNext} disabled={currentPage === totalPages - 1}>→</button>
+          </div>
         </div>
-        <div className="pagination">
-                <button onClick={handlePrev} disabled={currentPage === 0}>←</button>
-                <span>Page {currentPage + 1} of {totalPages}</span>
-                <button onClick={handleNext} disabled={currentPage === totalPages - 1}>→</button>
-            </div>
-      </div>
-    ):(
-<Box
+      ) : (
+        <Box
           sx={{
             display: "flex",
             justifyContent: "center",
@@ -329,7 +430,7 @@ function MealPlanningPage() {
           }}
         >
           <NutritionalAccordion />
-        </Box>    )}
+        </Box>)}
     </div>
   );
 }
