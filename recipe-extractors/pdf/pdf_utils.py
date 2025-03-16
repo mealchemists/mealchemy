@@ -1,21 +1,35 @@
+from os import cpu_count
 import pypdfium2
 import cv2
 import numpy as np
 import pytesseract
 
+from sklearn.cluster import KMeans
+from skimage.filters.rank import entropy
+from skimage.morphology import disk
 
-# TODO: Identify and extract text regions of the PDF using OCR.
-# If we are dealing with a printed PDF, then there is most likely highlightable text.
-
+import multiprocessing as mp
+from multiprocessing import shared_memory
+from tqdm import tqdm
 
 DEBUG_PERFORM_OCR = False
 DEBUG_SHOW_DESKEW = False
-DEBUG_SHOW_IDENTIFY = True
+DEBUG_SHOW_IDENTIFY = False
+DEBUG_SHOW_CLEAN = True
 
 
 def debug_show_image(image, window_name="test"):
     cv2.imshow(window_name, image)
     cv2.waitKey(0)
+
+
+def render_page(index, pdf_data_name, scale_factor):
+    # retrieve raw PDF data from shared memory
+    existing_shm = shared_memory.SharedMemory(name=pdf_data_name)
+    pdf_data = bytes(existing_shm.buf)
+    pdf = pypdfium2.PdfDocument(pdf_data)
+
+    return pdf[index].render(scale=scale_factor).to_numpy()
 
 
 def load_pdf_pages(path, scale_factor=1.75):
@@ -24,8 +38,24 @@ def load_pdf_pages(path, scale_factor=1.75):
     The pixmap from the PDF page is rendered at a larger size to help with
     OCR (higher PPI usually yields better results)
     """
+
     pdf = pypdfium2.PdfDocument(path)
-    return [p.render(scale=scale_factor).to_numpy() for p in pdf]  # type: ignore
+    n_pages = len(pdf)
+    del pdf
+    with open(path, "rb") as f:
+        pdf_data = f.read()
+
+    shm = shared_memory.SharedMemory(create=True, size=len(pdf_data))
+    shm.buf[:] = pdf_data
+
+    with mp.Pool(mp.cpu_count() - 1) as pool:
+        tasks = [(i, shm.name, scale_factor) for i in range(n_pages)]
+        images = pool.starmap(render_page, tasks)
+
+    shm.close()
+    shm.unlink()
+
+    return images
 
 
 def load_pdf_text(path):
@@ -133,6 +163,8 @@ def create_mser_mask(image, mser, kernel=(5, 5), iterations=3):
     Creates a mask from a grayscale image `image` that likely
     represents text using MSER.
     """
+    regions, _ = mser.detectRegions(image)
+    mask = np.zeros_like(image)
 
     # Some notes on MSER parameters:
     # delta: controls step size between intensity thresholds
@@ -147,16 +179,26 @@ def create_mser_mask(image, mser, kernel=(5, 5), iterations=3):
     #   - smaller value allows for more overlapping regions
     #   - larger value reduces redundancy by favoring more diverse regions
 
-    regions, _ = mser.detectRegions(image)
-    mask = np.zeros_like(image)
+    # draw convex hull for each region
     for region in regions:
         hull = cv2.convexHull(region.reshape(-1, 1, 2))
         cv2.drawContours(mask, [hull], -1, (255, 255, 255), -1)
 
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, kernel)
+    # remove small noise
+    opening_kernel = cv2.getStructuringElement(
+        cv2.MORPH_RECT, (kernel[0] // 2, kernel[1] // 2)
+    )
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, opening_kernel, iterations=1)
+
+    h, w = image.shape[:2]
+    dynamic_kernel = cv2.getStructuringElement(
+        cv2.MORPH_RECT, (max(kernel[0], w // 200), max(kernel[1], h // 200))
+    )
+
+    # connect regions together based image dimensions
     mask = cv2.morphologyEx(
-        mask, cv2.MORPH_CLOSE, kernel, iterations=iterations
-    )  # connect likely regions of text (but not too much)
+        mask, cv2.MORPH_CLOSE, dynamic_kernel, iterations=iterations
+    )
 
     return mask
 
@@ -176,7 +218,7 @@ def identify_text_regions(original_image, mser, pad_amount=3):
     gamma = np.interp(mean_intensity, [50, 200], [0.8, 2.0])
     enhanced = (cv2.pow(enhanced / 255.0, gamma) * 255).astype(np.uint8)
 
-    mask = create_mser_mask(enhanced, mser, kernel=(3, 7), iterations=3)
+    mask = create_mser_mask(enhanced, mser, kernel=(3, 7), iterations=2)
 
     edges = cv2.Canny(enhanced, 50, 200, L2gradient=True)
 
@@ -191,7 +233,7 @@ def identify_text_regions(original_image, mser, pad_amount=3):
         dilated_combined_mask,
         cv2.MORPH_OPEN,
         merge_text_kernel,
-        iterations=3,  # clean up
+        iterations=2,  # clean up
     )
 
     contours, _ = cv2.findContours(
@@ -262,7 +304,12 @@ def identify_text_regions(original_image, mser, pad_amount=3):
 def extract_text(text_regions, original_image):
     # TODO: Use NLP to get rid of links, stopwords, garbage characters, etc that Tesseract may pick up.
 
-    slices = [original_image[r[1] : r[3], r[0] : r[2]] for r in text_regions]
+    # slices = [original_image[r[1] : r[3], r[0] : r[2]] for r in text_regions]
+    # cv2.fastNlMeansDenoisingColoredMulti(slices, )
+
+    for x0, y0, x1, y1 in text_regions:
+        slice = original_image[y0:y1, x0:x1]
+        slice_gray = cv2.cvtColor(slice, cv2.COLOR_BGR2GRAY)
 
     # TODO: maybe get a RGB histogram of each of the slices and filter out the outliers
     # since histograms of RGB values for ideal slices are usually bimodal
@@ -273,6 +320,80 @@ def extract_text(text_regions, original_image):
     # slices_denoised = cv2.fastNlMeansDenoisingColoredMulti(slices, )
 
     return
+
+
+def filter_regions_kmeans(text_regions, original_image):
+    image_rgb = original_image.copy()
+    image_rgb = cv2.cvtColor(image_rgb, cv2.COLOR_BGR2RGB)
+
+    all_pixels = np.vstack(
+        [image_rgb[y0:y1, x0:x1].reshape(-1, 3) for x0, y0, x1, y1 in text_regions]
+    )
+
+    # downsample for speed
+    SAMPLE_FRACTION = 0.1
+    num_samples = max(int(len(all_pixels) * SAMPLE_FRACTION), 5000)
+    sampled = all_pixels[
+        np.random.choice(all_pixels.shape[0], num_samples, replace=False)
+    ]
+
+    N_CLUSTERS = 2
+    kmeans = KMeans(n_clusters=N_CLUSTERS, n_init="auto")  # type: ignore
+    kmeans.fit(sampled)
+    dominant_colors = kmeans.cluster_centers_
+
+    final_rects = []
+    for x0, y0, x1, y1 in text_regions:
+        roi = image_rgb[y0:y1, x0:x1]
+        if roi.size == 0:
+            continue
+
+        roi_pixels = roi.reshape(-1, 3)  # Flatten pixels
+        distances = np.min(
+            np.linalg.norm(roi_pixels[:, None] - dominant_colors, axis=2), axis=1
+        )
+
+        # count how many pixels match the text color
+        matching_text_pixels = np.sum(distances < 50)
+        text_pixel_ratio = matching_text_pixels / len(roi_pixels)
+
+        # do enough pixels match the text colors?
+        if text_pixel_ratio >= 0.6:
+            final_rects.append((x0, y0, x1, y1))
+            cv2.rectangle(
+                original_image, (x0, y0), (x1, y1), (0, 255, 0), 2
+            )  # Green = valid
+        else:
+            cv2.rectangle(
+                original_image, (x0, y0), (x1, y1), (0, 0, 255), 2
+            )  # Red = removed
+
+    debug_show_image(original_image)
+
+    return final_rects
+
+
+def filter_regions_shannon(text_regions, original_image, entropy_threshold=4.6):
+    image_gray = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
+    entropy_map = entropy(image_gray, disk(7))
+
+    final_rects = []
+    for x0, y0, x1, y1 in text_regions:
+        entropy_slice = entropy_map[y0:y1, x0:x1]
+        mean_entropy = np.mean(entropy_slice)
+
+        if mean_entropy > entropy_threshold:
+            if DEBUG_SHOW_CLEAN:
+                cv2.rectangle(original_image, (x0, y0), (x1, y1), (0, 0, 255), 2)
+        else:
+            if DEBUG_SHOW_CLEAN:
+                cv2.rectangle(original_image, (x0, y0), (x1, y1), (0, 255, 0), 2)
+            final_rects.append([x0, y0, x1, y1])
+
+    if DEBUG_SHOW_CLEAN:
+        debug_show_image(original_image)
+
+    return final_rects
 
 
 if __name__ == "__main__":
@@ -303,11 +424,11 @@ if __name__ == "__main__":
         max_variation=0.1,
         max_evolution=1000,
     )
-    for page in pages:
+    for page in tqdm(pages, desc="Processing pages", unit="page"):
         rotated = deskew_image(page, mser_deskew)
-        if rotated is not None:
-            regions = identify_text_regions(rotated, mser_identify)
-        else:
-            print("COULD NOT ROTATE")
+        if rotated is None:
+            continue
+        regions = identify_text_regions(rotated, mser_identify)
+        cleaned_regions = filter_regions_shannon(regions, rotated)
 
     cv2.destroyAllWindows()
