@@ -2,22 +2,29 @@ import pypdfium2
 import cv2
 import numpy as np
 import pytesseract
+import pdf2image
 
-from sklearn.cluster import KMeans
+from cv2 import COLOR_RGB2BGR, dnn_superres  # type: ignore
 from skimage.filters.rank import entropy
 from skimage.morphology import disk
 
-import multiprocessing as mp
-from multiprocessing import shared_memory
 from tqdm import tqdm
 
 DEBUG_PERFORM_OCR = False
 DEBUG_SHOW_DESKEW = False
-DEBUG_SHOW_IDENTIFY = False
+DEBUG_SHOW_IDENTIFY = True
 DEBUG_SHOW_CLEAN = False
+
+# https://github.com/fannymonori/TF-LapSRN/tree/master/export
+MODEL_PATH = "./models/LapSRN_x2.pb"
 
 
 class PDFUtils:
+    @classmethod
+    def classify_pdf(cls):
+        # TODO: Classify the PDF (i think its just a check to see whether or not the PDF has readable text)
+        return
+
     @classmethod
     def debug_show_image(cls, image, window_name="test"):
         """
@@ -27,47 +34,52 @@ class PDFUtils:
         cv2.imshow(window_name, image)
         cv2.waitKey(0)
 
+    # @classmethod
+    # def render_page(cls, index, pdf_data_name, scale_factor):
+    #     """
+    #     Worker function to render a PDF page into numpy format.
+    #     """
+    #
+    #     # retrieve raw PDF data from shared memory
+    #     # since pypdfium2.PdfDocument is not pickleable, sending the raw PDF
+    #     # data works in this case.
+    #     existing_shm = shared_memory.SharedMemory(name=pdf_data_name)
+    #     pdf_data = bytes(existing_shm.buf)
+    #     pdf = pypdfium2.PdfDocument(pdf_data)
+    #
+    #     return pdf[index].render(scale=scale_factor).to_numpy()
+    #
+    # @classmethod
+    # def load_pdf_pages(cls, path, scale_factor=1.75):
+    #     """
+    #     Loads the pages of a PDF to numpy format.
+    #     The pixmap from the PDF page is rendered at a larger size to help with
+    #     OCR (higher PPI usually yields better results)
+    #     """
+    #
+    #     pdf = pypdfium2.PdfDocument(path)
+    #     n_pages = len(pdf)
+    #     del pdf
+    #     with open(path, "rb") as f:
+    #         pdf_data = f.read()
+    #
+    #     shm = shared_memory.SharedMemory(create=True, size=len(pdf_data))
+    #     shm.buf[:] = pdf_data
+    #
+    #     # concurrent read the PDF for speed
+    #     with mp.Pool(mp.cpu_count() - 1) as pool:
+    #         tasks = [(i, shm.name, scale_factor) for i in range(n_pages)]
+    #         images = pool.starmap(cls.render_page, tasks)
+    #
+    #     shm.close()
+    #     shm.unlink()
+    #
+    #     return images
+
     @classmethod
-    def render_page(cls, index, pdf_data_name, scale_factor):
-        """
-        Worker function to render a PDF page into numpy format.
-        """
-
-        # retrieve raw PDF data from shared memory
-        # since pypdfium2.PdfDocument is not pickleable, sending the raw PDF
-        # data works in this case.
-        existing_shm = shared_memory.SharedMemory(name=pdf_data_name)
-        pdf_data = bytes(existing_shm.buf)
-        pdf = pypdfium2.PdfDocument(pdf_data)
-
-        return pdf[index].render(scale=scale_factor).to_numpy()
-
-    @classmethod
-    def load_pdf_pages(cls, path, scale_factor=1.75):
-        """
-        Loads the pages of a PDF to numpy format.
-        The pixmap from the PDF page is rendered at a larger size to help with
-        OCR (higher PPI usually yields better results)
-        """
-
-        pdf = pypdfium2.PdfDocument(path)
-        n_pages = len(pdf)
-        del pdf
-        with open(path, "rb") as f:
-            pdf_data = f.read()
-
-        shm = shared_memory.SharedMemory(create=True, size=len(pdf_data))
-        shm.buf[:] = pdf_data
-
-        # concurrent read the PDF for speed
-        with mp.Pool(mp.cpu_count() - 1) as pool:
-            tasks = [(i, shm.name, scale_factor) for i in range(n_pages)]
-            images = pool.starmap(cls.render_page, tasks)
-
-        shm.close()
-        shm.unlink()
-
-        return images
+    def load_pdf_pages(cls, path, dpi=200):
+        images = pdf2image.convert_from_path(path, dpi=dpi)
+        return [cv2.cvtColor(np.array(img), COLOR_RGB2BGR) for img in images]
 
     @classmethod
     def load_pdf_text(cls, path):
@@ -236,14 +248,14 @@ class PDFUtils:
         blurred = cv2.GaussianBlur(gray, (5, 5), 1.0)
 
         # enhance contrast globally
-        clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
+        clahe = cv2.createCLAHE(clipLimit=1.25, tileGridSize=(12, 12))
         enhanced = clahe.apply(blurred)
         # apply adaptive gamma correction
         mean_intensity = np.mean(enhanced)
         gamma = np.interp(mean_intensity, [50, 200], [0.8, 2.0])
         enhanced = (cv2.pow(enhanced / 255.0, gamma) * 255).astype(np.uint8)
 
-        mask = cls.create_mser_mask(enhanced, mser, kernel=(3, 7), iterations=2)
+        mask = cls.create_mser_mask(enhanced, mser, kernel=(3, 7), iterations=4)
 
         edges = cv2.Canny(enhanced, 50, 200, L2gradient=True)
 
@@ -253,7 +265,7 @@ class PDFUtils:
         # merge nearby text regions of the mask
         edge_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 5))
         merge_text_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 3))
-        dilated_combined_mask = cv2.dilate(combined_mask, edge_kernel, iterations=3)
+        dilated_combined_mask = cv2.dilate(combined_mask, edge_kernel, iterations=5)
         detected_regions = cv2.morphologyEx(
             dilated_combined_mask,
             cv2.MORPH_OPEN,
@@ -334,18 +346,53 @@ class PDFUtils:
 
     @classmethod
     def extract_text(cls, text_regions, original_image):
+        sr = dnn_superres.DnnSuperResImpl_create()  # type: ignore
+        sr.readModel(MODEL_PATH)
+        sr.setModel("lapsrn", 2)
+
+        # TODO: Sharpen the image so that text characters are more well-defined
+        image_lab = cv2.cvtColor(original_image, cv2.COLOR_BGR2LAB)
+
+        clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
+        image_lab[:, :, 0] = clahe.apply(image_lab[:, :, 0])
+        enhanced_bgr = cv2.cvtColor(image_lab, cv2.COLOR_LAB2BGR)
+        k = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+        sharpened = cv2.filter2D(enhanced_bgr, -1, k)
+
+        # cls.debug_show_image(cv2.hconcat([original_image, sharpened]))
+        # return
+
+        def preprocess_slice(slice):
+            denoised = cv2.fastNlMeansDenoisingColored(slice, None, 30, 30, 7, 21)
+            upsampled = sr.upsample(denoised)
+            gray = cv2.cvtColor(upsampled, cv2.COLOR_BGR2GRAY)
+
+            # TODO: Use morphology (erosion)
+            _, binary = cv2.threshold(
+                gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU
+            )
+
+            return binary
+
         # TODO: Use NLP to get rid of links, stopwords, garbage characters, etc that Tesseract may pick up.
 
         # TODO: Figure out a way to improve the quality of the sliced image (such as resolution).
+        # OpenCV's DNN super resolution
 
-        # slices = [original_image[r[1] : r[3], r[0] : r[2]] for r in text_regions]
+        denoised_slices = [
+            preprocess_slice(sharpened[y0:y1, x0:x1]) for x0, y0, x1, y1 in text_regions
+        ]
 
-        for x0, y0, x1, y1 in text_regions:
-            slice = original_image[y0:y1, x0:x1]
-        # TODO: maybe get a RGB histogram of each of the slices and filter out the outliers
-        # since histograms of RGB values for ideal slices are usually bimodal
-        # - ignore bright backgrounds and try to ignore some of the values?
-        # - apply Otsu thresholding on each of the slices?
+        for slice in denoised_slices:
+            cls.debug_show_image(slice)
+        # for x0, y0, x1, y1 in text_regions:
+        #     slice = original_image[y0:y1, x0:x1]
+        #     upsampled = sr.upsample(slice)
+        #
+        #
+        #
+        #     print(pytesseract.image_to_string(upsampled).strip())
+
         return
 
     @classmethod
@@ -402,17 +449,17 @@ def main():
     mser_identify = cv2.MSER_create(  # type: ignore
         delta=4,
         min_area=45,
-        max_area=1000,
-        max_variation=0.1,
-        max_evolution=1000,
+        max_area=1500,
+        max_variation=0.075,
+        max_evolution=750,
     )
     for page in tqdm(pages, desc="Processing pages", unit="page"):
         rotated = PDFUtils.deskew_image(page, mser_deskew)
         if rotated is None:
             continue
         regions = PDFUtils.identify_text_regions(rotated, mser_identify)
-        cleaned_regions = PDFUtils.filter_regions_shannon(regions, rotated)
-        PDFUtils.extract_text(cleaned_regions, rotated)
+        # cleaned_regions = PDFUtils.filter_regions_shannon(regions, rotated)
+        # PDFUtils.extract_text(cleaned_regions, rotated)
 
     cv2.destroyAllWindows()
 
