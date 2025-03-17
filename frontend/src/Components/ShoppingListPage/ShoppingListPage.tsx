@@ -1,5 +1,10 @@
 import { Accordion, AccordionDetails, AccordionSummary, Typography, Box } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Checkbox from '@mui/material/Checkbox';
+import { useEffect, useState } from 'react';
+import AisleModal from '../AisleModal/AisleModal';
+import './ShoppingListPage.css';
+
 const ShoppingListData = [
   {
     aisle: "Dairy",
@@ -38,43 +43,123 @@ const ShoppingListData = [
   }
 ];
 
-  
+
 function ShoppingListPage() {
-    // TODO: Get all the recipe aisles
-   
-    return (
-        <Box
+  const [openAisleModal, setOpenAisleModal] = useState(false);
+
+  const handleOpenAisleModal = (ingredient) => {
+    setSelectedIngredient(ingredient);
+    setOpenAisleModal(true);
+  };
+
+  const handleCloseAisleModal = () => {
+    setOpenAisleModal(false);
+    setSelectedIngredient(null);
+  };
+
+  const [selectedIngredient, setSelectedIngredient] = useState<string | null>(null);
+
+  // TODO: Get all the recipe aisles
+  const updatedShoppingListData = ShoppingListData.map(aisle => ({
+    ...aisle,
+    items: aisle.items.map(item => ({
+      ...item,
+      checked: false, // Default value for `checked` is false
+    })),
+  }));
+  const [aisleData, setAisleData] = useState(updatedShoppingListData);
+  const handleCheckChange = (aisleIndex: number, itemIndex: number) => {
+    const updatedAisleData = [...aisleData];
+    updatedAisleData[aisleIndex].items[itemIndex].checked =
+      !updatedAisleData[aisleIndex].items[itemIndex].checked;
+    setAisleData(updatedAisleData); // Update the state with new checked values
+  };
+
+  const handleEditAisleIngredient = (ingredientName: string, newAisle: string) => {
+    setAisleData((prevAisleData) => {
+      let ingredientToMove = null;
+
+      // Find and remove the ingredient from  current aisle
+      const updatedAisleData = prevAisleData.map((aisle) => {
+        const filteredItems = aisle.items.filter((item) => {
+          if (item.ingredient === ingredientName) {
+            ingredientToMove = item; 
+            return false; // remove from list
+          }
+          return true;
+        });
+
+        return { ...aisle, items: filteredItems };
+      });
+
+      // If ingredient exists, add to the new aisle
+      if (ingredientToMove) {
+        // Check if the new aisle already exists
+        const aisleExists = updatedAisleData.some((aisle) => aisle.aisle === newAisle);
+
+        if (aisleExists) {
+          // Add ingredient to the existing aisle
+          return updatedAisleData.map((aisle) => {
+            if (aisle.aisle === newAisle) {
+              return {
+                ...aisle,
+                items: [...aisle.items, ingredientToMove], // Append ingredient
+              };
+            }
+            return aisle;
+          });
+        } else {
+          // Create a new aisle with the ingredient
+          const newAisleObj = {
+            aisle: newAisle,
+            items: [ingredientToMove],
+          };
+
+          return [...updatedAisleData, newAisleObj]; 
+        }
+      }
+
+      return updatedAisleData; 
+    });
+  };
+
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        width: "100%"
+      }}
+    >
+      <Box
         sx={{
-          width: "600px",
+          width: "700px",
         }}>
-        {ShoppingListData.map((aisle, index) => (
+        {aisleData.map((aisle, index) => (
           <Accordion
             key={index}
             sx={{
-              borderRadius:
-                index === 0 // First Accordion
-                  ? "10px 10px 0 0"
-                  : index === ShoppingListData.length - 1 // Last Accordion
-                    ? "0 0 10px 10px"
-                    : "0", // Middle Accordions (no border radius)
-              overflow: "hidden", // Ensure child elements don't overflow the rounded corners
+              overflow: "hidden",
               "&:not(:last-child)": {
-                marginBottom: "1px", // Add a small gap between Accordions (optional)
+                marginBottom: "1px",
               },
               "&:first-of-type": {
-                borderRadius: "10px 10px 0 0", // Apply border-radius to the first Accordion
+                borderRadius: "10px 10px 0 0",
               },
               "&:last-of-type": {
-                borderRadius: "0 0 10px 10px", // Apply border-radius to the first Accordion
+                borderRadius: "0 0 10px 10px",
               },
               "&.Mui-expanded": {
-              borderRadius: "10px", // Apply border radius when expanded (for middle Accordions)
-            },
-            boxShadow: "0px 3px 7px #38793b"
-                    }}
+                borderRadius: "10px",
+              },
+              boxShadow: "0px 3px 7px #38793b"
+
+            }
+            }
           >
             <AccordionSummary
-              expandIcon={<ExpandMoreIcon sx = {{
+              expandIcon={<ExpandMoreIcon sx={{
                 color: "#38793b"
               }}
               />}
@@ -84,12 +169,16 @@ function ShoppingListPage() {
                 borderRadius:
                   index === 0 // First Accordion
                     ? "10px 10px 0 0"
-                    : index === ShoppingListData.length - 1 && "0 0 0 0", // Last Accordion (no top radius)
+                    : index === aisleData.length - 1
+                      ? "0 0 10px 10px" // Last Accordion (rounded bottom)
+                      : "0px", // Middle Accordions (no border radius)
                 "&.Mui-expanded": {
                   borderRadius:
-                    index === 0 // First Accordion (expanded state)
-                      ? "10px 10px 0 0"
-                      : index === ShoppingListData.length - 1 && "0 0 0 0", // Last Accordion (expanded state)
+                    index === 0
+                      ? "10px 10px 0 0" // First Accordion (expanded state, rounded top)
+                      : index === aisleData.length - 1
+                        ? "0 0 10px 10px" // Last Accordion (expanded state, rounded bottom)
+                        : "10px",
                 },
               }}
             >
@@ -98,24 +187,61 @@ function ShoppingListPage() {
             <AccordionDetails
               sx={{
                 borderRadius:
-                  index === ShoppingListData.length - 1 // Last Accordion
+                  index === aisleData.length - 1 // Last Accordion
                     ? "0 0 10px 10px"
-                    : "0", // Middle Accordions (no border radius)
+                    : "0",
               }}
             >
-              <Box>
-                {aisle.items.map((item, i) => (
-                  <Box key={i} display="flex" justifyContent="space-between" mb={1}>
-                    <Typography>{item.ingredient}</Typography>
-                    <Typography>{item.quantity}</Typography>
+              <Box key={index}>
+                {aisle.items.map((item, itemIndex) => (
+                  <Box
+                    key={itemIndex}
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mb={1}
+                  >
+                    <Checkbox
+                      size={'small'}
+                      sx={{
+                        color: '#38793b',
+                        '&.Mui-checked': {
+                          color: '#38793b',
+                        },
+                      }}
+                      checked={item.checked || false}
+                      onChange={() => handleCheckChange(index, itemIndex)}
+                    />
+                    <Typography sx={{
+                      flexGrow: 1,
+                      marginLeft: '5px',
+                      textDecoration: item.checked ? 'line-through' : 'none',
+                      color: item.checked ? 'gray' : 'initial'
+                    }}>{item.ingredient}</Typography>
+                    <Typography sx={{
+                      marginRight: "10px",
+                      textDecoration: item.checked ? 'line-through' : 'none',
+                      color: item.checked ? 'gray' : 'initial'
+                    }}>{item.quantity}</Typography>
+                    <button onClick={() => handleOpenAisleModal(item.ingredient)}>Move</button>
+
                   </Box>
                 ))}
               </Box>
+
             </AccordionDetails>
           </Accordion>
         ))}
       </Box>
-    );
+      <AisleModal
+        onEditAisle={handleEditAisleIngredient}
+        open={openAisleModal}
+        onClose={handleCloseAisleModal}
+        ingredient={selectedIngredient}
+      ></AisleModal>
+    </Box>
+
+  );
 }
 
 export default ShoppingListPage;

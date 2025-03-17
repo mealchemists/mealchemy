@@ -55,12 +55,16 @@ const NutritionalAccordion = () => {
               borderRadius:
                 index === 0 // First Accordion
                   ? "10px 10px 0 0"
-                  : index === daysOfWeek.length - 1 && "0 0 0 0", // Last Accordion (no top radius)
+                  : index === daysOfWeek.length - 1
+                  ? "0 0 10px 10px" // Last Accordion (rounded bottom)
+                  : "0px", // Middle Accordions (no border radius)
               "&.Mui-expanded": {
                 borderRadius:
                   index === 0 // First Accordion (expanded state)
                     ? "10px 10px 0 0"
-                    : index === daysOfWeek.length - 1 && "0 0 0 0", // Last Accordion (expanded state)
+                    : index === daysOfWeek.length - 1
+                      ? "0 0 10px 10px" // Last Accordion (expanded state, rounded bottom)
+                      : "10px",
               },
             }}
           >
