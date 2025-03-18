@@ -5,7 +5,7 @@ import { Chip } from '@mui/material';
 
 
 function GridItem({ recipe }: { recipe: Recipe }) {
-    const tags = [recipe.mainIngredient, recipe.cookTime, recipe.prepTime, recipe.totalTime];
+    const tags = [recipe.main_ingredient, recipe.cook_time, recipe.prep_time, recipe.total_time];
 
     return (
         <div className="gridItemContainer">

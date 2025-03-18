@@ -1,28 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import ListItem from '../ListItem/ListItem';
 import RecipeSearch from '../RecipeSearch/RecipeSearch';
-import { Recipe } from '../../Models/models';
+import { Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipePanel.css';
+import {getRecipeIngredients} from '../../api/recipeIngredientApi.js';
 
-const blankRecipe: Recipe = {
-    title: "Enter Recipe Title",
-    cookTime: 0,
-    prepTime: 0,
-    totalTime: 0,
-    mainIngredient: "Chicken",
-    ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-    instructions: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
-    imageSrc: "/salad.jpg"
-};
+interface RecipePanelProps {
+    recipeIngredient: RecipeIngredient[];
+    setRecipeIngredients: React.Dispatch<React.SetStateAction<RecipeIngredient[]>>; // Set recipe list from parent
+    onRecipeSelect: (recipe: RecipeIngredient) => void;
+    setRecipeEditMode: (editMode: boolean) => void;
+}
 
-function RecipePanel({ onRecipeSelect, setRecipeEditMode}) {
-    const [recipes, setRecipes] = useState<Recipe[]>([]);
-    const [searchRecipes, setSearchRecipes] = useState<Recipe[]>(recipes);
-
+const RecipePanel: React.FC<RecipePanelProps> = ({ 
+    recipeIngredient, 
+    setRecipeIngredients, 
+    onRecipeSelect, 
+    setRecipeEditMode 
+}) => {
+    const [searchRecipes, setSearchRecipes] = useState<RecipeIngredient[]>(recipeIngredient);
     const [buttonVisibility, setButtonVisibility] = useState(false);
     const [multiSelect, setMultiSelect] = useState(false);
     const [selectedRecipes, setSelectedRecipes] = useState<string[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const fetchRecipes = async () => { 
+      try {
+            const response = await getRecipeIngredients();
+            console.log(response)
+            const data: RecipeIngredient[] = response.data; 
+            setRecipeIngredients(data);
+        } catch (error) {
+            setError("Error fetching recipes");
+            console.error("Error fetching recipes:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
+        fetchRecipes();
+    }, []);
+
+    // TODO convert this to recipe ingredients instead
     const handleCheckboxChange = (recipeName: string, isChecked: boolean) => {
         setSelectedRecipes((prevSelected) =>
             isChecked ? [...prevSelected, recipeName] : prevSelected.filter(name => name !== recipeName)
@@ -30,38 +50,12 @@ function RecipePanel({ onRecipeSelect, setRecipeEditMode}) {
         console.log(recipeName);
     };
 
-    const handleAddManualRecipe = () =>{
-        setRecipeEditMode(true);
-        setRecipes(prevRecipes => [...prevRecipes, blankRecipe]);
-        onRecipeSelect(blankRecipe);
-    }
-
-    useEffect(()=> {
-        const recipe1: Recipe = {
-            title: "Salad",
-            cookTime: 30,
-            prepTime: 50,
-            totalTime: 80,
-            mainIngredient: "Chicken",
-            ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-            instructions: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
-            imageSrc: "/salad.jpg"
-        };
-
-        const recipe2: Recipe = {
-            title: "Soup",
-            cookTime: 20,
-            prepTime: 20,
-            totalTime: 40,
-            mainIngredient: "Beef",
-            ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-            instructions: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
-            imageSrc: "/salad.jpg"
-        };
-
-        setRecipes([recipe1, recipe2]);
-        onRecipeSelect(recipe1);
-    }, [])
+    // TODO convert this to recipe ingredients instead
+    const handleAddManualRecipe = () => {
+        // setRecipeEditMode(true);
+        // setRecipes(prevRecipes => [...prevRecipes, blankRecipe]);
+        // onRecipeSelect(blankRecipe);
+    };
 
     const handleSelectOption = (option: string) => {
         if (option === "") {
@@ -70,35 +64,45 @@ function RecipePanel({ onRecipeSelect, setRecipeEditMode}) {
         } else if (option === "Select") {
             setButtonVisibility(true);
             setMultiSelect(true);
-        } else if (option === "Add Manually"){
+        } else if (option === "Add Manually") {
             handleAddManualRecipe();
         }
+    };
 
-    }
     const handleDelete = () => {
         // TODO: Delete from database
         setButtonVisibility(false);
-    }
+    };
+
     const handleAddShoppingList = () => {
         setButtonVisibility(false);
-    }
+    };
 
     useEffect(() => {
-        setSearchRecipes(recipes); // Ensure filtered list updates when recipes change
-    }, [recipes]);
+        setSearchRecipes(recipeIngredient); 
+    }, [recipeIngredient]);
 
-    const handleSearchRecipe = (searchInput) => {
-        const filtered = recipes.filter(recipe =>
-            recipe.title.toLowerCase().includes(searchInput.toLowerCase())
-        );
-    
-        setSearchRecipes(filtered);
+    const handleSearchRecipe = (searchInput: string) => {
+    if (!searchInput.trim()) {
+        setRecipeIngredients(recipeIngredient); // Reset to the original list when empty
+        return;
     }
+
+    const filtered = recipeIngredient.filter(
+        item => item.recipe && item.recipe.title.toLowerCase().includes(searchInput.toLowerCase())
+    );
+
+    setRecipeIngredients(filtered);
+};
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
+
     return (
         <div className="recipe-container">
-            <RecipeSearch onSelect={handleSelectOption} searchRecipe = {handleSearchRecipe}></RecipeSearch>
+
+            <RecipeSearch onSelect={handleSelectOption} searchRecipe={handleSearchRecipe} />
             {searchRecipes.map((recipe, index) => (
-                <ListItem key={index} recipe={recipe} multiSelect={multiSelect} onCheckboxChange={handleCheckboxChange}  onClick={() => onRecipeSelect(recipe)}/>
+                <ListItem key={index} recipeIngredient={recipe} multiSelect={multiSelect} onCheckboxChange={handleCheckboxChange} onClick={() => onRecipeSelect(recipe)} />
             ))}
 
             {buttonVisibility && (
@@ -106,11 +110,9 @@ function RecipePanel({ onRecipeSelect, setRecipeEditMode}) {
                     <button className="delete-button" onClick={handleDelete}>Delete</button>
                     <button className="shopping-list-button" onClick={handleAddShoppingList}>Add to Shopping List</button>
                 </div>
-            )
-            }
-
+            )}
         </div>
-    )
+    );
 }
 
 export default RecipePanel;

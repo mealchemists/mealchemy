@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.urls import path
-from .views import RecipeViewSet, IngredientViewSet, save_scraped_data, recipe_url, RecipeIngredientsAPIView
+
+from .views import (IngredientViewSet, RecipeIngredientsAPIView, RecipeViewSet,
+                    recipe_url, save_scraped_data)
 
 urlpatterns = [
     path('recipe-ingredients/<str:pk>', RecipeIngredientsAPIView.as_view(), name='recipe-ingredients'),
