@@ -44,7 +44,6 @@ export const CustomEvent = ({ event, resetEventToPlaceholder }) => {
 };
 
 
-
 export const CustomDayHeader = ({ label }) => {
     return (
         <div

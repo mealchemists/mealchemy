@@ -4,7 +4,6 @@ import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import MealPlanningPage from './Components/MealPlanningPage/MealPlanningPage';
 import ShoppingListPage from './Components/ShoppingListPage/ShoppingListPage';
 import RecipePage from './Components/RecipePage/RecipePage';
-import HomePage from './Components/HomePage/HomePage';
 import UserProfile from './Components/UserProfile/UserProfile';
 import LoginPage from './Components/LoginPage/LoginPage';
 import NavigationBar from './Components/NavigationBar/NavigationBar';
@@ -25,10 +24,9 @@ function App() {
         )} 
         <div className="content">
           <Routes>
-            <Route path="/Login" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage />} />
               <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/home" element={<HomePage />} />
+                <Route path="/" element={<RecipePage />} />
                 <Route path="/mealplanning" element={<MealPlanningPage />} />
                 <Route path="/recipes" element={<RecipePage />} />
                 <Route path="/shoppinglist" element={<ShoppingListPage />} />

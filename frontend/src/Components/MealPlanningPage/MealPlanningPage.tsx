@@ -250,7 +250,7 @@ function MealPlanningPage() {
         direction="row"
         spacing={2}
         justifyContent="space-between"
-        style={{ width: "1000px", margin: "0 auto", marginTop: "10px" }}
+        style={{ width: "1004px", margin: "0 auto", marginTop: "10px" }}
       >
         {weekDays.map((day) => (
           <FormControl key={day.format("YYYY-MM-DD")} style={{
