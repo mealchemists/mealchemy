@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import pytesseract
 import pdf2image
+import argparse
 
 from cv2 import COLOR_RGB2BGR, dnn_superres  # type: ignore
 from skimage.filters.rank import entropy
@@ -10,8 +11,8 @@ from skimage.morphology import disk
 
 from tqdm import tqdm
 
-DEBUG_PERFORM_OCR = False
-DEBUG_SHOW_DESKEW = True
+DEBUG_DISPLAY_OCR_PRECURSOR = False
+DEBUG_SHOW_DESKEW = False
 DEBUG_SHOW_IDENTIFY = False
 DEBUG_SHOW_CLEAN = False
 
@@ -28,12 +29,12 @@ class PDFUtils:
         return
 
     @classmethod
-    def debug_show_image(cls, image, window_name="test"):
+    def debug_show_image(cls, images, window_name="test"):
         """
-        Debug function to display an image.
+        Debug function to display one (or more) images side by side.
         """
 
-        cv2.imshow(window_name, image)
+        cv2.imshow(window_name, cv2.hconcat(images))
         cv2.waitKey(0)
 
     @classmethod
@@ -145,7 +146,7 @@ class PDFUtils:
                     value=[0, 0, 0],
                 )
 
-                cls.debug_show_image(cv2.hconcat([padded_display, padded_rotated]))
+                cls.debug_show_image([padded_display, padded_rotated])
 
             return rotated
 
@@ -277,7 +278,7 @@ class PDFUtils:
                 rects.append([x0_pad, y0_pad, x1_pad, y1_pad])
                 region_no += 1
 
-        if DEBUG_PERFORM_OCR:
+        if DEBUG_DISPLAY_OCR_PRECURSOR:
             import pytesseract
 
             for i, r in enumerate(rects):
@@ -293,13 +294,10 @@ class PDFUtils:
                 enhanced, enhanced, mask=dilated_combined_mask
             )  # type: ignore
             cls.debug_show_image(
-                # cv2.hconcat([display_image, cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)])
-                cv2.hconcat(
-                    [
-                        display_image,
-                        cv2.cvtColor(text_regions, cv2.COLOR_GRAY2BGR),
-                    ]
-                )
+                [
+                    display_image,
+                    cv2.cvtColor(text_regions, cv2.COLOR_GRAY2BGR),
+                ]
             )
 
         return rects
@@ -344,7 +342,8 @@ class PDFUtils:
         ]
 
         for slice in denoised_slices:
-            cls.debug_show_image(slice)
+            if DEBUG_DISPLAY_OCR_PRECURSOR:
+                cls.debug_show_image([slice])
         # for x0, y0, x1, y1 in text_regions:
         #     slice = original_image[y0:y1, x0:x1]
         #     upsampled = sr.upsample(slice)
@@ -380,7 +379,7 @@ class PDFUtils:
                 final_rects.append([x0, y0, x1, y1])
 
         if DEBUG_SHOW_CLEAN:
-            cls.debug_show_image(original_image)
+            cls.debug_show_image([original_image])
 
         return final_rects
 
@@ -426,5 +425,33 @@ def main():
     return
 
 
+def parse_args():
+    global \
+        DEBUG_DISPLAY_OCR_PRECURSOR, \
+        DEBUG_SHOW_DESKEW, \
+        DEBUG_SHOW_IDENTIFY, \
+        DEBUG_SHOW_CLEAN
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", action="store_true", help="Show deskewing")
+    parser.add_argument("-i", action="store_true", help="Show identification")
+    parser.add_argument("-c", action="store_true", help="Show text region cleaning")
+    parser.add_argument("-o", action="store_true", help="Show preprocessed OCR images")
+
+    args = parser.parse_args()
+
+    if args.d:
+        DEBUG_SHOW_DESKEW = True
+    if args.i:
+        DEBUG_SHOW_IDENTIFY = True
+    if args.c:
+        DEBUG_SHOW_CLEAN = True
+    if args.o:
+        DEBUG_DISPLAY_OCR_PRECURSOR = True
+
+    return
+
+
 if __name__ == "__main__":
+    parse_args()
     main()
