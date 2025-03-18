@@ -11,12 +11,14 @@ from skimage.morphology import disk
 from tqdm import tqdm
 
 DEBUG_PERFORM_OCR = False
-DEBUG_SHOW_DESKEW = False
-DEBUG_SHOW_IDENTIFY = True
+DEBUG_SHOW_DESKEW = True
+DEBUG_SHOW_IDENTIFY = False
 DEBUG_SHOW_CLEAN = False
 
 # https://github.com/fannymonori/TF-LapSRN/tree/master/export
 MODEL_PATH = "./models/LapSRN_x2.pb"
+
+DPI = 200
 
 
 class PDFUtils:
@@ -33,48 +35,6 @@ class PDFUtils:
 
         cv2.imshow(window_name, image)
         cv2.waitKey(0)
-
-    # @classmethod
-    # def render_page(cls, index, pdf_data_name, scale_factor):
-    #     """
-    #     Worker function to render a PDF page into numpy format.
-    #     """
-    #
-    #     # retrieve raw PDF data from shared memory
-    #     # since pypdfium2.PdfDocument is not pickleable, sending the raw PDF
-    #     # data works in this case.
-    #     existing_shm = shared_memory.SharedMemory(name=pdf_data_name)
-    #     pdf_data = bytes(existing_shm.buf)
-    #     pdf = pypdfium2.PdfDocument(pdf_data)
-    #
-    #     return pdf[index].render(scale=scale_factor).to_numpy()
-    #
-    # @classmethod
-    # def load_pdf_pages(cls, path, scale_factor=1.75):
-    #     """
-    #     Loads the pages of a PDF to numpy format.
-    #     The pixmap from the PDF page is rendered at a larger size to help with
-    #     OCR (higher PPI usually yields better results)
-    #     """
-    #
-    #     pdf = pypdfium2.PdfDocument(path)
-    #     n_pages = len(pdf)
-    #     del pdf
-    #     with open(path, "rb") as f:
-    #         pdf_data = f.read()
-    #
-    #     shm = shared_memory.SharedMemory(create=True, size=len(pdf_data))
-    #     shm.buf[:] = pdf_data
-    #
-    #     # concurrent read the PDF for speed
-    #     with mp.Pool(mp.cpu_count() - 1) as pool:
-    #         tasks = [(i, shm.name, scale_factor) for i in range(n_pages)]
-    #         images = pool.starmap(cls.render_page, tasks)
-    #
-    #     shm.close()
-    #     shm.unlink()
-    #
-    #     return images
 
     @classmethod
     def load_pdf_pages(cls, path, dpi=200):
@@ -110,8 +70,8 @@ class PDFUtils:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blur = cv2.GaussianBlur(gray, (3, 3), 1.0)
 
-        mask = cls.create_mser_mask(blur, mser, kernel=(7, 3), iterations=5)
-        edges = cv2.Canny(blur, 50, 150)
+        mask = cls.create_mser_mask(blur, mser, kernel=(7, 5), iterations=5)
+        edges = cv2.Canny(blur, 50, 200)
         masked_edges = cv2.bitwise_and(edges, edges, mask=mask)
 
         lines = cv2.HoughLinesP(
@@ -196,7 +156,7 @@ class PDFUtils:
         represents text using MSER.
         """
         regions, _ = mser.detectRegions(image)
-        mask = np.zeros_like(image)
+        mask = np.zeros_like(image, dtype=np.uint8)
 
         # Some notes on MSER parameters:
         # delta: controls step size between intensity thresholds
@@ -216,23 +176,28 @@ class PDFUtils:
             hull = cv2.convexHull(region.reshape(-1, 1, 2))
             cv2.drawContours(mask, [hull], -1, (255, 255, 255), -1)
 
-        # remove small noise
+        # emphasize edges in the mask
+        gradient_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, kernel)
+        gradient = cv2.morphologyEx(mask, cv2.MORPH_GRADIENT, gradient_kernel)
+
+        combined = cv2.bitwise_or(mask, gradient)
+
+        # fill gaps within connected regions
+        close_kernel = cv2.getStructuringElement(
+            cv2.MORPH_RECT, (int(kernel[0] * 1.5), int(kernel[1] * 1.5))
+        )
+        closed = cv2.morphologyEx(
+            combined, cv2.MORPH_CLOSE, close_kernel, iterations=iterations
+        )
+
+        # remove small artifacts/noise
         opening_kernel = cv2.getStructuringElement(
-            cv2.MORPH_RECT, (kernel[0] // 2, kernel[1] // 2)
+            cv2.MORPH_RECT, (max(1, kernel[0] // 2), max(1, kernel[1] // 2))
         )
-        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, opening_kernel, iterations=1)
-
-        h, w = image.shape[:2]
-        dynamic_kernel = cv2.getStructuringElement(
-            cv2.MORPH_RECT, (max(kernel[0], w // 200), max(kernel[1], h // 200))
+        final_mask = cv2.morphologyEx(
+            closed, cv2.MORPH_OPEN, opening_kernel, iterations=1
         )
-
-        # connect regions together based image dimensions
-        mask = cv2.morphologyEx(
-            mask, cv2.MORPH_CLOSE, dynamic_kernel, iterations=iterations
-        )
-
-        return mask
+        return final_mask
 
     @classmethod
     def identify_text_regions(cls, original_image, mser, pad_amount=3):
@@ -255,7 +220,7 @@ class PDFUtils:
         gamma = np.interp(mean_intensity, [50, 200], [0.8, 2.0])
         enhanced = (cv2.pow(enhanced / 255.0, gamma) * 255).astype(np.uint8)
 
-        mask = cls.create_mser_mask(enhanced, mser, kernel=(3, 7), iterations=4)
+        mask = cls.create_mser_mask(enhanced, mser, kernel=(7, 5), iterations=3)
 
         edges = cv2.Canny(enhanced, 50, 200, L2gradient=True)
 
@@ -263,18 +228,11 @@ class PDFUtils:
         combined_mask = cv2.bitwise_and(mask, edges)
 
         # merge nearby text regions of the mask
-        edge_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 5))
-        merge_text_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 3))
-        dilated_combined_mask = cv2.dilate(combined_mask, edge_kernel, iterations=5)
-        detected_regions = cv2.morphologyEx(
-            dilated_combined_mask,
-            cv2.MORPH_OPEN,
-            merge_text_kernel,
-            iterations=2,  # clean up
-        )
+        edge_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 7))
+        dilated_combined_mask = cv2.dilate(combined_mask, edge_kernel, iterations=3)
 
         contours, _ = cv2.findContours(
-            detected_regions, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            dilated_combined_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
         rects = []
 
@@ -331,7 +289,9 @@ class PDFUtils:
 
         if DEBUG_SHOW_IDENTIFY:
             # debug: show the original image side by side with the masked out text
-            text_regions = cv2.bitwise_and(enhanced, enhanced, mask=detected_regions)  # type: ignore
+            text_regions = cv2.bitwise_and(
+                enhanced, enhanced, mask=dilated_combined_mask
+            )  # type: ignore
             cls.debug_show_image(
                 # cv2.hconcat([display_image, cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)])
                 cv2.hconcat(
@@ -435,30 +395,30 @@ def main():
     ELECTRONIC_SINGLE_PATH = "./source_material/electronic_printouts/single/Slow Cooker Pineapple Pork Chops.pdf"
 
     print("Loading pages")
-    pages = PDFUtils.load_pdf_pages(HARDCOPY_MULTI_PATH_2)
+    pages = PDFUtils.load_pdf_pages(HARDCOPY_MULTI_PATH_2, dpi=DPI)
     print("Pages loaded")
 
     mser_deskew = cv2.MSER_create(  # type: ignore
-        delta=2,
+        delta=4,
         min_area=20,
         max_area=2000,
-        max_variation=0.2,
+        max_variation=0.12,
         max_evolution=1000,
     )
 
     mser_identify = cv2.MSER_create(  # type: ignore
         delta=4,
-        min_area=45,
+        min_area=100,
         max_area=1500,
-        max_variation=0.075,
-        max_evolution=750,
+        max_variation=0.09,
+        max_evolution=1000,
     )
     for page in tqdm(pages, desc="Processing pages", unit="page"):
         rotated = PDFUtils.deskew_image(page, mser_deskew)
         if rotated is None:
             continue
         regions = PDFUtils.identify_text_regions(rotated, mser_identify)
-        # cleaned_regions = PDFUtils.filter_regions_shannon(regions, rotated)
+        cleaned_regions = PDFUtils.filter_regions_shannon(regions, rotated)
         # PDFUtils.extract_text(cleaned_regions, rotated)
 
     cv2.destroyAllWindows()
