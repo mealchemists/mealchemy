@@ -34,8 +34,10 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
     }, [tempCookTime,tempPrepTime]);
 
     const sendTagsToParent = ()=>{
+        // TODO: check if tempMainIngredient exists in database, if not, add to database
         onApplyTagChanges(tempMainIngredient, tempCookTime, tempPrepTime, tempTotalTime);
     }
+
 
 
     return (
@@ -58,7 +60,18 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
                                 id="tags-outlined"
                                 options={allTags.map((option) => option.title)}
                                 value={tempMainIngredient}
-                                onChange={(event, newValue) => setTempMainIngredient(newValue)}
+                                inputValue={tempMainIngredient || ""}
+                                onInputChange={(event, newInputValue) => setTempMainIngredient(newInputValue)}
+                                onChange={(event, newValue) => {
+                                    if (newValue === null) {
+                                        // Check if there's any text in the input field before clearing
+                                        if (!tempMainIngredient.trim()) {
+                                            setTempMainIngredient(""); // Clear if empty
+                                        }
+                                    } else {
+                                        setTempMainIngredient(newValue);
+                                    }
+                                }}
                                 freeSolo
                                 renderTags={() => null}
                                 renderInput={(params) => (
@@ -79,7 +92,7 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
                                     />
                                 )}
                             />
-                            <button className = "add-button" style={{ height: "40px" }}>Add</button>
+                            {/* <button className = "add-button" style={{ height: "40px" }}>Add</button> */}
                         </div>
 
                         {/* Cook Time */}
