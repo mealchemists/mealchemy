@@ -1,9 +1,11 @@
-from backend.models import TimeStampedModel
-from django.db import models
 from datetime import timedelta
+
+from django.db import models
 from django.utils.timezone import now
 
 from backend.apps.recipes.models.recipe import Recipe
+from backend.models import TimeStampedModel
+
 
 class MealPlan(TimeStampedModel):
     day_planned = models.DateField(null=True)

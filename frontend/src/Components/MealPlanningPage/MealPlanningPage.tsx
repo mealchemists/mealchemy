@@ -28,24 +28,24 @@ import NutritionalAccordion from "../NutritionAccordion/NutritionAccordion";
 // ]
 
 const blankRecipe: Recipe = {
-  title: "Salad",
-  cookTime: 0,
-  prepTime: 0,
-  totalTime: 0,
-  mainIngredient: "Chicken",
+  title: "Chicken",
+  cook_time: 0,
+  prep_time: 0,
+  total_time: 0,
+  main_ingredient: "Chicken",
   ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-  instructions: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
+  steps: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
   imageSrc: "/salad.jpg"
 };
 
 const blankRecipe2: Recipe = {
-  title: "Chicken",
-  cookTime: 0,
-  prepTime: 0,
-  totalTime: 0,
-  mainIngredient: "Chicken",
+  title: "Salad",
+  cook_time: 0,
+  prep_time: 0,
+  total_time: 0,
+  main_ingredient: "Chicken",
   ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-  instructions: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
+  steps: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
   imageSrc: "/salad.jpg"
 };
 

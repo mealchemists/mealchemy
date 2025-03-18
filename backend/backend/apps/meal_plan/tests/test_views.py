@@ -1,9 +1,12 @@
 
-from backend.apps.meal_plan.models.meal_plan import MealPlan
 from datetime import datetime
+
 from django.urls import reverse
-from backend.apps.test_utils.test_base_api import BaseApiTest
 from rest_framework import status
+
+from backend.apps.meal_plan.models.meal_plan import MealPlan
+from backend.apps.test_utils.test_base_api import BaseApiTest
+
 
 class MealPlanApiTest(BaseApiTest):
     def setUp(self):
