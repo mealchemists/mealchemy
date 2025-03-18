@@ -3,6 +3,7 @@ __pycache__/
 *.deb
 *.sql
 *.sqlite3
+db.sqlite3
 .env
 
 # IDE files

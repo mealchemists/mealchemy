@@ -5,30 +5,29 @@ import { Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipePanel.css';
 import {getRecipeIngredients} from '../../api/recipeIngredientApi.js';
 
-const blankRecipe: Recipe = {
-    title: "Enter Recipe Title",
-    cook_time: 0,
-    prep_time: 0,
-    total_time: 0,
-    main_ingredient: "Chicken",
-    ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-    steps: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
-    imageSrc: "/salad.jpg"
-};
+interface RecipePanelProps {
+    recipeIngredient: RecipeIngredient[];
+    setRecipeIngredients: React.Dispatch<React.SetStateAction<RecipeIngredient[]>>; // Set recipe list from parent
+    onRecipeSelect: (recipe: RecipeIngredient) => void;
+    setRecipeEditMode: (editMode: boolean) => void;
+}
 
-function RecipePanel({ onRecipeSelect, setRecipeEditMode }) {
-    const [recipes, setRecipes] = useState<Recipe[]>([]);
-    const [recipeIngredient, setRecipeIngredients] = useState<RecipeIngredient[]>([]);
+const RecipePanel: React.FC<RecipePanelProps> = ({ 
+    recipeIngredient, 
+    setRecipeIngredients, 
+    onRecipeSelect, 
+    setRecipeEditMode 
+}) => {
     const [searchRecipes, setSearchRecipes] = useState<RecipeIngredient[]>(recipeIngredient);
     const [buttonVisibility, setButtonVisibility] = useState(false);
     const [multiSelect, setMultiSelect] = useState(false);
     const [selectedRecipes, setSelectedRecipes] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
     const fetchRecipes = async () => { 
       try {
             const response = await getRecipeIngredients();
+            console.log(response)
             const data: RecipeIngredient[] = response.data; 
             setRecipeIngredients(data);
         } catch (error) {
@@ -53,9 +52,9 @@ function RecipePanel({ onRecipeSelect, setRecipeEditMode }) {
 
     // TODO convert this to recipe ingredients instead
     const handleAddManualRecipe = () => {
-        setRecipeEditMode(true);
-        setRecipes(prevRecipes => [...prevRecipes, blankRecipe]);
-        onRecipeSelect(blankRecipe);
+        // setRecipeEditMode(true);
+        // setRecipes(prevRecipes => [...prevRecipes, blankRecipe]);
+        // onRecipeSelect(blankRecipe);
     };
 
     const handleSelectOption = (option: string) => {

@@ -1,9 +1,10 @@
-from rest_framework import viewsets
+from rest_framework import generics, mixins, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from .models.meal_plan import MealPlan
 from .serializers import MealPlanSerializer
-from rest_framework import viewsets, status, mixins, generics
-from rest_framework.response import Response
-from rest_framework.decorators import action
+
 
 class MealPlanViewSet(viewsets.ModelViewSet):
     queryset = MealPlan.objects.all()

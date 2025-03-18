@@ -1,9 +1,11 @@
-from django.db import models
-from django.contrib.postgres.search import TrigramSimilarity
 import fractions
 
+from django.contrib.postgres.search import TrigramSimilarity
+from django.db import models
+
 from backend.models import TimeStampedModel
-from .units import Unit, MassUnit, VolumeUnit, CountUnit
+
+from .units import CountUnit, MassUnit, Unit, VolumeUnit
 
 
 class Aisle(TimeStampedModel):
