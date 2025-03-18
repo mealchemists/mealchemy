@@ -2,12 +2,26 @@ import React, { useState } from 'react';
 import './ListItem.css';
 
 import { Chip } from '@mui/material';
-import { Recipe } from '../../Models/models'
+import { Recipe, RecipeIngredient } from '../../Models/models'
 import Checkbox from '@mui/material/Checkbox';
 
-function ListItem({ recipe, multiSelect, onCheckboxChange, onClick}) {
+
+interface ListItemProps {
+    recipeIngredient: RecipeIngredient;
+    multiSelect: boolean;
+    onCheckboxChange: (recipeName: string, isChecked: boolean) => void;
+    onClick: any;
+}
+
+const ListItem: React.FC<ListItemProps> = ({ 
+    recipeIngredient, 
+    multiSelect = false, 
+    onCheckboxChange,
+    onClick
+}) => {
+    const recipe = recipeIngredient.recipe;
     const [checked, setChecked] = useState(false);
-    const tags = [recipe.mainIngredient, recipe.cookTime, recipe.prepTime, recipe.totalTime];
+    const tags = [recipe.main_ingredient, recipe.cook_time, recipe.prep_time, recipe.total_time];
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const isChecked = e.target.checked;
         setChecked(isChecked);

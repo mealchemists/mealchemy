@@ -5,14 +5,14 @@ import { Chip } from '@mui/material';
 
 
 function GridItem({ recipe }: { recipe: Recipe }) {
-    const tags = [recipe.mainIngredient, recipe.cookTime, recipe.prepTime, recipe.totalTime];
+    const tags = [recipe.main_ingredient, recipe.cook_time, recipe.prep_time, recipe.total_time];
 
     return (
         <div className="gridItemContainer">
         <div className="contentContainer">
           <h3 className="gridItemTitle">{recipe.title}</h3>
           <img src={recipe.imageSrc} alt={recipe.title} className="gridItemImage" />
-          <div className="tagsContainer">
+          {/* <div className="tagsContainer">
             {tags.map((tag: string, index: number) => (
               <Chip
                 key={index}
@@ -26,7 +26,7 @@ function GridItem({ recipe }: { recipe: Recipe }) {
                 }}
               />
             ))}
-          </div>
+          </div> */}
         </div>
       </div>
       

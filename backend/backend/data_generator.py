@@ -1,12 +1,15 @@
 import random
-import django
-from faker import Faker
-from backend.apps.recipes.models.recipe import Recipe
-from backend.apps.meal_plan.models.meal_plan import MealPlan
-from backend.apps.recipes.models.ingredients import Aisle, Ingredient, RecipeIngredient
-from django.contrib.auth.models import User
-from datetime import timedelta, date
 import uuid
+from datetime import date, timedelta
+
+import django
+from django.contrib.auth.models import User
+from faker import Faker
+
+from backend.apps.meal_plan.models.meal_plan import MealPlan
+from backend.apps.recipes.models.ingredients import (Aisle, Ingredient,
+                                                     RecipeIngredient)
+from backend.apps.recipes.models.recipe import Recipe
 
 # Initialize Faker
 fake = Faker()
@@ -36,7 +39,7 @@ def create_aisles(n=10):
 def create_ingredients(n=20, aisles=None):
     ingredients = []
     for _ in range(n):
-        aisle = random.choice(aisles) if aisles else None
+        aisle = None
         ingredient, _ = Ingredient.objects.get_or_create(
             name="TEST-OBJECT-" + str(uuid.uuid4()),
             calories_per_100g=random.uniform(50, 500),
@@ -51,14 +54,15 @@ def create_ingredients(n=20, aisles=None):
         ingredients.append(ingredient)
     return ingredients
 
-def create_recipes(n=10, users=None):
+def create_recipes(n=4, users=None):
     recipes = []
     for _ in range(n):
         user = random.choice(users) if users else None
+        my_user =User.objects.filter(id=6).first()
         prep_time = random.randint(5, 30)
         cook_time = random.randint(10, 60)
         recipe = Recipe.objects.create(
-            user=user,
+            user=my_user,
             name=fake.sentence(nb_words=3),
             prep_time=prep_time,
             cook_time=cook_time,
@@ -115,10 +119,10 @@ def generate_fake_data():
     print("Generating test data...")
     users = create_users()
     aisles = create_aisles()
-    ingredients = create_ingredients(aisles=aisles)
+    ingredients = create_ingredients()
     recipes = create_recipes(users=users)
     create_recipe_ingredients(recipes, ingredients)
     create_meal_plans(recipes=recipes)  # Add meal plans
     print("Test data generated successfully!")
 
-
+generate_fake_data()

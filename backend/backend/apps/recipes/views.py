@@ -1,23 +1,24 @@
-from rest_framework import viewsets, status, mixins, generics
-from rest_framework.response import Response
-from .models.recipe import Recipe
-from .models.ingredients import Ingredient, RecipeIngredient
-from ..meal_plan.models.meal_plan import MealPlan
-from .serializers import RecipeSerializer, IngredientSerializer, RecipeIngredientSerializer
-from rest_framework.decorators import api_view
-from rest_framework.views import APIView
-from .producer import publish
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
+from rest_framework import filters, generics, mixins, status, viewsets
+from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 import random
+from django.http import Http404
+from ..meal_plan.models.meal_plan import MealPlan
+from .models.ingredients import Ingredient, RecipeIngredient
+from .models.recipe import Recipe
+from .producer import publish
+from .serializers import (IngredientSerializer, RecipeIngredientSerializer,
+                          RecipeSerializer)
+
 
 @api_view(['POST'])
 def save_scraped_data(request):
     if request.method == 'POST':
         ingredients = request.data["ingredients"]
         
-        # ingredient_data =  [{"name": ingredient["name"]} for ingredient in ingredients] 
-        # ingredient_serializer = IngredientSerializer(data=ingredient_data, many=True)   
         recipe_serialzer = RecipeSerializer(data=request.data["recipe"])
         recipe_serialzer.is_valid(raise_exception=True)
         recipe = recipe_serialzer.save()
@@ -40,16 +41,17 @@ def recipe_url(request):
         print(data['url'])
         publish(data['url'])
         return Response(data, status=status.HTTP_201_CREATED)
-    
         
-class RecipeIngredientsAPIView(generics.ListAPIView):
-    serializer_class = RecipeIngredientSerializer
-    filter_backends = [DjangoFilterBackend]
-    filter_set_fields = ["id"]
-
 class RecipeIngredientsAPIView(APIView):
+    permission_classes=[IsAuthenticated]
     def get_queryset(self):
-        return RecipeIngredient.objects.prefetch_related("recipe", "ingredient")
+        return RecipeIngredient.objects.filter(recipe__user=self.request.user).prefetch_related("recipe", "ingredient")
+    
+    def get_object(self, pk):
+        try:
+            return RecipeIngredient.objects.get(pk=pk)
+        except RecipeIngredient.DoesNotExist:
+            raise Http404
     
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -61,7 +63,7 @@ class RecipeIngredientsAPIView(APIView):
                 recipe_id = ri.recipe.id
                 if recipe_id not in recipes:
                     recipes[recipe_id] = {
-                        "id": recipe_id,
+                        "id": ri.id,
                         "recipe": RecipeSerializer(ri.recipe).data,
                         "ingredients": []
                     }
@@ -85,6 +87,7 @@ class RecipeIngredientsAPIView(APIView):
         # Serialize recipe info
         recipe_data = RecipeSerializer(recipe_ingredients.first().recipe).data
         ingredient_data = IngredientSerializer()
+        
         # Aggregate all ingredients into a list
         ingredients_data = [
             {
@@ -98,7 +101,7 @@ class RecipeIngredientsAPIView(APIView):
 
         return Response(
             {
-                "id": recipe_id,
+                "id": ri.id,
                 "recipe": recipe_data,
                 "ingredients": ingredients_data
             },
@@ -107,14 +110,14 @@ class RecipeIngredientsAPIView(APIView):
         
     def post(self, request, *args, **kwargs):
         # serialize entire recipe object
-        serializer = RecipeSerializer(data=request.data)
+        serializer = RecipeSerializer(data=request.data['recipe'])
 
         if serializer.is_valid():
             ingredients_data = request.data.pop('ingredients', [])  # Extract ingredients
             recipe = Recipe.objects.create(**serializer.validated_data)  # Create Recipe
 
             for ingredient_data in ingredients_data:
-                ingredient_name = ingredient_data.get('ingredient')
+                ingredient_name = ingredient_data.get('name')
                 quantity = ingredient_data.get('quantity')
                 unit = ingredient_data.get('unit')
                 display_name = ingredient_data.get('display_name')
@@ -149,10 +152,24 @@ class RecipeIngredientsAPIView(APIView):
             return Response(RecipeSerializer(recipe).data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, *args, **kwargs):
+        pk = kwargs.get("pk")
+        print(pk)
+        if pk:
+            recipe_ingredient = self.get_object(pk=pk)
+            recipe = recipe_ingredient.recipe
+            recipe_ingredient.delete()
+            recipe.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response("Failes", status=status.HTTP_400_BAD_REQUEST)
         
+    
 class RecipeViewSet(viewsets.ModelViewSet):
+    permission_classes=[IsAuthenticated]
+
     def list(self, request): #/api/Recipes
-        Recipes = Recipe.objects.all()
+        Recipes = Recipe.objects.filter(user=self.request.user)
         serializer = RecipeSerializer(Recipes, many=True)
         return Response(serializer.data)
         

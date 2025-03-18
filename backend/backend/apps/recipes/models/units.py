@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Unit(Enum):
     def to_base_unit(self, amount: float):
         return amount * self.value
