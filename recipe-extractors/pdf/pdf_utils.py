@@ -29,13 +29,16 @@ class PDFUtils:
         return
 
     @classmethod
-    def debug_show_image(cls, images, window_name="test"):
+    def debug_show_image(cls, images, window_name="Press 'SPACE' to continue"):
         """
         Debug function to display one (or more) images side by side.
         """
 
         cv2.imshow(window_name, cv2.hconcat(images))
-        cv2.waitKey(0)
+        while True:
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord(" "):
+                break
 
     @classmethod
     def load_pdf_pages(cls, path, dpi=200):
@@ -278,16 +281,6 @@ class PDFUtils:
                 rects.append([x0_pad, y0_pad, x1_pad, y1_pad])
                 region_no += 1
 
-        if DEBUG_DISPLAY_OCR_PRECURSOR:
-            import pytesseract
-
-            for i, r in enumerate(rects):
-                x0, y0, x1, y1 = r
-                slice = original_image[y0:y1, x0:x1]
-                print(
-                    f"region {i + 1}/{len(rects)}:\n{pytesseract.image_to_string(slice).strip()}\n"
-                )
-
         if DEBUG_SHOW_IDENTIFY:
             # debug: show the original image side by side with the masked out text
             text_regions = cv2.bitwise_and(
@@ -307,25 +300,22 @@ class PDFUtils:
         sr = dnn_superres.DnnSuperResImpl_create()  # type: ignore
         sr.readModel(MODEL_PATH)
         sr.setModel("lapsrn", 2)
-
-        # TODO: Sharpen the image so that text characters are more well-defined
-        image_lab = cv2.cvtColor(original_image, cv2.COLOR_BGR2LAB)
-
-        clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
-        image_lab[:, :, 0] = clahe.apply(image_lab[:, :, 0])
-        enhanced_bgr = cv2.cvtColor(image_lab, cv2.COLOR_LAB2BGR)
+        #
+        # # sharpen and enhance the contrast of the image with CLAHE
+        # image_lab = cv2.cvtColor(original_image, cv2.COLOR_BGR2LAB)
+        # clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
+        # image_lab[:, :, 0] = clahe.apply(image_lab[:, :, 0])
+        # enhanced_bgr = cv2.cvtColor(image_lab, cv2.COLOR_LAB2BGR)
         k = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
-        sharpened = cv2.filter2D(enhanced_bgr, -1, k)
-
-        # cls.debug_show_image(cv2.hconcat([original_image, sharpened]))
-        # return
+        sharpened = cv2.filter2D(original_image, -1, k)
 
         def preprocess_slice(slice):
+            # Tessseract works best with binarized, deskewed, and denoised images
+            # with an appropriate resolution (~300 DPI is recommended).
             denoised = cv2.fastNlMeansDenoisingColored(slice, None, 30, 30, 7, 21)
             upsampled = sr.upsample(denoised)
             gray = cv2.cvtColor(upsampled, cv2.COLOR_BGR2GRAY)
 
-            # TODO: Use morphology (erosion)
             _, binary = cv2.threshold(
                 gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU
             )
@@ -334,23 +324,29 @@ class PDFUtils:
 
         # TODO: Use NLP to get rid of links, stopwords, garbage characters, etc that Tesseract may pick up.
 
-        # TODO: Figure out a way to improve the quality of the sliced image (such as resolution).
-        # OpenCV's DNN super resolution
-
-        denoised_slices = [
+        prepared_slices = [
             preprocess_slice(sharpened[y0:y1, x0:x1]) for x0, y0, x1, y1 in text_regions
         ]
 
-        for slice in denoised_slices:
-            if DEBUG_DISPLAY_OCR_PRECURSOR:
-                cls.debug_show_image([slice])
-        # for x0, y0, x1, y1 in text_regions:
-        #     slice = original_image[y0:y1, x0:x1]
-        #     upsampled = sr.upsample(slice)
-        #
-        #
-        #
-        #     print(pytesseract.image_to_string(upsampled).strip())
+        for prepared in prepared_slices:
+            # if DEBUG_DISPLAY_OCR_PRECURSOR:
+            #     cls.debug_show_image([cv2.cvtColor(prepared, cv2.COLOR_GRAY2BGR)])
+
+            print(pytesseract.image_to_string(prepared).strip())
+
+        boxes = pytesseract.image_to_boxes(original_image)
+        h, w = original_image.shape[:2]
+        for b in boxes.splitlines():
+            b = b.split(" ")
+            original_image = cv2.rectangle(
+                original_image,
+                (int(b[1]), h - int(b[2])),
+                (int(b[3]), h - int(b[4])),
+                (0, 255, 0),
+                2,
+            )
+
+        cls.debug_show_image([original_image])
 
         return
 
@@ -418,7 +414,7 @@ def main():
             continue
         regions = PDFUtils.identify_text_regions(rotated, mser_identify)
         cleaned_regions = PDFUtils.filter_regions_shannon(regions, rotated)
-        # PDFUtils.extract_text(cleaned_regions, rotated)
+        PDFUtils.extract_text(cleaned_regions, rotated)
 
     cv2.destroyAllWindows()
 

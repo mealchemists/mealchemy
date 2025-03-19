@@ -12,23 +12,30 @@ MIN_ASPECT_RATIO = 0.1
 MAX_ASPECT_RATIO = 10
 
 
-def test_identify_text_regions(original_image, pad_amount=(5, 0)):
+def test_identify_text_regions(original_image, pad_amount=(7, 3)):
+    denoised = cv2.fastNlMeansDenoisingColored(
+        original_image, None, h=10, hColor=5, templateWindowSize=7, searchWindowSize=21
+    )
+
+    gray = cv2.cvtColor(denoised, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=2.1, tileGridSize=(16, 16))
+    enhanced = clahe.apply(gray)
+
     # increase contrast and sharpen
-    image_lab = cv2.cvtColor(original_image, cv2.COLOR_BGR2LAB)
-    clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
-    image_lab[:, :, 0] = clahe.apply(image_lab[:, :, 0])
-    enhanced = cv2.cvtColor(image_lab, cv2.COLOR_LAB2BGR)
+    # image_lab = cv2.cvtColor(original_image, cv2.COLOR_BGR2LAB)
+    # clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
+    # image_lab[:, :, 0] = clahe.apply(image_lab[:, :, 0])
+    # enhanced = cv2.cvtColor(image_lab, cv2.COLOR_LAB2BGR)
 
     # adaptive gamma correction based on grayscale image intensity
-    # mean_intensity = np.mean(cv2.cvtColor(enhanced, cv2.COLOR_BGR2GRAY))
-    # gamma = np.interp(mean_intensity, [50, 200], [0.8, 2.0])
-    # enhanced = (cv2.pow(enhanced / 255.0, gamma) * 255).astype(np.uint8)
-    #
+    mean_intensity = np.mean(enhanced)
+    gamma = np.interp(mean_intensity, [50, 200], [0.8, 2.0])
+    enhanced = (cv2.pow(enhanced / 255.0, gamma) * 255).astype(np.uint8)
+
     # k = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
     # sharpened = cv2.filter2D(enhanced, -1, k)
-    #
+
     # # this process does introduce some noise
-    # denoised = cv2.bilateralFilter(sharpened, d=9, sigmaColor=75, sigmaSpace=75)
 
     # get boxes
     # dilate and then perform some closing
@@ -41,6 +48,7 @@ def test_identify_text_regions(original_image, pad_amount=(5, 0)):
     regions = []
     word_data = data.splitlines().copy()
     for i, d in enumerate(word_data):
+        color = (0, 255, 0)
         # first entry is the header of the data
         if i == 0:
             continue
@@ -51,7 +59,9 @@ def test_identify_text_regions(original_image, pad_amount=(5, 0)):
         confidence = float(data[4])
         word = data[-1]
 
-        if confidence < 0 or word.strip() == "":
+        if confidence < 0:
+            color = (0, 0, 255)
+        if word.strip() == "":
             continue
 
         # NOTE: Tessearct uses the following measurements (left, top, width, height) for the coordinates.
@@ -82,7 +92,7 @@ def test_identify_text_regions(original_image, pad_amount=(5, 0)):
             original_image,
             (x0_pad, y0_pad),
             (x1_pad, y1_pad),
-            (0, 255, 0),
+            color,
             2,
         )
 
@@ -99,7 +109,9 @@ def test_identify_text_regions(original_image, pad_amount=(5, 0)):
     mask = cv2.erode(mask, erode_kernel, iterations=3)
     # mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=2)
     regions = cv2.bitwise_and(enhanced, enhanced, mask=mask)
-    PDFUtils.debug_show_image([original_image, enhanced])
+    PDFUtils.debug_show_image(
+        [original_image, cv2.cvtColor(enhanced, cv2.COLOR_GRAY2BGR)]
+    )
 
     return regions
 
