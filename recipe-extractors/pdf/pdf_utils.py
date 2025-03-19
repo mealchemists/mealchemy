@@ -4,10 +4,9 @@ import numpy as np
 import pytesseract
 import pdf2image
 import argparse
+import re
 
-from cv2 import COLOR_RGB2BGR, dnn_superres  # type: ignore
-from skimage.filters.rank import entropy
-from skimage.morphology import disk
+from cv2 import dnn_superres  # type: ignore
 
 from tqdm import tqdm
 
@@ -20,6 +19,8 @@ DEBUG_SHOW_CLEAN = False
 MODEL_PATH = "./models/LapSRN_x2.pb"
 
 DPI = 200
+MIN_ASPECT_RATIO = 0.1
+MAX_ASPECT_RATIO = 10
 
 
 class PDFUtils:
@@ -43,7 +44,7 @@ class PDFUtils:
     @classmethod
     def load_pdf_pages(cls, path, dpi=200):
         images = pdf2image.convert_from_path(path, dpi=dpi)
-        return [cv2.cvtColor(np.array(img), COLOR_RGB2BGR) for img in images]
+        return [cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR) for img in images]
 
     @classmethod
     def load_pdf_text(cls, path):
@@ -204,103 +205,13 @@ class PDFUtils:
         return final_mask
 
     @classmethod
-    def identify_text_regions(cls, original_image, mser, pad_amount=3):
-        """
-        Identifies regions that are likely text based off of MSER. Regions
-        are padded by `pad_amount`, and returned as a list of coordinates
-        that define the bounding boxes of each detected region.
-        """
+    def extract_text(cls, original_image, text_regions):
+        # TODO: See if you can improve the quality...
 
-        display_image = original_image.copy()
-
-        gray = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(gray, (5, 5), 1.0)
-
-        # enhance contrast globally
-        clahe = cv2.createCLAHE(clipLimit=1.25, tileGridSize=(12, 12))
-        enhanced = clahe.apply(blurred)
-        # apply adaptive gamma correction
-        mean_intensity = np.mean(enhanced)
-        gamma = np.interp(mean_intensity, [50, 200], [0.8, 2.0])
-        enhanced = (cv2.pow(enhanced / 255.0, gamma) * 255).astype(np.uint8)
-
-        mask = cls.create_mser_mask(enhanced, mser, kernel=(7, 5), iterations=3)
-
-        edges = cv2.Canny(enhanced, 50, 200, L2gradient=True)
-
-        # refine text region detection with the MSER mask as well as Canny edges
-        combined_mask = cv2.bitwise_and(mask, edges)
-
-        # merge nearby text regions of the mask
-        edge_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 7))
-        dilated_combined_mask = cv2.dilate(combined_mask, edge_kernel, iterations=3)
-
-        contours, _ = cv2.findContours(
-            dilated_combined_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
-        rects = []
-
-        # obtain and draw the regions to perform OCR on (if debugging)
-        # TODO: Maybe look into reordering way that text regions are read from.
-        # Use the centroids of each region and order them.
-        # https://stackoverflow.com/questions/29630052/ordering-coordinates-from-top-left-to-bottom-right
-        height, width, _ = original_image.shape
-        min_area = 120
-        region_no = 1
-        for contour in reversed(contours):
-            x, y, w, h = cv2.boundingRect(contour)
-
-            area = w * h
-            if area > min_area:
-                # pad around each region
-                x0_pad = max(x - pad_amount, 0)
-                y0_pad = max(y - pad_amount, 0)
-                x1_pad = min(width, x + w + pad_amount)
-                y1_pad = min(height, y + h + pad_amount)
-
-                if DEBUG_SHOW_IDENTIFY:
-                    # highlight for debugging
-                    cv2.rectangle(
-                        display_image,
-                        (x0_pad, y0_pad),
-                        (x1_pad, y1_pad),
-                        (0, 255, 0),
-                        2,
-                    )
-                    cv2.putText(
-                        display_image,
-                        f"{region_no}",
-                        (x, y + 30),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.75,
-                        (0, 255, 0),
-                        2,
-                        cv2.LINE_AA,
-                    )
-
-                rects.append([x0_pad, y0_pad, x1_pad, y1_pad])
-                region_no += 1
-
-        if DEBUG_SHOW_IDENTIFY:
-            # debug: show the original image side by side with the masked out text
-            text_regions = cv2.bitwise_and(
-                enhanced, enhanced, mask=dilated_combined_mask
-            )  # type: ignore
-            cls.debug_show_image(
-                [
-                    display_image,
-                    cv2.cvtColor(text_regions, cv2.COLOR_GRAY2BGR),
-                ]
-            )
-
-        return rects
-
-    @classmethod
-    def extract_text(cls, text_regions, original_image):
         sr = dnn_superres.DnnSuperResImpl_create()  # type: ignore
         sr.readModel(MODEL_PATH)
         sr.setModel("lapsrn", 2)
-        #
+
         # # sharpen and enhance the contrast of the image with CLAHE
         # image_lab = cv2.cvtColor(original_image, cv2.COLOR_BGR2LAB)
         # clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
@@ -322,62 +233,151 @@ class PDFUtils:
 
             return binary
 
-        # TODO: Use NLP to get rid of links, stopwords, garbage characters, etc that Tesseract may pick up.
-
         prepared_slices = [
             preprocess_slice(sharpened[y0:y1, x0:x1]) for x0, y0, x1, y1 in text_regions
         ]
 
+        content = []
         for prepared in prepared_slices:
-            # if DEBUG_DISPLAY_OCR_PRECURSOR:
-            #     cls.debug_show_image([cv2.cvtColor(prepared, cv2.COLOR_GRAY2BGR)])
+            text = pytesseract.image_to_string(prepared).strip()
+            text = cls.remove_stopwords(text)
 
-            print(pytesseract.image_to_string(prepared).strip())
+            if text == "":
+                continue
 
-        boxes = pytesseract.image_to_boxes(original_image)
-        h, w = original_image.shape[:2]
-        for b in boxes.splitlines():
-            b = b.split(" ")
-            original_image = cv2.rectangle(
-                original_image,
-                (int(b[1]), h - int(b[2])),
-                (int(b[3]), h - int(b[4])),
-                (0, 255, 0),
-                2,
-            )
+            if DEBUG_DISPLAY_OCR_PRECURSOR:
+                print(text)
+                cls.debug_show_image([cv2.cvtColor(prepared, cv2.COLOR_GRAY2BGR)])
 
-        cls.debug_show_image([original_image])
+            content.append(text)
 
-        return
+        return content
 
     @classmethod
-    def filter_regions_shannon(
-        cls, text_regions, original_image, entropy_threshold=4.6
-    ):
+    def remove_stopwords(cls, text):
+        # TODO: Remove garbage characters, such as links, stopwords, dates, file extensions, etc
+        # from the text.
+        return text
+
+    @classmethod
+    def identify_text_regions(cls, original_image, pad_amount=(7, 3)):
         """
-        Filters out image-like regions based on Shannon entropy.
+        Identifies blocks of text using Tesseract.
         """
 
-        image_gray = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
-        entropy_map = entropy(image_gray, disk(7))
+        denoised = cv2.fastNlMeansDenoisingColored(
+            original_image,
+            None,
+            h=10,
+            hColor=5,
+            templateWindowSize=7,
+            searchWindowSize=21,
+        )
 
-        final_rects = []
-        for x0, y0, x1, y1 in text_regions:
-            entropy_slice = entropy_map[y0:y1, x0:x1]
-            mean_entropy = np.mean(entropy_slice)
+        # enhance image contrast for faded text
+        gray = cv2.cvtColor(denoised, cv2.COLOR_BGR2GRAY)
+        clahe = cv2.createCLAHE(clipLimit=2.1, tileGridSize=(16, 16))
+        enhanced = clahe.apply(gray)
 
-            if mean_entropy > entropy_threshold:
-                if DEBUG_SHOW_CLEAN:
-                    cv2.rectangle(original_image, (x0, y0), (x1, y1), (0, 0, 255), 2)
-            else:
-                if DEBUG_SHOW_CLEAN:
-                    cv2.rectangle(original_image, (x0, y0), (x1, y1), (0, 255, 0), 2)
-                final_rects.append([x0, y0, x1, y1])
+        # adaptive gamma correction based on grayscale image intensity
+        mean_intensity = np.mean(enhanced)
+        gamma = np.interp(mean_intensity, [50, 200], [0.8, 2.0])
+        enhanced = (cv2.pow(enhanced / 255.0, gamma) * 255).astype(np.uint8)
 
-        if DEBUG_SHOW_CLEAN:
-            cls.debug_show_image([original_image])
+        # get boxes first of all using tesseract, then combine to obtain blocks of text
+        data = pytesseract.image_to_data(enhanced)
+        h, w = original_image.shape[:2]
+        mask = np.zeros((h, w), dtype=np.uint8)
 
-        return final_rects
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 5))
+
+        word_data = data.splitlines().copy()
+        for i, d in enumerate(word_data):
+            # first entry is the header of the data
+            if i == 0:
+                continue
+
+            # level, page_num, block_num, par_num, line_num, word_num, left, top, width, height, confidence, text
+            # left, top, width, height, confidence
+            data = d.split("\t")[6:12]
+            confidence = float(data[4])
+            word = data[-1]
+
+            # filter out regions of the image that are mostly not text
+            if confidence < 0:
+                continue
+            if word.strip() == "":
+                continue
+
+            # NOTE: Tessearct uses the following measurements (left, top, width, height) for the coordinates.
+            # The coordinate system should still be the same as OpenCV.
+            x0 = int(data[0])
+            y0 = int(data[1])
+            x1 = int(data[0]) + int(data[2])
+            y1 = int(data[1]) + int(data[3])
+
+            # pad around each of the regions
+            x0_pad = max(x0 - pad_amount[0], 0)
+            y0_pad = max(y0 - pad_amount[1], 0)
+            x1_pad = min(w, x1 + pad_amount[0])
+            y1_pad = min(h, y1 + pad_amount[1])
+
+            b_width = x1_pad - x0_pad
+            b_height = y1_pad - y0_pad
+            if b_height == 0:
+                continue
+
+            # filter out horizontal/vertical lines (extreme aspect ratios)
+            aspect_ratio = b_width / b_height
+            if aspect_ratio <= MIN_ASPECT_RATIO or aspect_ratio >= MAX_ASPECT_RATIO:
+                continue
+
+            if DEBUG_SHOW_IDENTIFY:
+                original_image = cv2.rectangle(
+                    original_image,
+                    (x0_pad, y0_pad),
+                    (x1_pad, y1_pad),
+                    (0, 255, 0),
+                    2,
+                )
+
+            mask = cv2.rectangle(mask, (x0_pad, y0_pad), (x1_pad, y1_pad), 255, -1)
+
+        # connect regions together
+        # this helps if Tesseract misses some words in a sentence
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=4)
+
+        # identify and collect the blocks of text from the mask
+        regions = []
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        for contour in reversed(contours):
+            x, y, w, h = cv2.boundingRect(contour)
+            x0, y0, x1, y1 = x, y, x + w, y + h
+            regions.append([x0, y0, x1, y1])
+
+        if DEBUG_SHOW_IDENTIFY:
+            region_no = 1
+            masked_regions = cv2.bitwise_and(enhanced, enhanced, mask=mask)
+
+            # draw rectangles and number them
+            for x0, y0, x1, y1 in regions:
+                cv2.rectangle(original_image, (x0, y0), (x1, y1), (0, 255, 0), 2)
+                cv2.putText(
+                    original_image,
+                    f"{region_no}",
+                    (x0, y0 + 30),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.75,
+                    (0, 255, 0),
+                    2,
+                    cv2.LINE_AA,
+                )
+
+            PDFUtils.debug_show_image(
+                [original_image, cv2.cvtColor(masked_regions, cv2.COLOR_GRAY2BGR)]
+            )
+
+        return regions
 
 
 def main():
@@ -390,7 +390,7 @@ def main():
     ELECTRONIC_SINGLE_PATH = "./source_material/electronic_printouts/single/Slow Cooker Pineapple Pork Chops.pdf"
 
     print("Loading pages")
-    pages = PDFUtils.load_pdf_pages(HARDCOPY_MULTI_PATH_2, dpi=DPI)
+    pages = PDFUtils.load_pdf_pages(HARDCOPY_MULTI_PATH_1, dpi=DPI)
     print("Pages loaded")
 
     mser_deskew = cv2.MSER_create(  # type: ignore
@@ -401,20 +401,23 @@ def main():
         max_evolution=1000,
     )
 
-    mser_identify = cv2.MSER_create(  # type: ignore
-        delta=4,
-        min_area=100,
-        max_area=1500,
-        max_variation=0.09,
-        max_evolution=1000,
-    )
+    # mser_identify = cv2.MSER_create(  # type: ignore
+    #     delta=4,
+    #     min_area=100,
+    #     max_area=1500,
+    #     max_variation=0.09,
+    #     max_evolution=1000,
+    # )
+
     for page in tqdm(pages, desc="Processing pages", unit="page"):
         rotated = PDFUtils.deskew_image(page, mser_deskew)
         if rotated is None:
             continue
-        regions = PDFUtils.identify_text_regions(rotated, mser_identify)
-        cleaned_regions = PDFUtils.filter_regions_shannon(regions, rotated)
-        PDFUtils.extract_text(cleaned_regions, rotated)
+        regions = PDFUtils.identify_text_regions(rotated)
+        text = PDFUtils.extract_text(rotated, regions)
+
+        if not DEBUG_DISPLAY_OCR_PRECURSOR:
+            print(*text, sep="\n")
 
     cv2.destroyAllWindows()
 

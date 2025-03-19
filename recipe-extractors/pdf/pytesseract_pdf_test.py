@@ -21,21 +21,10 @@ def test_identify_text_regions(original_image, pad_amount=(7, 3)):
     clahe = cv2.createCLAHE(clipLimit=2.1, tileGridSize=(16, 16))
     enhanced = clahe.apply(gray)
 
-    # increase contrast and sharpen
-    # image_lab = cv2.cvtColor(original_image, cv2.COLOR_BGR2LAB)
-    # clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
-    # image_lab[:, :, 0] = clahe.apply(image_lab[:, :, 0])
-    # enhanced = cv2.cvtColor(image_lab, cv2.COLOR_LAB2BGR)
-
     # adaptive gamma correction based on grayscale image intensity
     mean_intensity = np.mean(enhanced)
     gamma = np.interp(mean_intensity, [50, 200], [0.8, 2.0])
     enhanced = (cv2.pow(enhanced / 255.0, gamma) * 255).astype(np.uint8)
-
-    # k = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
-    # sharpened = cv2.filter2D(enhanced, -1, k)
-
-    # # this process does introduce some noise
 
     # get boxes
     # dilate and then perform some closing
@@ -126,7 +115,7 @@ def main():
     ELECTRONIC_SINGLE_PATH = "./source_material/electronic_printouts/single/Slow Cooker Pineapple Pork Chops.pdf"
 
     print("Loading pages")
-    pages = PDFUtils.load_pdf_pages(HARDCOPY_MULTI_PATH_2, dpi=DPI)
+    pages = PDFUtils.load_pdf_pages(HARDCOPY_MULTI_PATH_1, dpi=DPI)
     print("Pages loaded")
 
     mser_deskew = cv2.MSER_create(  # type: ignore
