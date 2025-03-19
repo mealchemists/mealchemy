@@ -2,6 +2,8 @@ import apiClient from './apiClient.js'
 
 const LOGIN_URI = "login/";
 const REGISTER_URI = "register/";
+const LOGOUT_URI = "logout/";
+const FORGOT_PASS_URI = "forgot-password/"
 const CSRF_URI = "csrf-token/"
 
 // loginUser function to handle the login request
@@ -53,3 +55,17 @@ export const getCsrfToken = async () => {
 
     return csrfToken;
 };
+
+export const logout = async (creds) =>{
+    const csrfToken = await getCsrfToken();
+
+    const response = await apiClient.post(LOGOUT_URI, creds,
+         {
+            headers: {
+                'X-CSRFToken': csrfToken, 
+            }
+        }
+    );
+
+    return response;
+}

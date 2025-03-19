@@ -17,24 +17,24 @@ function App() {
 
   return (
     <div className="app-container">
-        {location.pathname !== "/login" && (
-            <div className="navigation-bar">
-                <NavigationBar onClick={(item) => nav(`/${item}`)} />
-            </div>
-        )} 
-        <div className="content">
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-              <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<RecipePage />} />
-                <Route path="/mealplanning" element={<MealPlanningPage />} />
-                <Route path="/recipes" element={<RecipePage />} />
-                <Route path="/shoppinglist" element={<ShoppingListPage />} />
-                <Route path="/userprofile" element={<UserProfile />} />
-            </Route>
-          </Routes>
-          <ToastContainer position="bottom-right" autoClose={3000} />
+      {location.pathname !== "/login" && (
+        <div className="navigation-bar">
+          <NavigationBar onClick={(item) => nav(`/${item}`)} />
         </div>
+      )}
+      <div className="content">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<RecipePage />} />
+            <Route path="/mealplanning" element={<MealPlanningPage />} />
+            <Route path="/recipes" element={<RecipePage />} />
+            <Route path="/shoppinglist" element={<ShoppingListPage />} />
+            <Route path="/userprofile" element={<UserProfile />} />
+          </Route>
+        </Routes>
+        <ToastContainer position="bottom-right" autoClose={3000} />
+      </div>
     </div>
   );
 }

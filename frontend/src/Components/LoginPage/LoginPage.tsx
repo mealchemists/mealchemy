@@ -50,7 +50,9 @@ function LoginPage() {
     };
     return (
         <Container component="main" maxWidth="xs">
-            <Paper elevation={3} sx={{ padding: 3 }}>
+            <Paper elevation={3} sx={{ padding: 3,
+                borderRadius:'10px'
+            }}>
                 <Typography variant="h5" gutterBottom>
                     {isRegistering ? "Sign Up" : "Login"}
                 </Typography>
