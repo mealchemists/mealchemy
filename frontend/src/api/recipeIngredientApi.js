@@ -2,8 +2,16 @@ import apiClient from "./apiClient";
 
 const RECIPE_INGREDIENT_URI = "recipe-ingredients";
 
-export const getRecipeIngredients = async () => {
-  const response = await apiClient.get(RECIPE_INGREDIENT_URI);
+export const getRecipeIngredients = async (searchParams = {}) => {
+  // Construct the query string if there are search parameters
+  const queryString = new URLSearchParams(searchParams).toString();
+  
+  // Create the final URI with query parameters
+  const url = queryString ? `${RECIPE_INGREDIENT_URI}?${queryString}` : RECIPE_INGREDIENT_URI;
+
+  // Send the GET request to the API
+  const response = await apiClient.get(url);
+  
   return response;
 };
 
