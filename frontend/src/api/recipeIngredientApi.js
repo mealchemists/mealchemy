@@ -30,6 +30,28 @@ export const deleteRecipeIngredients = async (id) => {
 
 };
 
+export const putRecipeIngredients = async (data) => {
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];
+
+    try {
+        const response = await apiClient.put(
+            RECIPE_INGREDIENT_URI,  
+            data,  
+            {
+                headers: {
+                    'X-CSRFToken': csrfToken,  // Include CSRF token
+                },
+                withCredentials: true,  // Ensure cookies are sent with the request
+            }
+        );
+        return response;
+    } catch (error) {
+        // Handle error response
+        console.error("Error updating recipe ingredients:", error);
+        throw error;  // Optionally, rethrow or handle the error as needed
+    }
+};
+
 export const createRecipeIngredients = async (recipeData) => {
   const response = await apiClient.post(RECIPE_INGREDIENT_URI, recipeData);
   return response.data;

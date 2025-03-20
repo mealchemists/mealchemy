@@ -5,7 +5,7 @@ export interface Recipe{
     total_time: Number;
     main_ingredient?:string | null;
     ingredients: Array<string>;
-    steps: Array<string> | null;
+    steps: string | null;
     imageSrc: string; //Change later
     sourceUrl?: string | null
 }

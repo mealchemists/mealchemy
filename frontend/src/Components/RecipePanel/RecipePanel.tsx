@@ -27,7 +27,6 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const fetchRecipes = async () => { 
       try {
             const response = await getRecipeIngredients();
-            console.log(response)
             const data: RecipeIngredient[] = response.data; 
             setRecipeIngredients(data);
         } catch (error) {
@@ -47,7 +46,6 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
         setSelectedRecipes((prevSelected) =>
             isChecked ? [...prevSelected, recipeName] : prevSelected.filter(name => name !== recipeName)
         );
-        console.log(recipeName);
     };
 
     // TODO convert this to recipe ingredients instead

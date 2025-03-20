@@ -32,7 +32,7 @@ const blankRecipe: Recipe = {
   total_time: 0,
   main_ingredient: "Chicken",
   ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-  steps: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
+  steps: null,
   imageSrc: "/salad.jpg"
 };
 
