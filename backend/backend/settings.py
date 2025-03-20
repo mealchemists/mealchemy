@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'backend.apps.recipes',
     'backend.apps.meal_plan',
-    'backend.apps.user'
+    'backend.apps.user',
+    'rest_framework_simplejwt'
 ]
 
 MIDDLEWARE = [
@@ -122,6 +123,7 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -151,6 +153,17 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Set access token lifetime to 15 minutes
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=5),     # Set refresh token lifetime to 1 day
+    'ROTATE_REFRESH_TOKENS': False,                   # Whether to rotate refresh tokens
+    'BLACKLIST_AFTER_ROTATION': False,                # Whether to blacklist refresh tokens after they are rotated
+    'ALGORITHM': 'HS256',                             # JWT algorithm to use (default is HS256)
+    'SIGNING_KEY': SECRET_KEY,                        # Your secret key for signing tokens
+    'VERIFYING_KEY': None,                            # Optional: specify a verifying key if you need to verify the signature externally
+    'AUTH_HEADER_TYPES': ('Bearer',),                 # Defines what type of authorization header is allowed
+}
 
 # Forgot password email
 EMAIL_HOST = "smtp.gmail.com"
