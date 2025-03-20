@@ -7,7 +7,6 @@ import argparse
 import re
 
 from cv2 import dnn_superres  # type: ignore
-
 from tqdm import tqdm
 
 DEBUG_DISPLAY_OCR_PRECURSOR = False
@@ -21,6 +20,8 @@ MODEL_PATH = "./models/LapSRN_x2.pb"
 DPI = 200
 MIN_ASPECT_RATIO = 0.1
 MAX_ASPECT_RATIO = 10
+# Allow only alphanumeric charaacters, as well as common punctuation.
+TESSERACT_CONFIG = r'--oem 3 --psm 6 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:;()[]%°/-\'"'
 
 
 class PDFUtils:
@@ -152,7 +153,7 @@ class PDFUtils:
 
                 cls.debug_show_image([padded_display, padded_rotated])
 
-            return rotated
+            return rotated, median_angle
 
     @classmethod
     def create_mser_mask(cls, image, mser, kernel=(5, 5), iterations=3):
@@ -227,8 +228,13 @@ class PDFUtils:
             upsampled = sr.upsample(denoised)
             gray = cv2.cvtColor(upsampled, cv2.COLOR_BGR2GRAY)
 
-            _, binary = cv2.threshold(
-                gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU
+            binary = cv2.ximgproc.niBlackThreshold(
+                gray,
+                255,
+                cv2.THRESH_BINARY_INV,
+                blockSize=31,
+                k=0.08,
+                binarizationMethod=cv2.ximgproc.BINARIZATION_SAUVOLA,
             )
 
             return binary
@@ -279,17 +285,15 @@ class PDFUtils:
         clahe = cv2.createCLAHE(clipLimit=2.1, tileGridSize=(16, 16))
         enhanced = clahe.apply(gray)
 
-        # adaptive gamma correction based on grayscale image intensity
-        mean_intensity = np.mean(enhanced)
-        gamma = np.interp(mean_intensity, [50, 200], [0.8, 2.0])
-        enhanced = (cv2.pow(enhanced / 255.0, gamma) * 255).astype(np.uint8)
+        # # adaptive gamma correction based on grayscale image intensity
+        # mean_intensity = np.mean(enhanced)
+        # gamma = np.interp(mean_intensity, [50, 200], [0.8, 2.0])
+        # enhanced = (cv2.pow(enhanced / 255.0, gamma) * 255).astype(np.uint8)
 
         # get boxes first of all using tesseract, then combine to obtain blocks of text
         data = pytesseract.image_to_data(enhanced)
         h, w = original_image.shape[:2]
         mask = np.zeros((h, w), dtype=np.uint8)
-
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 5))
 
         word_data = data.splitlines().copy()
         for i, d in enumerate(word_data):
@@ -332,20 +336,24 @@ class PDFUtils:
             if aspect_ratio <= MIN_ASPECT_RATIO or aspect_ratio >= MAX_ASPECT_RATIO:
                 continue
 
-            if DEBUG_SHOW_IDENTIFY:
-                original_image = cv2.rectangle(
-                    original_image,
-                    (x0_pad, y0_pad),
-                    (x1_pad, y1_pad),
-                    (0, 255, 0),
-                    2,
-                )
+            # if DEBUG_SHOW_IDENTIFY:
+            #     original_image = cv2.rectangle(
+            #         original_image,
+            #         (x0_pad, y0_pad),
+            #         (x1_pad, y1_pad),
+            #         (0, 255, 0),
+            #         2,
+            #     )
 
             mask = cv2.rectangle(mask, (x0_pad, y0_pad), (x1_pad, y1_pad), 255, -1)
 
         # connect regions together
         # this helps if Tesseract misses some words in a sentence
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=4)
+        close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 5))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, close_kernel, iterations=4)
+
+        dilate_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 3))
+        mask = cv2.dilate(mask, dilate_kernel, iterations=5)
 
         # identify and collect the blocks of text from the mask
         regions = []
@@ -410,14 +418,14 @@ def main():
     # )
 
     for page in tqdm(pages, desc="Processing pages", unit="page"):
-        rotated = PDFUtils.deskew_image(page, mser_deskew)
+        rotated, _ = PDFUtils.deskew_image(page, mser_deskew)
         if rotated is None:
             continue
         regions = PDFUtils.identify_text_regions(rotated)
         text = PDFUtils.extract_text(rotated, regions)
 
-        if not DEBUG_DISPLAY_OCR_PRECURSOR:
-            print(*text, sep="\n")
+        # if not DEBUG_DISPLAY_OCR_PRECURSOR:
+        #     print(*text, sep="\n")
 
     cv2.destroyAllWindows()
 
