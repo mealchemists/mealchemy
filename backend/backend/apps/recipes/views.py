@@ -18,6 +18,9 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db import IntegrityError
+from django_filters.rest_framework import DjangoFilterBackend
+
+from rest_framework import filters
 
 @api_view(['POST'])
 @permission_classes([AllowAny])  
@@ -68,8 +71,15 @@ def recipe_url(request):
 
         
 class RecipeIngredientsAPIView(APIView):
+    # Apply filter backends for search and filtering
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend)
+    filterset_fields = ["recipe__name"]  # You can filter by recipe name
+    search_fields = ['recipe__name', 'ingredient__name']  # Allow search on recipe and ingredient name
+
     def get_queryset(self):
-        return RecipeIngredient.objects.filter(recipe__user=self.request.user).prefetch_related("recipe", "ingredient")
+        # Default queryset, only recipes related to the current user
+        queryset = RecipeIngredient.objects.filter(recipe__user=self.request.user).prefetch_related('recipe', 'ingredient')
+        return queryset
     
     def get_object(self, pk):
         try:
@@ -79,6 +89,12 @@ class RecipeIngredientsAPIView(APIView):
     
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
+
+        # Manually apply search filter
+        search = request.query_params.get('search', None)
+        if search:
+            queryset = filters.SearchFilter().filter_queryset(request, queryset, self)
+
 
         if not self.kwargs:
             # If no ID is provided, return all recipes grouped with their ingredients
