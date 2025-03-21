@@ -3,7 +3,7 @@ import ListItem from '../ListItem/ListItem';
 import RecipeSearch from '../RecipeSearch/RecipeSearch';
 import { Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipePanel.css';
-import {getRecipeIngredients} from '../../api/recipeIngredientApi.js';
+import { getRecipeIngredients } from '../../api/recipeIngredientApi';
 
 interface RecipePanelProps {
     recipeIngredient: RecipeIngredient[];
@@ -12,11 +12,11 @@ interface RecipePanelProps {
     setRecipeEditMode: (editMode: boolean) => void;
 }
 
-const RecipePanel: React.FC<RecipePanelProps> = ({ 
-    recipeIngredient, 
-    setRecipeIngredients, 
-    onRecipeSelect, 
-    setRecipeEditMode 
+const RecipePanel: React.FC<RecipePanelProps> = ({
+    recipeIngredient,
+    setRecipeIngredients,
+    onRecipeSelect,
+    setRecipeEditMode
 }) => {
     const [searchRecipes, setSearchRecipes] = useState<RecipeIngredient[]>(recipeIngredient);
     const [buttonVisibility, setButtonVisibility] = useState(false);
@@ -24,12 +24,11 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const [selectedRecipes, setSelectedRecipes] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const fetchRecipes = async () => { 
-      try {
+    const fetchRecipes = async () => {
+        try {
             const response = await getRecipeIngredients();
-            console.log(response)
-            const data: RecipeIngredient[] = response.data; 
-            setRecipeIngredients(data);
+            console.log(response);
+            setRecipeIngredients(response);
         } catch (error) {
             setError("Error fetching recipes");
             console.error("Error fetching recipes:", error);
@@ -79,21 +78,21 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     };
 
     useEffect(() => {
-        setSearchRecipes(recipeIngredient); 
+        setSearchRecipes(recipeIngredient);
     }, [recipeIngredient]);
 
     const handleSearchRecipe = (searchInput: string) => {
-    if (!searchInput.trim()) {
-        setRecipeIngredients(recipeIngredient); // Reset to the original list when empty
-        return;
-    }
+        if (!searchInput.trim()) {
+            setRecipeIngredients(recipeIngredient); // Reset to the original list when empty
+            return;
+        }
 
-    const filtered = recipeIngredient.filter(
-        item => item.recipe && item.recipe.title.toLowerCase().includes(searchInput.toLowerCase())
-    );
+        const filtered = recipeIngredient.filter(
+            item => item.recipe && item.recipe.name.toLowerCase().includes(searchInput.toLowerCase())
+        );
 
-    setRecipeIngredients(filtered);
-};
+        setRecipeIngredients(filtered);
+    };
     if (loading) return <div>Loading...</div>;
     if (error) return <div>{error}</div>;
 

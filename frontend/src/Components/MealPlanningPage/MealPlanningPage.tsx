@@ -6,9 +6,12 @@ import './MealPlanningPage.css';
 import RecipeSearch from "../RecipeSearch/RecipeSearch";
 import GridItem from "../GridItem/GridItem";
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
-import { Recipe } from "../../Models/models";
-import { CustomToolbar,CustomEvent, CustomDayHeader } from "./CalendarComponents";
+import { Recipe, RecipeIngredient } from "../../Models/models";
+import { CustomToolbar, CustomEvent, CustomDayHeader } from "./CalendarComponents";
 import NutritionalAccordion from "../NutritionAccordion/NutritionAccordion";
+
+import { getRecipeIngredients } from '../../api/recipeIngredientApi';
+
 // const events = [
 //   {
 //     'title': 'All Day 1',
@@ -27,29 +30,29 @@ import NutritionalAccordion from "../NutritionAccordion/NutritionAccordion";
 
 // ]
 
-const blankRecipe: Recipe = {
-  title: "Chicken",
-  cook_time: 0,
-  prep_time: 0,
-  total_time: 0,
-  main_ingredient: "Chicken",
-  ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-  steps: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
-  imageSrc: "/salad.jpg"
-};
+// const blankRecipe: Recipe = {
+//   title: "Chicken",
+//   cook_time: 0,
+//   prep_time: 0,
+//   total_time: 0,
+//   main_ingredient: "Chicken",
+//   ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
+//   steps: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
+//   imageSrc: "/salad.jpg"
+// };
 
-const blankRecipe2: Recipe = {
-  title: "Salad",
-  cook_time: 0,
-  prep_time: 0,
-  total_time: 0,
-  main_ingredient: "Chicken",
-  ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-  steps: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
-  imageSrc: "/salad.jpg"
-};
+// const blankRecipe2: Recipe = {
+//   title: "Salad",
+//   cook_time: 0,
+//   prep_time: 0,
+//   total_time: 0,
+//   main_ingredient: "Chicken",
+//   ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
+//   steps: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit", " Maecenas mattis quis augue quis facilisis", "Cras et mollis orci"],
+//   imageSrc: "/salad.jpg"
+// };
 
-const recipes = [blankRecipe, blankRecipe2, blankRecipe, blankRecipe2, blankRecipe, blankRecipe, blankRecipe, blankRecipe, blankRecipe];
+// const recipes = [blankRecipe, blankRecipe2, blankRecipe, blankRecipe2, blankRecipe, blankRecipe, blankRecipe, blankRecipe, blankRecipe];
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar)
 
@@ -61,27 +64,45 @@ function MealPlanningPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const recipesPerPage = 8; // Show 8 recipes per page (4 columns x 2 rows)
   const [view, setView] = useState("recipes");
-  const totalPages = Math.ceil(recipes.length / recipesPerPage);
-  const [searchRecipes, setSearchRecipes] = useState<Recipe[]>(recipes); //TODO: pass the recipes from database
-  const [visibleRecipes, setVisibleRecipes] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
+  // const totalPages = Math.ceil(recipes.length / recipesPerPage);
+  const [searchRecipes, setSearchRecipes] = useState<RecipeIngredient[]>([]); //TODO: pass the recipes from database
+  const [visibleRecipes, setVisibleRecipes] = useState<RecipeIngredient[]>([]);
+
+  const [recipeIngredients, setRecipeIngredients] = useState<RecipeIngredient[]>([]);
+
+  const fetchRecipes = async () => {
+    try {
+      const response = await getRecipeIngredients();
+      console.log(response);
+      setRecipeIngredients(response);
+      setTotalPages(response.length/recipesPerPage);
+    } catch (error) {
+      console.error("Error fetching recipes:", error);
+    } 
+  };
+
+  useEffect(() => {
+    fetchRecipes();
+  }, []);
 
   useEffect(() => {
     const startIndex = currentPage * recipesPerPage;
     const newVisibleRecipes = searchRecipes.slice(startIndex, startIndex + recipesPerPage);
     setVisibleRecipes(newVisibleRecipes);
-  }, [currentPage, recipesPerPage, recipes,searchRecipes]);
+  }, [currentPage, recipesPerPage, recipeIngredients, searchRecipes]);
 
   useEffect(() => {
-    setSearchRecipes(recipes); // Ensure filtered list updates when recipes change
-  }, [recipes]);
+    setSearchRecipes(recipeIngredients); // Ensure filtered list updates when recipes change
+  }, [recipeIngredients]);
 
   const handleSearchRecipe = (searchInput) => {
     console.log(searchInput);
     if (searchInput.trim() === "") {
-      setSearchRecipes(recipes);
+      setSearchRecipes(recipeIngredients);
     } else {
-      const filtered = recipes.filter((recipe) =>
-        recipe.title.toLowerCase().includes(searchInput.toLowerCase())
+      const filtered = recipeIngredients.filter((recipeIngredient) =>
+        recipeIngredient.recipe.name.toLowerCase().includes(searchInput.toLowerCase())
       );
       console.log(filtered);
       setSearchRecipes(filtered);
@@ -203,11 +224,11 @@ function MealPlanningPage() {
     }
   };
 
-  const saveMealPlan = ()=>{
+  const saveMealPlan = () => {
     // TODO: Save the meal plan to database
     console.log(myEventsList);
   };
-  
+
   return (
     <div>
       <div className="calendarContainer">
@@ -343,18 +364,18 @@ function MealPlanningPage() {
             Nutrition Details
           </ToggleButton>
         </ToggleButtonGroup>
-        <button className="shopping-list-button" onClick = {saveMealPlan}>SAVE</button>
+        <button className="shopping-list-button" onClick={saveMealPlan}>SAVE</button>
       </Box>
 
       {view === "recipes" ? (
 
         <div className="recipeGrid">
           <h3>Recipes</h3>
-          <RecipeSearch searchRecipe = {handleSearchRecipe}></RecipeSearch>
+          <RecipeSearch searchRecipe={handleSearchRecipe}></RecipeSearch>
           <div className="recipe-grid">
             {visibleRecipes.map((recipe, index) => (
               <div key={index} className="grid-item" draggable onDragStart={() => handleDragStart(recipe)}>
-                <GridItem recipe={recipe} />
+                <GridItem recipe={recipe.recipe} />
               </div>
             ))}
             {visibleRecipes.length < recipesPerPage &&

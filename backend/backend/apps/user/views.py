@@ -37,6 +37,7 @@ class LoginView(APIView):
 class LogoutView(APIView):
     def post(self, request):
         if request.user.is_authenticated:
+            print(request.user)
             logout(request)
             return Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
         return Response({"message": "Not Authroized"}, status=status.HTTP_400_BAD_REQUEST)

@@ -1,12 +1,12 @@
 import apiClient from "./apiClient";
+import { Recipe, RecipeIngredient } from '../Models/models';
 
 const RECIPE_INGREDIENT_URI = "recipe-ingredients";
 
-export const getRecipeIngredients = async () => {
-  const response = await apiClient.get(RECIPE_INGREDIENT_URI);
-  return response;
+export const getRecipeIngredients = async (): Promise<RecipeIngredient[]> => {
+  const response = await apiClient.get<RecipeIngredient[]>(RECIPE_INGREDIENT_URI);
+  return response.data; 
 };
-
 // export const deleteRecipeIngredients = async (id) => {
 //   const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];  // Get CSRF token from the cookie
 
@@ -26,6 +26,7 @@ export const deleteRecipeIngredients = async (id) => {
             withCredentials: true,  // Ensure cookies are sent with the request
         }
     );
+    
     return response;
 
 };

@@ -9,7 +9,7 @@ import { Chip, TextField } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import EditTagModal from '../EditTagModal/EditTagModal';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import {deleteRecipeIngredients} from '../../api/recipeIngredientApi.js';
+import {deleteRecipeIngredients} from '../../api/recipeIngredientApi';
 
 
 const options = [
@@ -35,7 +35,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     onDeleteRecipe
 }) => {
     const [recipe, setRecipe] = useState(recipeIngredient.recipe)
-    console.log({"Recipe": recipe})
     // 3 dot menu, edit and delete options
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [editMode, setEditMode] = useState(initialEditMode);
@@ -82,7 +81,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
 
     // For editing the actual recipe content
-    const [title, setTitle] = useState(recipe.title);
+    const [title, setTitle] = useState(recipe.name);
     const [ingredients, setIngredients] = useState<Ingredient[]>(recipeIngredient.ingredients);
     const [instructions, setInstructions] = useState<string[]>(recipe.steps);
 
@@ -264,7 +263,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 onClose={handleCloseTagModal}
             ></EditTagModal>
             <div className="imgIngredients">
-                <img src={recipe.imageSrc} alt={recipe.title} className="itemImage" />
+                <img src={recipe.imageSrc} alt={recipe.name} className="itemImage" />
                 <div className="ingredientContainer">
                     <h2>Ingredients</h2>
                     {editMode ? (
@@ -303,7 +302,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                     {editMode ? (
                         <>
                             <ul>
-                                {/* {instructions.map((instruction, index) => (
+                                {instructions.map((instruction, index) => (
                                     <li key={index}>
                                         <TextField
                                             value={instruction}
@@ -320,7 +319,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                             }}
                                         />
                                     </li>
-                                ))} */}
+                                ))}
                             </ul>
                             <button className = "add-button" onClick={handleAddInstruction}>Add Instruction</button>
 

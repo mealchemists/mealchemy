@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Button, Card, CardContent, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, TextField, Typography } from "@mui/material";
-import { logout } from '../../api/login.js';
+import { logout,changePassword } from '../../api/login';
 import { useAuth } from '../../api/useAuth';
 import './UserProfile.css';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+
+
 function UserProfile() {
   const { isAuthenticated, username } = useAuth();
   const [email, setEmail] = useState(username);
@@ -18,8 +20,8 @@ function UserProfile() {
     setEmail(username);
   }, [username]);
 
-  const handleSignOut = () => {
-    logout();
+  const handleSignOut = async () => {
+    await logout();
     navigate('/login');
   };
 
@@ -28,10 +30,13 @@ function UserProfile() {
   const handleChangePassword = () => {
     setShowPasswordInput(!showPasswordInput);
   };
-  const handleSavePassword = () => {
-    console.log("New Password:", newPassword); // Replace with actual password update logic
+  const handleSavePassword = async () => {
+    console.log("New Password:", newPassword); 
+    await changePassword(email, newPassword);
     setShowPasswordInput(false);
     setNewPassword(newPassword);
+    navigate('/login');
+
   };
   return (
     <Card sx={{ maxWidth: 400, margin: "auto", mt: 5, p: 3, textAlign: "center", borderRadius: '10px' }}>

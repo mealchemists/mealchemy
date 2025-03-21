@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './LoginPage.css';
-import {loginUser, getCsrfToken, registerUser} from '../../api/login.js';
+import {loginUser, getCsrfToken, registerUser} from '../../api/login';
 import { Container, TextField, Button, Typography, Box, Paper } from "@mui/material";
 import LoginForm from '../Forms/LoginForm'
 import RegisterForm from '../Forms/RegisterForm';
