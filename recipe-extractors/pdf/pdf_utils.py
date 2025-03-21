@@ -37,13 +37,6 @@ MAX_ASPECT_RATIO = 10
 
 # Allow only alphanumeric charaacters, as well as common punctuation that would be found in recipes.
 # page segmentation mode of 6 assumes the that the input image should give as a single uniform block of text
-# TESSERACT_CONFIG = (
-#     r"--oem 3 -c "
-#     r'tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:;()[]%°/-\'"'
-# )
-
-# Allow only alphanumeric charaacters, as well as common punctuation that would be found in recipes.
-# page segmentation mode of 6 assumes the that the input image should give as a single uniform block of text
 # NOTE: Tesseract-OCR is not good at reading vulgar fractions; this is a known issue.
 TESSERACT_CONFIG = r'--psm 6 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:;()[]%°/-\'•⅛¼⅜½⅝¾⅞ "'
 DPI = 200
