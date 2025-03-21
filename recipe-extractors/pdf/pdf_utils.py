@@ -1,13 +1,26 @@
 import pypdfium2
 import cv2
 import numpy as np
-import pytesseract
-import pdf2image
 import argparse
-import re
+import warnings
 
+from time import perf_counter
 from cv2 import dnn_superres  # type: ignore
-from tqdm import tqdm
+from pdf2image.exceptions import PopplerNotInstalledError
+from pytesseract import TesseractNotFoundError
+
+try:
+    import pytesseract
+
+    _ = pytesseract.get_tesseract_version()
+except TesseractNotFoundError as e:
+    print(e)
+    exit(-1)
+try:
+    import pdf2image
+except PopplerNotInstalledError as e:
+    print(e)
+    exit(-1)
 
 DEBUG_DISPLAY_OCR_PRECURSOR = False
 DEBUG_SHOW_DESKEW = False
@@ -17,17 +30,20 @@ DEBUG_SHOW_CLEAN = False
 # https://github.com/fannymonori/TF-LapSRN/tree/master/export
 MODEL_PATH = "./models/LapSRN_x2.pb"
 
-DPI = 200
 MIN_ASPECT_RATIO = 0.1
 MAX_ASPECT_RATIO = 10
 # Allow only alphanumeric charaacters, as well as common punctuation.
-TESSERACT_CONFIG = r'--oem 3 --psm 6 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:;()[]%°/-\'"'
+TESSERACT_CONFIG = (
+    r"--oem 3 -- psm 6 -c "
+    r'tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:;()[]%°/-\'"'
+)
 
 
 class PDFUtils:
     @classmethod
-    def classify_pdf(cls):
+    def classify_pdf(cls, page):
         # TODO: Classify the PDF (i think its just a check to see whether or not the PDF has readable text)
+
         return
 
     @classmethod
@@ -65,11 +81,19 @@ class PDFUtils:
         return extracted_text
 
     @classmethod
-    def deskew_image(cls, image, mser):
+    def deskew_image(cls, image):
         """
         Corrects the rotation of an image based on the Hough lines transform.
         This should be done before we perform any text identification.
         """
+
+        mser = cv2.MSER_create(  # type: ignore
+            delta=4,
+            min_area=20,
+            max_area=2000,
+            max_variation=0.12,
+            max_evolution=1000,
+        )
 
         # preprocess image with MSER to help with identifying the Hough lines
         # which basically represent the orientation of the document
@@ -213,11 +237,7 @@ class PDFUtils:
         sr.readModel(MODEL_PATH)
         sr.setModel("lapsrn", 2)
 
-        # # sharpen and enhance the contrast of the image with CLAHE
-        # image_lab = cv2.cvtColor(original_image, cv2.COLOR_BGR2LAB)
-        # clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
-        # image_lab[:, :, 0] = clahe.apply(image_lab[:, :, 0])
-        # enhanced_bgr = cv2.cvtColor(image_lab, cv2.COLOR_LAB2BGR)
+        # sharpen the image a little bit
         k = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
         sharpened = cv2.filter2D(original_image, -1, k)
 
@@ -336,15 +356,6 @@ class PDFUtils:
             if aspect_ratio <= MIN_ASPECT_RATIO or aspect_ratio >= MAX_ASPECT_RATIO:
                 continue
 
-            # if DEBUG_SHOW_IDENTIFY:
-            #     original_image = cv2.rectangle(
-            #         original_image,
-            #         (x0_pad, y0_pad),
-            #         (x1_pad, y1_pad),
-            #         (0, 255, 0),
-            #         2,
-            #     )
-
             mask = cv2.rectangle(mask, (x0_pad, y0_pad), (x1_pad, y1_pad), 255, -1)
 
         # connect regions together
@@ -387,6 +398,62 @@ class PDFUtils:
 
         return regions
 
+    @classmethod
+    def load_extract_text_hardcopy(cls, path, dpi=200, verbose=False):
+        """
+        Pipeline to load a PDF and extract raw text.
+        """
+        start_time = 0
+        extracted_raw_texts = []
+
+        # TODO: Look into debug logging, warnings, etc.
+        # Also look into potential performance improvements.
+
+        if verbose:
+            start_time = perf_counter()
+        pages = cls.load_pdf_pages(path, dpi)
+        if verbose:
+            print(f"loaded {len(pages)} in {perf_counter() - start_time:.2f} s")
+
+        for i, page in enumerate(pages):
+            # 1. rotate the page.
+            if verbose:
+                start_time = perf_counter()
+            rotated, angle = cls.deskew_image(page)  # type: ignore
+            if verbose:
+                print(
+                    f"deskewed page by {angle:.2f} degrees in {perf_counter() - start_time} s"
+                )
+            if rotated is None:
+                warnings.warn(
+                    f"Could not rotate PDF page {i + 1}, using original page as fallback."
+                )
+                rotated = page
+                continue
+
+            # 2. identify groups of text from the page.
+            if verbose:
+                start_time = perf_counter()
+            regions = cls.identify_text_regions(rotated)
+            if verbose:
+                print(
+                    f"identfied {len(regions)} in {perf_counter() - start_time:.2f} s"
+                )
+            if len(regions) <= 1:
+                warnings.warn(f"Unable to extract page {i + 1}.")
+                continue
+
+            # 3. extract the text from each of the identified groups.
+            if verbose:
+                start_time = perf_counter()
+            raw_text_sections = cls.extract_text(rotated, regions)
+            if verbose:
+                print(f"extracted text in {(perf_counter() - start_time):.2f}s")
+
+            extracted_raw_texts.append(raw_text_sections)
+
+        return extracted_raw_texts
+
 
 def main():
     HARDCOPY_MULTI_PATH_1 = (
@@ -398,34 +465,29 @@ def main():
     ELECTRONIC_SINGLE_PATH = "./source_material/electronic_printouts/single/Slow Cooker Pineapple Pork Chops.pdf"
 
     print("Loading pages")
-    pages = PDFUtils.load_pdf_pages(HARDCOPY_MULTI_PATH_1, dpi=DPI)
+    pages = PDFUtils.load_pdf_pages(HARDCOPY_MULTI_PATH_1, dpi=200)
     print("Pages loaded")
 
-    mser_deskew = cv2.MSER_create(  # type: ignore
-        delta=4,
-        min_area=20,
-        max_area=2000,
-        max_variation=0.12,
-        max_evolution=1000,
-    )
-
-    # mser_identify = cv2.MSER_create(  # type: ignore
-    #     delta=4,
-    #     min_area=100,
-    #     max_area=1500,
-    #     max_variation=0.09,
-    #     max_evolution=1000,
-    # )
-
-    for page in tqdm(pages, desc="Processing pages", unit="page"):
-        rotated, _ = PDFUtils.deskew_image(page, mser_deskew)
+    for i, page in enumerate(pages):
+        print(f"---PAGE {i + 1} of {len(pages)}---")
+        rotated, _ = PDFUtils.deskew_image(page)  # type: ignore
         if rotated is None:
-            continue
-        regions = PDFUtils.identify_text_regions(rotated)
-        text = PDFUtils.extract_text(rotated, regions)
+            print("Unable to rotate!")
+            rotated = page
 
-        # if not DEBUG_DISPLAY_OCR_PRECURSOR:
-        #     print(*text, sep="\n")
+        print("Identifying text regions")
+        regions = PDFUtils.identify_text_regions(rotated)
+        print(f"{len(regions)} identified")
+
+        print("Extracting text")
+        text = PDFUtils.extract_text(rotated, regions)
+        print("Text extracted")
+
+        if not DEBUG_DISPLAY_OCR_PRECURSOR:
+            print("")
+            print(*text, sep="\n")
+
+        _ = input("Press enter to continue\n")
 
     cv2.destroyAllWindows()
 
