@@ -13,7 +13,9 @@ class Scraper:
         if url:
             self.base_domain = extract_base_domain(url)
 
-    
+      
+        
+         
     def scrape_website(self, website):
         print("Launching Chrome...")
         
@@ -35,27 +37,24 @@ class Scraper:
             driver.quit()
             
     def extract_body_content(self, html_content):
-        soup = BeautifulSoup(html_content, "html.parser")
+        return self.preprocess(html_content)
+   
 
-        website_lookup = lookup_data[self.base_domain]
+        # website_lookup = lookup_data[self.base_domain]
 
-        ingredient = website_lookup['ingredient']  
-        recipe_step = website_lookup['recipe_step']  
-        recipe_detail = website_lookup['recipe_details']  
-        nutrition_detail = website_lookup['nutrition_details'] 
+        # ingredient = website_lookup['ingredient']  
+        # recipe_step = website_lookup['recipe_step']  
+        # recipe_detail = website_lookup['recipe_details']  
+        # nutrition_detail = website_lookup['nutrition_details'] 
 
-        ingredient_tags = soup.find(ingredient['tag'], attrs=ingredient['attrs'])
-        recipe_step_tags = soup.find(recipe_step['tag'], attrs=recipe_step['attrs'])
-        recipe_detail_tags = soup.find(recipe_detail['tag'], attrs=recipe_detail['attrs'])
-        nutrition_detail_tags = soup.find(nutrition_detail['tag'], attrs=nutrition_detail['attrs'])
+        # ingredient_tags = soup.find(ingredient['tag'], attrs=ingredient['attrs'])
+        # recipe_step_tags = soup.find(recipe_step['tag'], attrs=recipe_step['attrs'])
+        # recipe_detail_tags = soup.find(recipe_detail['tag'], attrs=recipe_detail['attrs'])
+        # nutrition_detail_tags = soup.find(nutrition_detail['tag'], attrs=nutrition_detail['attrs'])
 
-        # body_content = soup.find("ul", attrs={"class": "mm-recipes-structured-ingredients__list"})
-        # step_content = soup.find("div", attrs={"id": "mm-recipes-steps_1-0"})
-        # recipe_details = soup.find("div", attrs={"id": "mm-recipes-details_1-0"})
-        # nutrition_details = soup.find("div", attrs={"id": "mm-recipes-nutrition-facts-summary_1-0"})
-        if ingredient_tags:
-            return str("\n\ningredients\n" + ingredient_tags.text + "\n\nsteps\n" + recipe_step_tags.text + "\n\nrecipe_details\n" + recipe_detail_tags.text + "\n\nnutrition\n" + nutrition_detail_tags.text)
-        return ""
+        # if ingredient_tags:
+        #     return str("\n\ningredients\n" + ingredient_tags.text + "\n\nsteps\n" + recipe_step_tags.text + "\n\nrecipe_details\n" + recipe_detail_tags.text + "\n\nnutrition\n" + nutrition_detail_tags.text)
+        # return ""
 
     def clean_body_content(self, body_content):
         soup = BeautifulSoup(body_content, "html.parser")
@@ -74,4 +73,28 @@ class Scraper:
         return[
             dom_content[i: 1+max_length] for i in range(0, len(dom_content), max_length)
         ]
+    
+    def preprocess(self, html_content):
+        soup = BeautifulSoup(html_content, "html.parser")
         
+        for script_or_style in soup(['script', 'style', 'noscript', 'header', 'footer', 'aside', 'nav', 'img', 'button', 'input','figcaption', 'use', 'meta']):
+            script_or_style.decompose()  # Remove them from the tree
+            
+        # Extract body content
+        body_content = soup.find('body')
+        if body_content:
+            # Extract the text and use separator='\n' to get line breaks where appropriate
+            text = body_content.get_text(separator='\n').strip()
+            
+            # Remove extra newlines (multiple newlines are replaced with a single space)
+            clean_text = '\n'.join([line.strip() for line in text.splitlines() if line.strip()])
+
+            # Optionally, you can save it to a file
+            with open("detail.html", "w") as f:
+                f.write(clean_text)
+
+            return clean_text
+
+        return ""
+        
+     

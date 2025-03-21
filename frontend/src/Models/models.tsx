@@ -1,11 +1,11 @@
 export interface Recipe{
-    title:string,
+    name:string,
     cook_time: Number;
     prep_time: Number;
     total_time: Number;
     main_ingredient?:string | null;
     ingredients: Array<string>;
-    steps: Array<string> | null;
+    steps: string | null;
     imageSrc: string; //Change later
     sourceUrl?: string | null
 }

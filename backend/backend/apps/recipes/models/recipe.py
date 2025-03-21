@@ -15,6 +15,7 @@ class Recipe(TimeStampedModel):
     source_url = models.URLField(blank=True)  # Source URL
     image_url = models.ImageField(null=True, blank=True)  # Optional image content
     steps = models.TextField(null=True, max_length=255)
+    main_ingredient = models.TextField(null=True, max_length=100)
     
     def save(self, *args, **kwargs):
         if self.total_time is None:
