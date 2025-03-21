@@ -14,11 +14,12 @@ from pdf_utils import PDFUtils
 from time import perf_counter
 
 load_dotenv()
+
 DPI = 200
 USE_OPENAI = False
 FILE_PATH = ""
 
-SYSTEM_PROMPT = (
+PDF_SYSTEM_PROMPT = (
     "You are a text processing expert. Your task is to take as input a list of strings "
     '(named "content") that are the results of OCR applied to scanned recipe pages. These strings may contain various sections such as the recipe name, description, source URL, '
     "cook time, prep time, total time, ingredients, and recipe steps. Note that OCR may introduce minor spelling errors; please correct these errors as best as possible without "
@@ -74,20 +75,13 @@ else:
 
 
 def main():
+    # initialize LLM components
     human_template = "Content: {content}"
     human_message = HumanMessagePromptTemplate.from_template(human_template)
-    system_message = SystemMessagePromptTemplate.from_template(SYSTEM_PROMPT)
+    system_message = SystemMessagePromptTemplate.from_template(PDF_SYSTEM_PROMPT)
     chat_prompt = ChatPromptTemplate.from_messages([system_message, human_message])
 
     chain = chat_prompt | llm
-
-    # HARDCOPY_MULTI_PATH_1 = (
-    #     "./source_material/hardcopy_scans/multi/Healthy Family Week1.pdf"
-    # )
-    # HARDCOPY_MULTI_PATH_2 = (
-    #     "./source_material/hardcopy_scans/multi/White Binder Recipes.pdf"
-    # )
-    # ELECTRONIC_SINGLE_PATH = "./source_material/electronic_printouts/single/Slow Cooker Pineapple Pork Chops.pdf"
 
     print("Loading pages")
     tstart = perf_counter()
@@ -100,6 +94,7 @@ def main():
     for i, page in enumerate(pages):
         print(f"---PAGE {i + 1} OF{len(pages)}---")
 
+        # 1. deskew
         tstart = perf_counter()
         deskewed, rotation_angle = PDFUtils.deskew_image(page)  # type: ignore
         if deskewed is None:
@@ -109,6 +104,7 @@ def main():
             f"  Deskewed page by {rotation_angle:.2f} degrees in {(perf_counter() - tstart):.2f}s"
         )
 
+        # 2. identify groups of structured text from the page.
         tstart = perf_counter()
         regions = PDFUtils.identify_text_regions(deskewed)
         if len(regions) <= 1:
@@ -118,6 +114,7 @@ def main():
             f"  Identified {len(regions)} regions in {(perf_counter() - tstart):.2f}s"
         )
 
+        # 3. extract the text from each of the identified texts.
         tstart = perf_counter()
         content = PDFUtils.extract_text(deskewed, regions)
         print(f"  Extracted content in {(perf_counter() - tstart):.2f}s")

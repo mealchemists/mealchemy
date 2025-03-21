@@ -431,7 +431,7 @@ class PDFUtils:
                 rotated = page
                 continue
 
-            # 2. identify groups of text from the page.
+            # 2. identify groups of structured text from the page.
             if verbose:
                 start_time = perf_counter()
             regions = cls.identify_text_regions(rotated)
