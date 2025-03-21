@@ -4,6 +4,13 @@ __pycache__/
 *.sql
 *.sqlite3
 db.sqlite3
+.env
+
+# random test files
+*.json
+*.html
+*.txt
+
 
 # IDE files
 .vscode/
@@ -12,3 +19,6 @@ db.sqlite3
 # Virtual environments
 .venv/
 venv/
+
+#django migrations
+*/migrations/

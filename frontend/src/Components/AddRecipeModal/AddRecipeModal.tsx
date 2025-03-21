@@ -54,7 +54,6 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
         if (addRecipeFormat) {
 
         } else {
-            console.log(recipeUrl);
             addByUrl();
         }
         onAddRecipe(newRecipe);

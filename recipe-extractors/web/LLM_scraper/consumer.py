@@ -1,20 +1,29 @@
-# amqps://njslbjoh:qSWAVgxBywu6oIRcn5IS4LkCihc8LwHS@horse.lmq.cloudamqp.com/njslbjoh
+import os
+import json
 import pika
-params = pika.URLParameters("amqps://njslbjoh:sBepSHwzktvaxnpm9-5kcCAtJR63rzJ0@horse.lmq.cloudamqp.com/njslbjoh")
+from dotenv import load_dotenv
+from main import get_recipe_data
+load_dotenv()
+params = pika.URLParameters(os.environ["PIKA_URL"])
 
 connection = pika.BlockingConnection(params)
 
-from main import get_recipe_data
 
 channel = connection.channel()
 channel.queue_declare(queue="admin")
 
-def callback(ch, method, properties, body): 
+
+def callback(ch, method, properties, body):
     print(f"Received message: {body}")
-    get_recipe_data(body.decode("utf-8"))
-    
+    data =  json.loads(body.decode("utf-8"))
+    url = data.get("url")
+    user = data.get("user")
+    token = data.get("token")
+    get_recipe_data(url, user, token)
+
     # Acknowledge the message after processing
     ch.basic_ack(delivery_tag=method.delivery_tag)
+
 
 # Start consuming with manual acknowledgment
 channel.basic_consume(queue="admin", on_message_callback=callback, auto_ack=False)

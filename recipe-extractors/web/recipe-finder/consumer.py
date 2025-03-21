@@ -1,24 +1,24 @@
-# amqps://njslbjoh:qSWAVgxBywu6oIRcn5IS4LkCihc8LwHS@horse.lmq.cloudamqp.com/njslbjoh
-import pika
-params = pika.URLParameters("amqps://njslbjoh:sBepSHwzktvaxnpm9-5kcCAtJR63rzJ0@horse.lmq.cloudamqp.com/njslbjoh")
+# # amqps://njslbjoh:qSWAVgxBywu6oIRcn5IS4LkCihc8LwHS@horse.lmq.cloudamqp.com/njslbjoh
+# import pika
+# params = pika.URLParameters("amqps://njslbjoh:sBepSHwzktvaxnpm9-5kcCAtJR63rzJ0@horse.lmq.cloudamqp.com/njslbjoh")
 
-connection = pika.BlockingConnection(params)
+# connection = pika.BlockingConnection(params)
 
-from main import get_recipe_data
+# from main import get_recipe_data
 
-channel = connection.channel()
-channel.queue_declare(queue="admin")
+# channel = connection.channel()
+# channel.queue_declare(queue="admin")
 
-def callback(ch, method, properties, body):
+# def callback(ch, method, properties, body):
    
-   print("recieved in admin") 
-   print(body)
-   get_recipe_data(body.decode("utf-8"))
+#    print("recieved in admin") 
+#    print(body)
+#    get_recipe_data(body.decode("utf-8"))
 
-channel.basic_consume(queue="admin", on_message_callback=callback)
+# channel.basic_consume(queue="admin", on_message_callback=callback)
     
-print("started consuming")
+# print("started consuming")
 
-channel.start_consuming()
+# channel.start_consuming()
 
-channel.close()
+# channel.close()

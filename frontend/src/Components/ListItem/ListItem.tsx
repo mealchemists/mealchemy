@@ -25,7 +25,7 @@ const ListItem: React.FC<ListItemProps> = ({
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const isChecked = e.target.checked;
         setChecked(isChecked);
-        onCheckboxChange(recipe.title, isChecked); // Notify parent
+        onCheckboxChange(recipe.name, isChecked); // Notify parent
     };
 
     return (
@@ -43,9 +43,9 @@ const ListItem: React.FC<ListItemProps> = ({
                 />
             )
             }
-            <img src={recipe.imageSrc} alt={recipe.title} className="itemImage" />
+            <img src={recipe.imageSrc} alt={recipe.name} className="itemImage" />
             <div className="contentContainer">
-                <p className="itemTitle">{recipe.title}</p>
+                <p className="itemTitle">{recipe.name}</p>
                 <div className="tagsContainer">
                     {tags.map((tag: string, index: number) => (
                         <Chip
