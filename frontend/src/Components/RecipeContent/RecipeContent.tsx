@@ -93,7 +93,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
 
     // For editing the actual recipe content
-    const [title, setTitle] = useState(recipe.name);
+    const [title, setTitle] = useState(recipe.recipe.name);
     const [ingredients, setIngredients] = useState<Ingredient[]>(recipeIngredient.ingredients);
     const [instructions, setInstructions] = useState<string>(recipe.recipe.steps);
 
@@ -288,9 +288,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 onApplyTagChanges={handleApplyTagChanges}
                 open={openEditTagModal}
                 onClose={handleCloseTagModal}
-            ></EditTagModal>
+            ></EditTagModal> 
             <div className="imgIngredients">
-                <img src={recipe.imageSrc} alt={recipe.name} className="itemImage" />
+                <img src={recipe.recipe.imageSrc} alt={recipe.recipe.name} className="itemImage" />
                 <div className="ingredientContainer">
                     <h2>Ingredients</h2>
                     {editMode ? (

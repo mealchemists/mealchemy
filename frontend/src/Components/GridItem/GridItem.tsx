@@ -10,8 +10,8 @@ function GridItem({ recipe }: { recipe: Recipe }) {
     return (
         <div className="gridItemContainer">
         <div className="contentContainer">
-          <h3 className="gridItemTitle">{recipe.title}</h3>
-          <img src={recipe.imageSrc} alt={recipe.title} className="gridItemImage" />
+          <h3 className="gridItemTitle">{}</h3>
+          <img src={recipe.imageSrc} alt={recipe.name} className="gridItemImage" />
           <div className="tagsContainer">
             {tags.map((tag: string, index: number) => (
               <Chip

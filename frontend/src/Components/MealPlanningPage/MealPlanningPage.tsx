@@ -26,7 +26,7 @@ import { Recipe } from "../../Models/models";
 // ]
 
 const blankRecipe: Recipe = {
-  title: "Enter Recipe Title",
+  name: "Enter Recipe Title",
   cook_time: 0,
   prep_time: 0,
   total_time: 0,
