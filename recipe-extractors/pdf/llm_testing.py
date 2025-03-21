@@ -69,7 +69,7 @@ else:
     llm = ChatGoogleGenerativeAI(
         model="gemini-1.5-pro-latest",
         temperature=0.3,
-        max_tokens=2500,
+        max_tokens=3000,
         api_key=os.getenv("GEMINI_API_KEY"),  # type: ignore
     )
 
@@ -92,7 +92,7 @@ def main():
     print(f"Using model: {model_name}")
 
     for i, page in enumerate(pages):
-        print(f"---PAGE {i + 1} OF{len(pages)}---")
+        print(f"---PAGE {i + 1} OF {len(pages)}---")
 
         # 1. deskew
         tstart = perf_counter()
@@ -128,7 +128,7 @@ def main():
         except json.JSONDecodeError:
             print("  Cannot convert to JSON!")
 
-        _ = input("Press any key to continue\n")
+        _ = input("Press ENTER to continue\n")
 
     return
 
@@ -145,6 +145,7 @@ def parse_args():
     parser.add_argument(
         "--path",
         type=check_valid_path,
+        required=True,
         help="Path to the source PDF",
     )
     parser.add_argument(

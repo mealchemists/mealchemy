@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import argparse
 import warnings
+import multiprocessing as mp
 
 from time import perf_counter
 from cv2 import dnn_superres  # type: ignore
@@ -18,6 +19,7 @@ except TesseractNotFoundError as e:
     exit(-1)
 try:
     import pdf2image
+
 except PopplerNotInstalledError as e:
     print(e)
     exit(-1)
@@ -32,11 +34,19 @@ MODEL_PATH = "./models/LapSRN_x2.pb"
 
 MIN_ASPECT_RATIO = 0.1
 MAX_ASPECT_RATIO = 10
-# Allow only alphanumeric charaacters, as well as common punctuation.
-TESSERACT_CONFIG = (
-    r"--oem 3 -- psm 6 -c "
-    r'tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:;()[]%°/-\'"'
-)
+
+# Allow only alphanumeric charaacters, as well as common punctuation that would be found in recipes.
+# page segmentation mode of 6 assumes the that the input image should give as a single uniform block of text
+# TESSERACT_CONFIG = (
+#     r"--oem 3 -c "
+#     r'tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:;()[]%°/-\'"'
+# )
+
+# Allow only alphanumeric charaacters, as well as common punctuation that would be found in recipes.
+# page segmentation mode of 6 assumes the that the input image should give as a single uniform block of text
+# NOTE: Tesseract-OCR is not good at reading vulgar fractions; this is a known issue.
+TESSERACT_CONFIG = r'--psm 6 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:;()[]%°/-\'•⅛¼⅜½⅝¾⅞ "'
+DPI = 200
 
 
 class PDFUtils:
@@ -59,8 +69,9 @@ class PDFUtils:
                 break
 
     @classmethod
-    def load_pdf_pages(cls, path, dpi=200):
-        images = pdf2image.convert_from_path(path, dpi=dpi)
+    def load_pdf_pages(cls, path, dpi=DPI):
+        n_threads = mp.cpu_count()
+        images = pdf2image.convert_from_path(path, dpi=dpi, thread_count=n_threads)
         return [cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR) for img in images]
 
     @classmethod
@@ -231,15 +242,9 @@ class PDFUtils:
 
     @classmethod
     def extract_text(cls, original_image, text_regions):
-        # TODO: See if you can improve the quality...
-
-        sr = dnn_superres.DnnSuperResImpl_create()  # type: ignore
-        sr.readModel(MODEL_PATH)
-        sr.setModel("lapsrn", 2)
-
-        # sharpen the image a little bit
-        k = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
-        sharpened = cv2.filter2D(original_image, -1, k)
+        """
+        Performs OCR on each slice and extracts the raw text from.
+        """
 
         def preprocess_slice(slice):
             # Tessseract works best with binarized, deskewed, and denoised images
@@ -248,6 +253,7 @@ class PDFUtils:
             upsampled = sr.upsample(denoised)
             gray = cv2.cvtColor(upsampled, cv2.COLOR_BGR2GRAY)
 
+            # use Sauvola thresholding to handle slices that have non-uniform lighting
             binary = cv2.ximgproc.niBlackThreshold(
                 gray,
                 255,
@@ -259,14 +265,23 @@ class PDFUtils:
 
             return binary
 
+        sr = dnn_superres.DnnSuperResImpl_create()  # type: ignore
+        sr.readModel(MODEL_PATH)
+        sr.setModel("lapsrn", 2)
+
+        # sharpen the image a little bit
+        k = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+        sharpened = cv2.filter2D(original_image, -1, k)
+
         prepared_slices = [
             preprocess_slice(sharpened[y0:y1, x0:x1]) for x0, y0, x1, y1 in text_regions
         ]
 
         content = []
         for prepared in prepared_slices:
-            text = pytesseract.image_to_string(prepared).strip()
-            text = cls.remove_stopwords(text)
+            text = pytesseract.image_to_string(
+                prepared, config=TESSERACT_CONFIG
+            ).strip()
 
             if text == "":
                 continue
@@ -280,15 +295,12 @@ class PDFUtils:
         return content
 
     @classmethod
-    def remove_stopwords(cls, text):
-        # TODO: Remove garbage characters, such as links, stopwords, dates, file extensions, etc
-        # from the text.
-        return text
-
-    @classmethod
     def identify_text_regions(cls, original_image, pad_amount=(7, 3)):
         """
-        Identifies blocks of text using Tesseract.
+        Identifies blocks of text using Tesseract in a possibly unordered fashion.
+
+        NOTE: The order at which blocks will appear can depend on the
+        orientation of the text (organized by columns or rows).
         """
 
         denoised = cv2.fastNlMeansDenoisingColored(
@@ -305,29 +317,24 @@ class PDFUtils:
         clahe = cv2.createCLAHE(clipLimit=2.1, tileGridSize=(16, 16))
         enhanced = clahe.apply(gray)
 
-        # # adaptive gamma correction based on grayscale image intensity
-        # mean_intensity = np.mean(enhanced)
-        # gamma = np.interp(mean_intensity, [50, 200], [0.8, 2.0])
-        # enhanced = (cv2.pow(enhanced / 255.0, gamma) * 255).astype(np.uint8)
-
         # get boxes first of all using tesseract, then combine to obtain blocks of text
-        data = pytesseract.image_to_data(enhanced)
+        data = pytesseract.image_to_data(enhanced, config=f"--dpi {DPI}")
         h, w = original_image.shape[:2]
         mask = np.zeros((h, w), dtype=np.uint8)
 
         word_data = data.splitlines().copy()
         for i, d in enumerate(word_data):
-            # first entry is the header of the data
+            # first entry is the header of the data of the format:
+            # level, page_num, block_num, par_num, line_num, word_num, left, top, width, height, confidence, text
             if i == 0:
                 continue
 
-            # level, page_num, block_num, par_num, line_num, word_num, left, top, width, height, confidence, text
-            # left, top, width, height, confidence
+            # left, top, width, height, confidence, text
             data = d.split("\t")[6:12]
             confidence = float(data[4])
             word = data[-1]
 
-            # filter out regions of the image that are mostly not text
+            # filter out regions of the image that are most likely not text
             if confidence < 0:
                 continue
             if word.strip() == "":
@@ -356,9 +363,10 @@ class PDFUtils:
             if aspect_ratio <= MIN_ASPECT_RATIO or aspect_ratio >= MAX_ASPECT_RATIO:
                 continue
 
+            # focus on the regions of the image where there is likely text
             mask = cv2.rectangle(mask, (x0_pad, y0_pad), (x1_pad, y1_pad), 255, -1)
 
-        # connect regions together
+        # connect regions together in terms of connected components
         # this helps if Tesseract misses some words in a sentence
         close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 5))
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, close_kernel, iterations=4)
@@ -366,7 +374,7 @@ class PDFUtils:
         dilate_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 3))
         mask = cv2.dilate(mask, dilate_kernel, iterations=5)
 
-        # identify and collect the blocks of text from the mask
+        # identify and collect the blocks of text from the mask (obtain bounding boxes)
         regions = []
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         for contour in reversed(contours):
@@ -392,6 +400,8 @@ class PDFUtils:
                     cv2.LINE_AA,
                 )
 
+                region_no += 1
+
             PDFUtils.debug_show_image(
                 [original_image, cv2.cvtColor(masked_regions, cv2.COLOR_GRAY2BGR)]
             )
@@ -399,9 +409,9 @@ class PDFUtils:
         return regions
 
     @classmethod
-    def load_extract_text_hardcopy(cls, path, dpi=200, verbose=False):
+    def load_extract_text_hardcopy(cls, path, dpi=DPI, verbose=False):
         """
-        Pipeline to load a PDF and extract raw text.
+        Pipeline to load a PDF from a path and extract raw text in a (possibly) unordered fashion.
         """
         start_time = 0
         extracted_raw_texts = []
@@ -426,7 +436,7 @@ class PDFUtils:
                 )
             if rotated is None:
                 warnings.warn(
-                    f"Could not rotate PDF page {i + 1}, using original page as fallback."
+                    f"Could not deskew PDF page {i + 1}, using original page as fallback"
                 )
                 rotated = page
                 continue
@@ -440,7 +450,7 @@ class PDFUtils:
                     f"identfied {len(regions)} in {perf_counter() - start_time:.2f} s"
                 )
             if len(regions) <= 1:
-                warnings.warn(f"Unable to extract page {i + 1}.")
+                warnings.warn(f"Unable to extract page {i + 1}")
                 continue
 
             # 3. extract the text from each of the identified groups.
@@ -448,7 +458,7 @@ class PDFUtils:
                 start_time = perf_counter()
             raw_text_sections = cls.extract_text(rotated, regions)
             if verbose:
-                print(f"extracted text in {(perf_counter() - start_time):.2f}s")
+                print(f"extracted text in {(perf_counter() - start_time):.2f} s")
 
             extracted_raw_texts.append(raw_text_sections)
 
@@ -465,7 +475,7 @@ def main():
     ELECTRONIC_SINGLE_PATH = "./source_material/electronic_printouts/single/Slow Cooker Pineapple Pork Chops.pdf"
 
     print("Loading pages")
-    pages = PDFUtils.load_pdf_pages(HARDCOPY_MULTI_PATH_1, dpi=200)
+    pages = PDFUtils.load_pdf_pages(HARDCOPY_MULTI_PATH_2, dpi=DPI)
     print("Pages loaded")
 
     for i, page in enumerate(pages):
@@ -477,17 +487,14 @@ def main():
 
         print("Identifying text regions")
         regions = PDFUtils.identify_text_regions(rotated)
-        print(f"{len(regions)} identified")
+        print(f"{len(regions)} regions identified")
 
         print("Extracting text")
         text = PDFUtils.extract_text(rotated, regions)
-        print("Text extracted")
 
         if not DEBUG_DISPLAY_OCR_PRECURSOR:
             print("")
             print(*text, sep="\n")
-
-        _ = input("Press enter to continue\n")
 
     cv2.destroyAllWindows()
 
