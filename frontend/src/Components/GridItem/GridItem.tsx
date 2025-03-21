@@ -26,7 +26,7 @@ function GridItem({ recipe }: { recipe: Recipe }) {
                 }}
               />
             ))}
-          </div>
+          </div> 
         </div>
       </div>
       
