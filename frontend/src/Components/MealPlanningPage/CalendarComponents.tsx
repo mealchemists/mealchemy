@@ -1,4 +1,4 @@
-import { IconButton } from "@mui/material";
+import { IconButton, Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import './MealPlanningPage.css';
 
@@ -11,7 +11,15 @@ export const CustomToolbar = ({ label, onNavigate }) => (
             <button type="button" onClick={() => onNavigate('NEXT')}>Next</button>
         </div>
         <div className="rbc-btn-group rbc-btn-group-right">
-            <button type="button" className="shopping-list-button">Add to Shopping List</button>
+            <Button variant = "contained" 
+            sx = {{
+                backgroundColor:'#6bb2f4!important',
+                color:'white!important',
+                borderRadius:'10px!important',
+                border:'none !important'
+
+            }}
+            >Add to Shopping List</Button>
         </div>
     </div>
 );

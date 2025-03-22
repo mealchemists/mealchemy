@@ -1,4 +1,4 @@
-import { Stack, FormControl, MenuItem, Select, IconButton, Box, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { Stack, FormControl, MenuItem, Select, IconButton, Box, ToggleButton, ToggleButtonGroup, Button } from "@mui/material";
 import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
@@ -364,7 +364,14 @@ function MealPlanningPage() {
             Nutrition Details
           </ToggleButton>
         </ToggleButtonGroup>
-        <button className="shopping-list-button" onClick={saveMealPlan}>SAVE</button>
+        <Button 
+        variant = "contained"
+        sx = {{
+          backgroundColor: '#6bb2f4',
+          color:'white',
+          borderRadius:'10px'
+        }}
+         onClick={saveMealPlan}>SAVE</Button>
       </Box>
 
       {view === "recipes" ? (

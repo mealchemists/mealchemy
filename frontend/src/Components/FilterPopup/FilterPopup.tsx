@@ -3,7 +3,7 @@ import './FilterPopup.css';
 import CloseIcon from '@mui/icons-material/Close';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
-import { Chip } from '@mui/material';
+import { Button, Chip } from '@mui/material';
 import Slider from '@mui/material/Slider';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -218,15 +218,31 @@ export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSo
 
         <div className="popupButtonContainer">
           <div className="popupFirst">
-            <button className="reset-button" onClick={resetFilters}>
+            <Button 
+            variant = "contained"
+            sx = {{
+              backgroundColor:'#d2d2d2',
+              color:'black',
+              borderRadius:'10px',
+              marginTop:'3px'
+            }}
+            className="reset-button" onClick={resetFilters}>
               Reset
-            </button>
+            </Button>
           </div>
           <div className="popupMiddle"></div>
           <div className="popupLast">
-            <button className="apply-button" onClick={applyFilters}>
+            <Button 
+            variant = 'contained'
+            sx = {{
+              backgroundColor: '#6bb2f4',
+              color:'white',
+              borderRadius:'10px',
+              marginTop:'3px'
+            }}
+            className="apply-button" onClick={applyFilters}>
               Apply
-            </button>
+            </Button>
           </div>
         </div>
       </div>

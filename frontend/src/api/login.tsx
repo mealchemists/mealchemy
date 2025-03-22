@@ -12,6 +12,7 @@ export const loginUser = async (creds) => {
     // Fetch the CSRF token
     const csrfToken = await getCsrfToken();
     // Make the POST request with the CSRF token in the headers
+    console.log(creds);
     const response = await apiClient.post(
         LOGIN_URI, 
         creds,

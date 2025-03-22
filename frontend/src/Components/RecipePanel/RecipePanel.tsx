@@ -4,6 +4,7 @@ import RecipeSearch from '../RecipeSearch/RecipeSearch';
 import { Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipePanel.css';
 import { getRecipeIngredients } from '../../api/recipeIngredientApi';
+import Button from '@mui/material/Button';
 
 interface RecipePanelProps {
     recipeIngredient: RecipeIngredient[];
@@ -83,21 +84,21 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const handleSearchRecipe = async (searchInput: string) => {
         // If searchInput is empty or just whitespace, reset to the original list
         if (!searchInput.trim()) {
-          setRecipeIngredients(recipeIngredient); // Reset to the original list
-          return;
+            setRecipeIngredients(recipeIngredient); // Reset to the original list
+            return;
         }
-        
+
         try {
-          // Call the API with the search parameter
-          const response = await getRecipeIngredients({ search: searchInput.trim() });
-      
-          // Set the recipe ingredients with the API response
-          setRecipeIngredients(response.data); // Assuming 'data' contains the list of ingredients
+            // Call the API with the search parameter
+            const response = await getRecipeIngredients({ search: searchInput.trim() });
+
+            // Set the recipe ingredients with the API response
+            setRecipeIngredients(response);
         } catch (error) {
-          console.error('Error fetching recipe ingredients:', error);
-          // Optionally, you can handle errors (e.g., display a message to the user)
+            console.error('Error fetching recipe ingredients:', error);
+            // Optionally, you can handle errors (e.g., display a message to the user)
         }
-      };
+    };
     if (loading) return <div>Loading...</div>;
     if (error) return <div>{error}</div>;
 
@@ -105,14 +106,30 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
         <div className="recipe-container">
 
             <RecipeSearch onSelect={handleSelectOption} searchRecipe={handleSearchRecipe} />
-            {searchRecipes.map((recipe, index) => (
-                <ListItem key={index} recipeIngredient={recipe} multiSelect={multiSelect} onCheckboxChange={handleCheckboxChange} onClick={() => onRecipeSelect(recipe)} />
-            ))}
+            <div className='recipeListContainer'>
+                {searchRecipes.map((recipe, index) => (
+                    <ListItem key={index} recipeIngredient={recipe} multiSelect={multiSelect} onCheckboxChange={handleCheckboxChange} onClick={() => onRecipeSelect(recipe)} />
+                ))}
+            </div>
 
             {buttonVisibility && (
                 <div className="button-container">
-                    <button className="delete-button" onClick={handleDelete}>Delete</button>
-                    <button className="shopping-list-button" onClick={handleAddShoppingList}>Add to Shopping List</button>
+                    <Button
+                        variant="contained"
+                        sx={{
+                            backgroundColor: 'red',
+                            color: 'white',
+                            borderRadius: '10px'
+                        }}
+                        onClick={handleDelete}>Delete</Button>
+                    <Button
+                        variant="contained"
+                        sx={{
+                            backgroundColor: '#6bb2f4',
+                            color: 'white',
+                            borderRadius: '10px'
+                        }}
+                        onClick={handleAddShoppingList}>Add to Shopping List</Button>
                 </div>
             )}
         </div>

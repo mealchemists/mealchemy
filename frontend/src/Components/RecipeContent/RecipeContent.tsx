@@ -5,11 +5,11 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
-import { Chip, TextField } from '@mui/material';
+import { Button, Chip, TextField } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import EditTagModal from '../EditTagModal/EditTagModal';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import {deleteRecipeIngredients, putRecipeIngredients} from '../../api/recipeIngredientApi.js';
+import {deleteRecipeIngredients, putRecipeIngredients} from '../../api/recipeIngredientApi';
 
 
 
@@ -51,10 +51,10 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const handleCloseIngredientModal = () => setOpenAddIngredientModal(false);
     
     // For tags
-    const [mainIngredient, setMainIngredient] = useState(String(recipe.recipe.main_ingredient));
-    const [cookTime, setCookTime] = useState(String(recipe.recipe.cook_time));
-    const [prepTime, setPrepTime] = useState(String(recipe.recipe.prep_time));
-    const [totalTime, setTotalTime] = useState(String(recipe.recipe.total_time));
+    const [mainIngredient, setMainIngredient] = useState(String(recipe.main_ingredient));
+    const [cookTime, setCookTime] = useState(String(recipe.cook_time));
+    const [prepTime, setPrepTime] = useState(String(recipe.prep_time));
+    const [totalTime, setTotalTime] = useState(String(recipe.total_time));
 
     const [tags, setTags] = useState([mainIngredient, cookTime, prepTime, totalTime]);
     const [error, setError] = useState("");
@@ -94,7 +94,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     // For editing the actual recipe content
     const [title, setTitle] = useState(recipe.name);
     const [ingredients, setIngredients] = useState<Ingredient[]>(recipeIngredient.ingredients);
-    const [instructions, setInstructions] = useState<string>(recipe.recipe.steps);
+    const [instructions, setInstructions] = useState<string>(recipe.steps);
 
     const openOptions = Boolean(anchorEl);
 
@@ -141,9 +141,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         // Create the updated recipe object with changes
         console.log(tempCookTime)
         const updatedRecipe = {
-            ...recipe,
+            ...recipeIngredient,
             recipe: {
-                ...recipe.recipe,
+                ...recipe,
                 main_ingredient: tempMainIngredient,
                 cook_time: Number(tempCookTime),
                 prep_time: Number(tempPrepTime),
@@ -192,7 +192,14 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         <div className="recipeContent">
             <div className="buttonContainer">
                 {editMode ? (
-                    <button className = "cancel-button" onClick={handleCancel} autoFocus>Cancel</button>
+                    <Button 
+                    variant="contained" 
+                    sx = {{
+                        backgroundColor: '#d2d2d2',
+                        borderRadius:'10px',
+                        color:'black'
+                    }} 
+                    onClick={handleCancel} autoFocus>Cancel</Button>
                 ) : (
                     <IconButton
                         aria-label="more"
@@ -232,7 +239,14 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 </Menu>
 
                 {editMode && (
-                    <button className = "save-button" onClick={() => handleSave(title, ingredients, instructions)}>Save</button>
+                    <Button 
+                    variant = "contained"
+                    sx = {{
+                        backgroundColor:'#6bb2f4',
+                        color:'white',
+                        borderRadius:'10px'
+                    }}
+                    onClick={() => handleSave(title, ingredients, instructions)}>Save</Button>
                 )}
 
             </div>
@@ -310,7 +324,14 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                     </li>
                                 ))}
                             </ul>
-                            <button className="add-button" onClick={handleAddIngredient}>Add Ingredient</button>
+                            <Button 
+                            variant = "contained"
+                            sx = {{
+                                backgroundColor: '#b0dbb2',
+                                color:'white',
+                                borderRadius:'white'
+                            }}
+                            onClick={handleAddIngredient}>Add Ingredient</Button>
                         </>
                     ) : (
                         <ul>
@@ -327,7 +348,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 <div className="instructionContent">
                     {editMode ? (
                         <>
-                            <ul>
+                            {/* <ul>
                                 {instructions.map((instruction, index) => (
                                     <li key={index}>
                                         <TextField
@@ -347,7 +368,14 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                     </li>
                                 ))}
                             </ul>
-                            <button className = "add-button" onClick={handleAddInstruction}>Add Instruction</button>
+                            <Button 
+                            variant = "contained"
+                            sx = {{
+                            backgroundColor:'#b0dbb2',
+                            color:'white',
+                            borderRadius:'10px'
+                            }}
+                             onClick={handleAddInstruction}>Add Instruction</Button> */}
 
                         </>
                     ) : (

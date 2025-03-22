@@ -24,6 +24,7 @@ function LoginPage() {
 
     const handleLogin = async (creds) => {
         try {
+            console.log("CREDS", creds);
             const response = await loginUser(creds);
             navigate("/Recipes");
             toast.success('Login successful! 🎉'); // Success toast

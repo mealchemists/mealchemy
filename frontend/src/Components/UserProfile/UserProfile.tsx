@@ -50,13 +50,13 @@ function UserProfile() {
         <Typography variant="body2" sx={{ fontWeight: "bold", mb: 2 }}>
           {email}
         </Typography>
-        <Button variant="contained" color="primary" onClick={handleChangePassword} sx={{ mb: 1, width: "100%" }}>
+        <Button variant="contained" color="primary" onClick={handleChangePassword} sx={{ mb: 1, width: "100%",borderRadius:'10px'}}>
           Change Password
         </Button>
         {showPasswordInput && (
           <FormControl sx={{ display: "flex", flexDirection: "row", alignItems: "center", mt: 1, mb: 2 }} variant="outlined">
             <OutlinedInput
-              sx={{ flex: 1 }}
+              sx={{ flex: 1,borderRadius:'10px' }}
               type={showPassword ? "text" : "password"}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -74,12 +74,12 @@ function UserProfile() {
                 </InputAdornment>
               }
             />
-            <Button variant="contained" color="success" onClick={handleSavePassword} sx={{ ml: 1 }}>
+            <Button variant="contained" color="success" onClick={handleSavePassword} sx={{ ml: 1 ,borderRadius:'10px'}}>
               Done
             </Button>
           </FormControl>
         )}
-        <Button variant="outlined" color="error" onClick={handleSignOut} sx={{ width: "100%" }}>
+        <Button variant="outlined" color="error" onClick={handleSignOut} sx={{ width: "100%" ,borderRadius:'10px'}}>
           Sign Out
         </Button>
       </CardContent>

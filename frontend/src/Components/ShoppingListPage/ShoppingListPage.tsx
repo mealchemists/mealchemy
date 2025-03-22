@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Typography, Box } from '@mui/material'
+import { Accordion, AccordionDetails, AccordionSummary, Typography, Box, Button } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Checkbox from '@mui/material/Checkbox';
 import { useEffect, useState } from 'react';
@@ -223,7 +223,15 @@ function ShoppingListPage() {
                       textDecoration: item.checked ? 'line-through' : 'none',
                       color: item.checked ? 'gray' : 'initial'
                     }}>{item.quantity}</Typography>
-                    <button onClick={() => handleOpenAisleModal(item.ingredient)}>Move</button>
+                    <Button 
+                    variant = "contained"
+                    sx = {{
+                      backgroundColor: '#d2d2d2',
+                      color:'black',
+                      borderRadius:'10px',
+                      padding:'5px'
+                    }}
+                    onClick={() => handleOpenAisleModal(item.ingredient)}>Move</Button>
 
                   </Box>
                 ))}
