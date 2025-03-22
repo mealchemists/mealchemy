@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.core.mail import send_mail
+from rest_framework_simplejwt.tokens import RefreshToken
 import os
 
 class RegisterView(APIView):
@@ -86,4 +87,5 @@ class CheckAuth(APIView):
         if request.user.is_authenticated:
             return JsonResponse({"authenticated": True, "username": request.user.username})
         return JsonResponse({"authenticated": False})
+    
 

@@ -9,7 +9,8 @@ import { Chip, TextField } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import EditTagModal from '../EditTagModal/EditTagModal';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import {deleteRecipeIngredients} from '../../api/recipeIngredientApi';
+import {deleteRecipeIngredients, putRecipeIngredients} from '../../api/recipeIngredientApi.js';
+
 
 
 const options = [
@@ -50,10 +51,10 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const handleCloseIngredientModal = () => setOpenAddIngredientModal(false);
     
     // For tags
-    const [mainIngredient, setMainIngredient] = useState("Chicken");
-    const [cookTime, setCookTime] = useState(String(recipe.cook_time));
-    const [prepTime, setPrepTime] = useState(String(recipe.prep_time));
-    const [totalTime, setTotalTime] = useState(String(recipe.total_time));
+    const [mainIngredient, setMainIngredient] = useState(String(recipe.recipe.main_ingredient));
+    const [cookTime, setCookTime] = useState(String(recipe.recipe.cook_time));
+    const [prepTime, setPrepTime] = useState(String(recipe.recipe.prep_time));
+    const [totalTime, setTotalTime] = useState(String(recipe.recipe.total_time));
 
     const [tags, setTags] = useState([mainIngredient, cookTime, prepTime, totalTime]);
     const [error, setError] = useState("");
@@ -64,6 +65,16 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             console.log(response)
             // Notify parent to delete the recipe from the list
             onDeleteRecipe(recipeIngredient);
+        } catch (error) {
+            setError("Error fetching recipes");
+            console.error("Error fetching recipes:", error);
+        }
+    }
+
+    const putRecipe = async(data: RecipeIngredient) => {
+        try {
+            const response = await putRecipeIngredients(data);
+            console.log(response)
         } catch (error) {
             setError("Error fetching recipes");
             console.error("Error fetching recipes:", error);
@@ -83,7 +94,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     // For editing the actual recipe content
     const [title, setTitle] = useState(recipe.name);
     const [ingredients, setIngredients] = useState<Ingredient[]>(recipeIngredient.ingredients);
-    const [instructions, setInstructions] = useState<string[]>(recipe.steps);
+    const [instructions, setInstructions] = useState<string>(recipe.recipe.steps);
 
     const openOptions = Boolean(anchorEl);
 
@@ -126,6 +137,21 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         setCookTime(String(tempCookTime));
         setPrepTime(String(tempPrepTime));
         setTotalTime(String(tempTotalTime));
+        
+        // Create the updated recipe object with changes
+        console.log(tempCookTime)
+        const updatedRecipe = {
+            ...recipe,
+            recipe: {
+                ...recipe.recipe,
+                main_ingredient: tempMainIngredient,
+                cook_time: Number(tempCookTime),
+                prep_time: Number(tempPrepTime),
+                total_time: Number(tempTotalTime)
+            }
+        };
+        console.log(updatedRecipe);
+        putRecipe(updatedRecipe);
         handleCloseTagModal();
     };
 
@@ -152,15 +178,15 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
     };
 
-    const handleInstructionChange = (index, value) => {
-        const newInstructions = [...instructions];
-        newInstructions[index] = value;
-        setInstructions(newInstructions);
-    };
+    // const handleInstructionChange = (index, value) => {
+    //     const newInstructions = [...instructions];
+    //     newInstructions[index] = value;
+    //     setInstructions(newInstructions);
+    // };
 
-    const handleAddInstruction = () => {
-        setInstructions([...instructions, ""]); // Add an empty ingredient field
-    };
+    // const handleAddInstruction = () => {
+    //     setInstructions([...instructions, ""]); // Add an empty ingredient field
+    // };
 
     return (
         <div className="recipeContent">
@@ -261,7 +287,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 onApplyTagChanges={handleApplyTagChanges}
                 open={openEditTagModal}
                 onClose={handleCloseTagModal}
-            ></EditTagModal>
+            ></EditTagModal> 
             <div className="imgIngredients">
                 <img src={recipe.imageSrc} alt={recipe.name} className="itemImage" />
                 <div className="ingredientContainer">
@@ -325,11 +351,11 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
                         </>
                     ) : (
-                        <ul>
-                            {/* {instructions.map((instruction) => (
-                                <li key={instruction}>{instruction}</li>
-                            ))} */}
-                        </ul>
+                       <ul>
+                        {instructions.split('\n').map((instruction, index) => (
+                            <li key={index}>{instruction}</li>
+                        ))}
+                    </ul>
                     )}
                 </div>
             </div>

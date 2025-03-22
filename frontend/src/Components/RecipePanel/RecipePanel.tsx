@@ -46,7 +46,6 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
         setSelectedRecipes((prevSelected) =>
             isChecked ? [...prevSelected, recipeName] : prevSelected.filter(name => name !== recipeName)
         );
-        console.log(recipeName);
     };
 
     // TODO convert this to recipe ingredients instead
@@ -81,18 +80,24 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
         setSearchRecipes(recipeIngredient);
     }, [recipeIngredient]);
 
-    const handleSearchRecipe = (searchInput: string) => {
+    const handleSearchRecipe = async (searchInput: string) => {
+        // If searchInput is empty or just whitespace, reset to the original list
         if (!searchInput.trim()) {
-            setRecipeIngredients(recipeIngredient); // Reset to the original list when empty
-            return;
+          setRecipeIngredients(recipeIngredient); // Reset to the original list
+          return;
         }
-
-        const filtered = recipeIngredient.filter(
-            item => item.recipe && item.recipe.name.toLowerCase().includes(searchInput.toLowerCase())
-        );
-
-        setRecipeIngredients(filtered);
-    };
+        
+        try {
+          // Call the API with the search parameter
+          const response = await getRecipeIngredients({ search: searchInput.trim() });
+      
+          // Set the recipe ingredients with the API response
+          setRecipeIngredients(response.data); // Assuming 'data' contains the list of ingredients
+        } catch (error) {
+          console.error('Error fetching recipe ingredients:', error);
+          // Optionally, you can handle errors (e.g., display a message to the user)
+        }
+      };
     if (loading) return <div>Loading...</div>;
     if (error) return <div>{error}</div>;
 
