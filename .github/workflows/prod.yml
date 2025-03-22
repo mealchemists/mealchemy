@@ -37,7 +37,7 @@ jobs:
             --set-env-vars ALLOWED_HOSTS=mybackend-service-url.a.run.app \
             --set-env-vars CSRF_TRUSTED_ORIGINS=https://mealchemy.app \
             --set-env-vars CORS_ALLOWED_ORIGINS=https://mealchemy.app \
-            --set-env-vars PORT=8000  
+            --set-env-vars PORT=8000
 
   deploy-frontend:
     runs-on: ubuntu-latest
@@ -65,8 +65,8 @@ jobs:
             --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest \
             --platform managed \
             --region us-west1 \
-            --allow-unauthenticated \ 
-            --set-env-vars PORT=3000  
+            --allow-unauthenticated \
+            --set-env-vars PORT=3000
 
   # deploy-recipe-extractor:
   #   runs-on: ubuntu-latest
