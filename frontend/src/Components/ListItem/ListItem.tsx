@@ -78,7 +78,7 @@ const ListItem: React.FC<ListItemProps> = ({
                                         fontWeight: "bold",
                                         border: "3px solid #38793b",
                                         "& .MuiChip-icon": {
-                                            color: "#38793b", // Force the correct color
+                                            color: "#38793b", 
                                         },
                                     }}
                                 />

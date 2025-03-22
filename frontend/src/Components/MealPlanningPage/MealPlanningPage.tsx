@@ -65,7 +65,6 @@ function MealPlanningPage() {
   const recipesPerPage = 8; // Show 8 recipes per page (4 columns x 2 rows)
   const [view, setView] = useState("recipes");
   const [totalPages, setTotalPages] = useState(0);
-  // const totalPages = Math.ceil(recipes.length / recipesPerPage);
   const [searchRecipes, setSearchRecipes] = useState<RecipeIngredient[]>([]); //TODO: pass the recipes from database
   const [visibleRecipes, setVisibleRecipes] = useState<RecipeIngredient[]>([]);
 
@@ -76,7 +75,7 @@ function MealPlanningPage() {
       const response = await getRecipeIngredients();
       console.log(response);
       setRecipeIngredients(response);
-      setTotalPages(response.length/recipesPerPage);
+      setTotalPages(Math.ceil(response.length/recipesPerPage));
     } catch (error) {
       console.error("Error fetching recipes:", error);
     } 
