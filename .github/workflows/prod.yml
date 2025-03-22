@@ -32,7 +32,7 @@ jobs:
             --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest \
             --platform managed \
             --region us-west1 \
-            --port 8000
+            --port 8000 \
             --allow-unauthenticated \
             --set-env-vars DATABASE_URL=${{ secrets.SUPABASE_DB_URL }} \
             --set-env-vars ALLOWED_HOSTS=backend-service-102081122635.us-west1.run.app \
@@ -65,7 +65,7 @@ jobs:
             --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest \
             --platform managed \
             --region us-west1 \
-            --port 3000
+            --port 3000 \
             --allow-unauthenticated \
 
   # deploy-recipe-extractor:
