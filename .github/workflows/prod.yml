@@ -66,8 +66,7 @@ jobs:
             --platform managed \
             --region us-west1 \
             --port 3000 \
-            --allow-unauthenticated \
-
+            --allow-unauthenticated 
   # deploy-recipe-extractor:
   #   runs-on: ubuntu-latest
   #   steps:
