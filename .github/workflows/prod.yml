@@ -52,7 +52,8 @@ jobs:
             --allow-unauthenticated \
             --set-env-vars "DATABASE_URL=${{ env.DATABASE_URL }}" \
             --set-env-vars "GS_BUCKET_NAME=${{ env.GS_BUCKET_NAME }}" \
-            --set-env-vars "SECRET_KEY=${{ env.SECRET_KEY }}"
+            --set-env-vars "SECRET_KEY=${{ env.SECRET_KEY }}" \
+             --add-cloudsql-instances="${{ secrets.GCP_PROJECT_ID }}:us-west1:mealchemy-db"
 
       - name: Run database migrations
         run: |
