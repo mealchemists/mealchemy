@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './ListItem.css';
 
 import { Chip, Tooltip } from '@mui/material';
@@ -11,25 +11,30 @@ import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 interface ListItemProps {
     recipeIngredient: RecipeIngredient;
     multiSelect: boolean;
-    onCheckboxChange: (recipeName: string, isChecked: boolean) => void;
+    onCheckboxChange: (recipeName: Number, isChecked: boolean) => void;
     onClick: any;
+    isChecked: boolean;
 }
 
 const ListItem: React.FC<ListItemProps> = ({
     recipeIngredient,
     multiSelect = false,
     onCheckboxChange,
-    onClick
+    onClick,
+    isChecked = false
 }) => {
     const recipe = recipeIngredient.recipe;
-    const [checked, setChecked] = useState(false);
+    const [checked, setChecked] = useState(isChecked);
     const tags = [recipe.main_ingredient, recipe.cook_time, recipe.prep_time, recipe.total_time];
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const isChecked = e.target.checked;
         setChecked(isChecked);
-        onCheckboxChange(recipe.name, isChecked); // Notify parent
+        onCheckboxChange(recipe.id, isChecked); // Notify parent
     };
 
+    useEffect(() => {
+        setChecked(isChecked);
+    }, [isChecked]);
 
     return (
         <div className="itemContainer" onClick={onClick}>

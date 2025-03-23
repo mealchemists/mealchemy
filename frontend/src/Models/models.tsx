@@ -1,4 +1,5 @@
 export interface Recipe{
+    id:Number;
     name:string,
     cook_time: Number;
     prep_time: Number;

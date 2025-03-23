@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ListItem from '../ListItem/ListItem';
 import RecipeSearch from '../RecipeSearch/RecipeSearch';
 import { Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipePanel.css';
 import { getRecipeIngredients } from '../../api/recipeIngredientApi';
 import Button from '@mui/material/Button';
+import { deleteRecipe } from '../../api/recipes';
 
 interface RecipePanelProps {
     recipeIngredient: RecipeIngredient[];
@@ -22,9 +23,11 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const [searchRecipes, setSearchRecipes] = useState<RecipeIngredient[]>(recipeIngredient);
     const [buttonVisibility, setButtonVisibility] = useState(false);
     const [multiSelect, setMultiSelect] = useState(false);
-    const [selectedRecipes, setSelectedRecipes] = useState<string[]>([]);
+    const [selectedRecipes, setSelectedRecipes] = useState<Number[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const recipeSearchRef = useRef<any>(null);
+
     const fetchRecipes = async () => {
         try {
             const response = await getRecipeIngredients();
@@ -43,11 +46,18 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     }, []);
 
     // TODO convert this to recipe ingredients instead
-    const handleCheckboxChange = (recipeName: string, isChecked: boolean) => {
-        setSelectedRecipes((prevSelected) =>
-            isChecked ? [...prevSelected, recipeName] : prevSelected.filter(name => name !== recipeName)
-        );
+    const handleCheckboxChange = (recipeId: Number, isChecked: boolean) => {
+        setSelectedRecipes((prevSelected) => {
+            if (isChecked) {
+                // Add the selected recipe to the array
+                return [...prevSelected, recipeId];
+            } else {
+                // Remove the selected recipe from the array
+                return prevSelected.filter((id) => id !== recipeId);
+            }
+        });
     };
+
 
     // TODO convert this to recipe ingredients instead
     const handleAddManualRecipe = () => {
@@ -68,9 +78,38 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
         }
     };
 
-    const handleDelete = () => {
-        // TODO: Delete from database
-        setButtonVisibility(false);
+    const handleDelete = async () => {
+        if (selectedRecipes.length === 0) {
+            return;
+        }
+        try {
+            // Loop through each selected recipe and send the delete request
+            for (const recipeId of selectedRecipes) {
+                const recipeToDelete = recipeIngredient.find(
+                    recipeIngredient => recipeIngredient.recipe.id === recipeId
+                );
+                if (recipeToDelete) {
+                    await deleteRecipe(recipeToDelete.recipe.id); 
+                }
+            }
+
+            // After deletion, update the state and clear selected recipes
+            const updatedRecipes = recipeIngredient.filter(
+                recipeIngredient => !selectedRecipes.includes(recipeIngredient.recipe.id)
+            );
+            setRecipeIngredients(updatedRecipes);
+            setSelectedRecipes([]);
+            setMultiSelect(false);
+            setButtonVisibility(false);
+            if (recipeSearchRef.current) {
+                // uses handleCancel in recipeSearch
+                recipeSearchRef.current.handleCancel();
+            }
+            onRecipeSelect(null);
+        } catch (error) {
+            console.error("Error deleting recipes:", error);
+            alert("There was an error deleting the selected recipes.");
+        }
     };
 
     const handleAddShoppingList = () => {
@@ -80,6 +119,8 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     useEffect(() => {
         setSearchRecipes(recipeIngredient);
     }, [recipeIngredient]);
+
+
 
     const handleSearchRecipe = async (searchInput: string) => {
         // If searchInput is empty or just whitespace, reset to the original list
@@ -105,10 +146,17 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     return (
         <div className="recipe-container">
 
-            <RecipeSearch onSelect={handleSelectOption} searchRecipe={handleSearchRecipe} />
+            <RecipeSearch onSelect={handleSelectOption} searchRecipe={handleSearchRecipe} ref = {recipeSearchRef}/>
             <div className='recipeListContainer'>
-                {searchRecipes.map((recipe, index) => (
-                    <ListItem key={index} recipeIngredient={recipe} multiSelect={multiSelect} onCheckboxChange={handleCheckboxChange} onClick={() => onRecipeSelect(recipe)} />
+                {searchRecipes.map((recipeIngredient, index) => (
+                    <ListItem 
+                        key={index} 
+                        recipeIngredient={recipeIngredient} 
+                        multiSelect={multiSelect} 
+                        onCheckboxChange={handleCheckboxChange} 
+                        isChecked={selectedRecipes.includes(recipeIngredient.recipe.id)} 
+                        onClick={() => onRecipeSelect(recipeIngredient)} 
+                    />
                 ))}
             </div>
 

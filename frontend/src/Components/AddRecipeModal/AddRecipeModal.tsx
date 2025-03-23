@@ -3,7 +3,7 @@ import { Recipe } from '../../Models/models';
 import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, Typography } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import { postRecipeUrl } from '../../api/recipeAddUrl.js';
+import { postRecipeUrl } from '../../api/recipes';
 
 
 const style = {
