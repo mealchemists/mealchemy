@@ -29,9 +29,6 @@ SECRET_KEY = 'django-insecure-99qei#smfu0763xsl#hf^ln$52gj8o-es99dl2t@e(0i=%uk3k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["https://backend-service-102081122635.us-west1.run.app", "localhost"]
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -86,8 +83,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "db.sqlite3",
+        os.getenv("DATABASE_URL", "sqlite:///db.sqlite3"),
     }
 }
 
@@ -180,8 +176,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
 
-CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "https://backend-service-102081122635.us-west1.run.app").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "localhost").split(",")
 
-CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "https://backend-service-102081122635.us-west1.run.app").split(",")
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "localhost").split(",")
 
 CORS_ALLOW_CREDENTIALS = True
