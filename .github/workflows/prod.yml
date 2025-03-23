@@ -67,7 +67,7 @@ jobs:
             --region us-west1 \
             --port 3000 \
             --allow-unauthenticated \
-            --memory 600Mi
+            --memory 1G
   # deploy-recipe-extractor:
   #   runs-on: ubuntu-latest
   #   steps:
