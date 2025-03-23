@@ -50,7 +50,6 @@ jobs:
             --region us-west1 \
             --port 8000 \
             --allow-unauthenticated \ 
-            0
             --set-env-vars "DATABASE_URL=${{ env.DATABASE_URL }}" \
             --set-env-vars "GS_BUCKET_NAME=${{ env.GS_BUCKET_NAME }}" \
             --set-env-vars "SECRET_KEY=${{ env.SECRET_KEY }}"
