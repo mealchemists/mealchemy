@@ -49,16 +49,23 @@ jobs:
             --platform managed \
             --region us-west1 \
             --port 8000 \
-            --allow-unauthenticated \ 
+            --allow-unauthenticated \
             --set-env-vars "DATABASE_URL=${{ env.DATABASE_URL }}" \
             --set-env-vars "GS_BUCKET_NAME=${{ env.GS_BUCKET_NAME }}" \
             --set-env-vars "SECRET_KEY=${{ env.SECRET_KEY }}"
-            
+
       - name: Run database migrations
         run: |
           gcloud run services describe backend-service --region us-west1 --format "value(status.url)" > url.txt
+          
           export SERVICE_URL=$(cat url.txt)
           curl -X POST $SERVICE_URL/migrate
+            
+      # - name: Run database migrations
+      #   run: |
+      #     gcloud run services describe backend-service --region us-west1 --format "value(status.url)" > url.txt
+      #     export SERVICE_URL=$(cat url.txt)
+      #     curl -X POST $SERVICE_URL/migrate
   # deploy-frontend:
   #   runs-on: ubuntu-latest
   #   steps:
