@@ -17,6 +17,7 @@ import logging
 import os
 from urllib.parse import urlparse
 import dj_database_url
+import re
 
 load_dotenv()
 
@@ -95,7 +96,6 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Check if we're in development or production
 DEBUG = os.getenv("DATABASE_DEV", "False") == "True"
-print(f"DEBIG = {DEBUG}")
 # Set DATABASES depending on the environment
 if DEBUG:
     # Development: Use SQLite database
@@ -106,15 +106,36 @@ if DEBUG:
         }
     }
 else:
-    # Production: Use Supabase PostgreSQL database
-    print(f"my  db {dj_database_url.config()}")
-    DATABASES = {
-        'default': dj_database_url.config(
-            conn_max_age=600,
-            conn_health_checks=True,
-        ),
-    }
+   # Get the DATABASE_URL from environment variables
+    DATABASE_URL = os.getenv('DATABASE_URL')
 
+    # Parse the URI manually for Cloud SQL
+    match = re.match(
+        r'postgres://([^:]+):([^@]+)@//cloudsql/([^/]+)/([^/]+)', 
+        DATABASE_URL
+    )
+
+    if match:
+        # Extracting components from the URI
+        user = match.group(1)
+        password = match.group(2)
+        cloudsql_instance = match.group(3)
+        dbname = match.group(4)
+        
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': dbname,
+                'USER': user,
+                'PASSWORD': password,
+                'HOST': f'/cloudsql/{cloudsql_instance}',  # Set the Cloud SQL socket path
+                'PORT': '5432',  # Default PostgreSQL port
+                'CONN_MAX_AGE': 0,
+                'CONN_HEALTH_CHECKS': False,
+                'DISABLE_SERVER_SIDE_CURSORS': False,
+            }
+        }
+        
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
