@@ -53,8 +53,14 @@ function AddIngredientModal({ addIngredientFormat, open, onClose, onAddIngredien
                         </div>
                     )}
 
-                   </div> 
-                <button className = "done-button" onClick={sendIngredientToParent}>Done</button>
+                </div>
+                <Button variant="contained"
+                    sx={{
+                        backgroundColor: '#6bb2f4',
+                        color: 'white',
+                        borderRadius:'10px'
+                    }} 
+                    onClick={sendIngredientToParent}>Done</Button>
             </Box>
         </Modal>
     );

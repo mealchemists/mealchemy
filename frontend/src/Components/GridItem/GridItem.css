@@ -36,9 +36,10 @@
     margin-bottom:0;
 }
 
-.tagsContainer {
+.gridItemContainer .tagsContainer {
     display: flex;
     justify-content: center;
+    flex-wrap:wrap;
 }
 
 .contentContainer h3{

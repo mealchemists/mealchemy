@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './LoginPage.css';
-import {loginUser, getCsrfToken, registerUser} from '../../api/login.js';
+import {loginUser, getCsrfToken, registerUser} from '../../api/login';
 import { Container, TextField, Button, Typography, Box, Paper } from "@mui/material";
 import LoginForm from '../Forms/LoginForm'
 import RegisterForm from '../Forms/RegisterForm';
@@ -24,6 +24,7 @@ function LoginPage() {
 
     const handleLogin = async (creds) => {
         try {
+            console.log("CREDS", creds);
             const response = await loginUser(creds);
             navigate("/Recipes");
             toast.success('Login successful! 🎉'); // Success toast
@@ -50,7 +51,9 @@ function LoginPage() {
     };
     return (
         <Container component="main" maxWidth="xs">
-            <Paper elevation={3} sx={{ padding: 3 }}>
+            <Paper elevation={3} sx={{ padding: 3,
+                borderRadius:'10px'
+            }}>
                 <Typography variant="h5" gutterBottom>
                     {isRegistering ? "Sign Up" : "Login"}
                 </Typography>

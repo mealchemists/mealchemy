@@ -1,8 +1,9 @@
 import apiClient from "./apiClient";
+import { Recipe, RecipeIngredient } from '../Models/models';
 
 const RECIPE_INGREDIENT_URI = "recipe-ingredients";
 
-export const getRecipeIngredients = async (searchParams = {}) => {
+export const getRecipeIngredients = async (searchParams = {}) : Promise<RecipeIngredient[]>=> {
   // Construct the query string if there are search parameters
   const queryString = new URLSearchParams(searchParams).toString();
   
@@ -12,9 +13,8 @@ export const getRecipeIngredients = async (searchParams = {}) => {
   // Send the GET request to the API
   const response = await apiClient.get(url);
   
-  return response;
+  return response.data;
 };
-
 // export const deleteRecipeIngredients = async (id) => {
 //   const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];  // Get CSRF token from the cookie
 
@@ -34,6 +34,7 @@ export const deleteRecipeIngredients = async (id) => {
             withCredentials: true,  // Ensure cookies are sent with the request
         }
     );
+    
     return response;
 
 };

@@ -10,8 +10,7 @@ function RecipePage() {
     const [selectedRecipeIngredient, setSelectedRecipeIngredient] = useState<RecipeIngredient | null>(null);
     const [editMode, setEditMode] = useState(false);
     const [recipeIngredient, setRecipeIngredients] = useState<RecipeIngredient[]>([]);
-    
-    
+
     const handleSelectedRecipe = (recipe: RecipeIngredient) => {
         setSelectedRecipeIngredient(null); // Reset first
         setTimeout(() => {
@@ -24,7 +23,7 @@ function RecipePage() {
         setEditMode(false);
     }
 
-    const handleChangeRecipeMode = (changeEditMode)=>{
+    const handleChangeRecipeMode = (changeEditMode) => {
         setEditMode(changeEditMode);
     }
 
@@ -46,7 +45,7 @@ function RecipePage() {
     return (
         <div className="mainContainer">
             <div className="sideContainer">
-                <RecipePanel 
+                <RecipePanel
                     recipeIngredient={recipeIngredient}
                     setRecipeIngredients={setRecipeIngredients}
                     onRecipeSelect={handleSelectedRecipe}
@@ -55,14 +54,17 @@ function RecipePage() {
                 />
             </div>
             <div className="separator"></div>
-            {selectedRecipeIngredient && (
-                <RecipeContent 
-                    recipeIngredient={selectedRecipeIngredient} 
-                    initialEditMode={editMode} 
-                    exitEditMode = {handleExitEditMode} 
-                    onDeleteRecipe={handleDeleteRecipe}
-                />
-            )}
+            <div className="recipeContentContainer">
+                {selectedRecipeIngredient && (
+                    <RecipeContent
+                        recipeIngredient={selectedRecipeIngredient}
+                        initialEditMode={editMode}
+                        exitEditMode={handleExitEditMode}
+                        onDeleteRecipe={handleDeleteRecipe}
+                    />
+                )}
+            </div>
+
         </div>
     );
 }

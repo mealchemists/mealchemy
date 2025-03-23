@@ -1,4 +1,4 @@
-import { Autocomplete, Box, InputAdornment, Modal, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, InputAdornment, Modal, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 const style = {
@@ -92,7 +92,14 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
                                     />
                                 )}
                             />
-                            {/* <button className = "add-button" style={{ height: "40px" }}>Add</button> */}
+                            {/* <Button 
+                            variant = "contained"
+                            sx = {{
+                            backgroundColor:'#b0dbb2',
+                            color:'white',
+                            borderRadius:'10px'
+                            }}
+                            style={{ height: "40px" }}>Add</Button> */}
                         </div>
 
                         {/* Cook Time */}
@@ -161,7 +168,14 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
                     </div>
                 </div>
 
-                <button className = "done-button" onClick={sendTagsToParent}>Done</button>
+
+                <Button variant="contained" 
+                sx={{
+                    backgroundColor: '#6bb2f4',
+                    color: 'white',
+                    borderRadius:'10px'
+
+                }} onClick={sendTagsToParent}>Done</Button>
             </Box>
         </Modal>
     )

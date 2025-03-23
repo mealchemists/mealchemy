@@ -12,7 +12,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
-import Button from '@mui/material';
+import Button from '@mui/material/Button';
 
 const options = [
     'Select',
@@ -103,7 +103,14 @@ function RecipeSearch({ onSelect = null, searchRecipe=null }) {
             <div className="searchContainer">
                 <div className="searchLeft">
                     {showCancelButton ? (
-                        <button className="cancel-button" onClick={handleCancel} autoFocus>Cancel</button>
+                        <Button 
+                        variant="contained" 
+                        sx = {{
+                            backgroundColor: '#d2d2d2',
+                            borderRadius:'10px',
+                            color:'black'
+                        }} 
+                        onClick={handleCancel} autoFocus>Cancel</Button>
                     ) : (
 
                         onSelect &&

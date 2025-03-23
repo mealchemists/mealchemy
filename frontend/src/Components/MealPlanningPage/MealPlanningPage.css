@@ -43,13 +43,16 @@
   border-bottom:1px solid #38793b  !important;
 }
 .rbc-row.rbc-time-header-cell .rbc-header:first-child{
-  border-top-left-radius: 10px;
+  border-top-left-radius: 5px;
 }
 
 .rbc-row.rbc-time-header-cell .rbc-header:last-child{
-  border-top-right-radius: 10px;
+  border-top-right-radius: 5px;
 }
 
+.rbc-calendar {
+  box-sizing:unset !important;
+}
 .rbc-header.rbc-today, .rbc-day-bg.rbc-today{
   background-color:rgb(176, 219, 178, 0.3);
   color:black;
@@ -66,10 +69,6 @@
   width: 100%;
   padding: 0;
   padding-top: 10px;
-}
-
-.rbc-toolbar .shopping-list-button{
-  border:none !important;
 }
 
 .rbc-toolbar-label {
