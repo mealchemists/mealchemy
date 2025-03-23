@@ -3,7 +3,7 @@ import RecipePanel from '../RecipePanel/RecipePanel';
 import RecipeContent from '../RecipeContent/RecipeContent';
 import { Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipePage.css';
-
+import { deleteRecipe } from '../../api/recipes';
 
 
 function RecipePage() {
@@ -27,8 +27,9 @@ function RecipePage() {
         setEditMode(changeEditMode);
     }
 
-    const handleDeleteRecipe = (recipeToDelete: RecipeIngredient) => {
+    const handleDeleteRecipe = async (recipeToDelete: RecipeIngredient) => {
         // Delete the recipe from the list
+        await deleteRecipe(recipeToDelete.recipe.id);
         setRecipeIngredients((prevRecipes) => {
             const updatedRecipes = prevRecipes.filter(recipe => recipe !== recipeToDelete);
             // If the selected recipe is deleted, clear it

@@ -31,6 +31,7 @@ import { getRecipeIngredients } from '../../api/recipeIngredientApi';
 // ]
 
 const blankRecipe: Recipe = {
+  id: 999,
   name: "Chicken",
   cook_time: 0,
   prep_time: 0,
@@ -42,6 +43,7 @@ const blankRecipe: Recipe = {
 };
 
 const blankRecipe2: Recipe = {
+  id: 100,
   name: "Salad",
   cook_time: 0,
   prep_time: 0,
