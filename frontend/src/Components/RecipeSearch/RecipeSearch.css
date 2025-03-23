@@ -1,0 +1,32 @@
+.recipeInput{
+    border: 2px solid #38793b; 
+    border-radius: 10px;
+    padding:5px;
+}
+
+.searchContainer{
+    display: flex;
+    align-items: center; 
+}
+
+.searchLeft, .searchRight {
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    width: 35px;
+    position: relative;
+}
+
+.searchMiddle {
+    flex: 1;
+    text-align:center;
+}
+
+.searchRight:hover, .searchLeft:hover{
+    cursor:pointer;
+}
+
+.filterTagContainer{
+    margin-top:10px;
+    margin-bottom:10px;
+}

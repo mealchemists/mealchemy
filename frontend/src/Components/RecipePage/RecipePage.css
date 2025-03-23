@@ -1,0 +1,29 @@
+.mainContainer {
+    display: flex;          
+    align-items: stretch; 
+    gap: 20px;   
+    height:inherit;           
+}
+
+.sideContainer {
+    display: flex;
+    flex-direction: column; 
+    width: 30%;        
+    height:inherit;    
+}
+
+.recipeContentContainer {
+    width: 70%;         
+    transition: opacity 0.2s ease-in-out;    
+    min-width: 700px;
+}
+
+.separator {
+    width: 5px; 
+    background-color: #ccc; 
+    height: 100%; 
+    flex-shrink: 0;
+    border-radius: 50px;
+}
+
+

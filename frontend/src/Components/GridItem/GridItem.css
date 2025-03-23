@@ -1,0 +1,47 @@
+.gridItemContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: #b0dbb2;
+    width:fit-content;
+    padding: 10px 5px;
+    border-radius: 10px;
+    box-shadow: 0px 3px 7px #38793b;
+
+}
+
+.gridItemContainer:hover {
+    background-color: rgba(56, 121, 59, 0.5); 
+    cursor:pointer;
+}
+.contentContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.gridItemTitle {
+    text-align: center;
+}
+
+.gridItemImage {
+    width: 80px;
+    border-radius: 10px; 
+
+}
+
+.gridItemContainer h3{
+    margin-bottom:0;
+}
+
+.gridItemContainer .tagsContainer {
+    display: flex;
+    justify-content: center;
+    flex-wrap:wrap;
+}
+
+.contentContainer h3{
+    margin-top:0px;
+}

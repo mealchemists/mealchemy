@@ -1,5 +1,7 @@
 from django.db import models
+
 from backend.models import TimeStampedModel
+
 
 class Recipe(TimeStampedModel):
     name = models.CharField(max_length=255)

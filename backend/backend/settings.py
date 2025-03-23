@@ -9,9 +9,9 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
-from pathlib import Path
 import os
+from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +26,11 @@ SECRET_KEY = 'django-insecure-99qei#smfu0763xsl#hf^ln$52gj8o-es99dl2t@e(0i=%uk3k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+<<<<<<< HEAD
+ALLOWED_HOSTS = ["localhost"]
+=======
 ALLOWED_HOSTS = []
+>>>>>>> main
 
 
 # Application definition
@@ -39,8 +43,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+<<<<<<< HEAD
+    'django_filters',
+    'rest_framework',
+    'backend.apps.recipes',
+    'backend.apps.meal_plan',
+    'backend.apps.user',
+    'rest_framework_simplejwt',
+=======
     'rest_framework',
     'backend.apps.recipes'
+>>>>>>> main
 ]
 
 MIDDLEWARE = [
@@ -78,6 +91,28 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 DATABASES = {
+<<<<<<< HEAD
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "db.sqlite3",
+    }
+}
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('POSTGRES_DB', 'test_db'),
+#         'USER': os.getenv('POSTGRES_USER', 'admin'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'root'),
+#         'HOST': os.getenv('POSTGRES_HOST', 'localhost' if os.getenv('GITHUB_ACTIONS') else 'db'),
+#         'PORT': os.getenv('POSTGRES_PORT', '5432'),
+#         'TEST': {
+#             'NAME': 'test_db_unittest'
+#         }
+#     }
+# }
+
+=======
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('POSTGRES_DB', 'test_db'),
@@ -91,6 +126,7 @@ DATABASES = {
     }
 }
 
+>>>>>>> main
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -109,6 +145,21 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+<<<<<<< HEAD
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
+        
+    ],
+}
+=======
+>>>>>>> main
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -132,4 +183,33 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+<<<<<<< HEAD
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Set access token lifetime to 15 minutes
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=5),     # Set refresh token lifetime to 1 day
+    'ROTATE_REFRESH_TOKENS': False,                   # Whether to rotate refresh tokens
+    'BLACKLIST_AFTER_ROTATION': False,                # Whether to blacklist refresh tokens after they are rotated
+    'ALGORITHM': 'HS256',                             # JWT algorithm to use (default is HS256)
+    'SIGNING_KEY': SECRET_KEY,                        # Your secret key for signing tokens
+    'VERIFYING_KEY': None,                            # Optional: specify a verifying key if you need to verify the signature externally
+    'AUTH_HEADER_TYPES': ('Bearer',),                 # Defines what type of authorization header is allowed
+}
+
+# Forgot password email
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST_USER = os.getenv("EMAIL_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_EMAIL")
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',  # Your frontend domain
+]
+
+CORS_ALLOW_CREDENTIALS = True  # Allow credentials (cookies, authorization headers)
 CORS_ORIGIN_ALLOW_ALL = True
+=======
+CORS_ORIGIN_ALLOW_ALL = True
+>>>>>>> main
