@@ -14,6 +14,8 @@ from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
 import logging
+import os
+from urllib.parse import urlparse
 
 
 load_dotenv()
@@ -89,11 +91,34 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-DATABASES = {
-    "default": {
-        os.getenv("DATABASE_URL", "sqlite:///db.sqlite3"),
+
+
+# Check if we're in development or production
+DEBUG = os.getenv("DATABASE_DEV", "False") == "True"
+
+# Set DATABASES depending on the environment
+if DEBUG:
+    # Development: Use SQLite database
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": "db.sqlite3",
+        }
     }
-}
+else:
+    # Production: Use Supabase PostgreSQL database
+    DATABASE_URL = os.getenv("PROD_DATABASE_URL")
+    url = urlparse(DATABASE_URL)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql_psycopg2",
+            "NAME": url.path[1:],  
+            "USER": url.username,
+            "PASSWORD": url.password,
+            "HOST": url.hostname,
+            "PORT": url.port or 5432,  
+        }
+    }
 
 # DATABASES = {
 #     'default': {
@@ -182,10 +207,7 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_EMAIL")
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
-
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "https://backend-service-102081122635.us-west1.run.app").split(",")
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "localhost").split(",")
-
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "localhost").split(",")
-
 CORS_ALLOW_CREDENTIALS = True
