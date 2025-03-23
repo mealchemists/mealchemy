@@ -13,9 +13,17 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
+import logging
 
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
+
+# Log environment variables
+logger.info(f"ALLOWED_HOSTS: {os.getenv('ALLOWED_HOSTS')}")
+logger.info(f"CSRF_TRUSTED_ORIGINS: {os.getenv('CSRF_TRUSTED_ORIGINS')}")
+logger.info(f"CORS_ALLOWED_ORIGINS: {os.getenv('CORS_ALLOWED_ORIGINS')}")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
