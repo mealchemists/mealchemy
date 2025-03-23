@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect } from "react";
 import './App.css';
 import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import MealPlanningPage from './Components/MealPlanningPage/MealPlanningPage';
@@ -14,7 +14,21 @@ import 'react-toastify/dist/ReactToastify.css';
 function App() {
   const nav = useNavigate();
   const location = useLocation();
-
+  const changeFavicon = (iconURL: string) => {
+    const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+    if (link) {
+      link.href = iconURL;
+    } else {
+      const newLink = document.createElement("link");
+      newLink.rel = "icon";
+      newLink.href = iconURL;
+      document.head.appendChild(newLink);
+    }
+  };
+  useEffect(() => {
+    document.title = "Mealchemy"; 
+    changeFavicon("mealchemy-logo.png");
+  }, []);
   return (
     <div className="app-container">
       {location.pathname !== "/login" && (
