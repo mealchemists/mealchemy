@@ -95,7 +95,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Check if we're in development or production
 DEBUG = os.getenv("DATABASE_DEV", "False") == "True"
-print(DEBUG)
+print(f"DEBIG = {DEBUG}")
 # Set DATABASES depending on the environment
 if DEBUG:
     # Development: Use SQLite database
@@ -107,12 +107,7 @@ if DEBUG:
     }
 else:
     # Production: Use Supabase PostgreSQL database
-    DATABASE_URL = os.getenv("PROD_DATABASE_URL")
-    print(DATABASE_URL)
-    url = urlparse(DATABASE_URL)
-    print(url.path[1:])
-    print(url.port)
-    print(url.hostname)
+    print(f"my  db {dj_database_url.config()}")
     DATABASES = {
         'default': dj_database_url.config(
             conn_max_age=600,
@@ -207,7 +202,11 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_EMAIL")
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-ALLOWED_HOSTS = ["https://backend-service-102081122635.us-west1.run.app"]
+ALLOWED_HOSTS = ["*.run.app"]
 CSRF_TRUSTED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app"]
 CORS_ALLOWED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app"]
 CORS_ALLOW_CREDENTIALS = True
+
+print(f" allowed {ALLOWED_HOSTS}")
+print(f" trusted_origins {CSRF_TRUSTED_ORIGINS}")
+print(f" allowed_origins {CORS_ALLOWED_ORIGINS}")
