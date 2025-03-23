@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 import logging
 import os
 from urllib.parse import urlparse
-
+import dj_database_url
 
 load_dotenv()
 
@@ -95,7 +95,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Check if we're in development or production
 DEBUG = os.getenv("DATABASE_DEV", "False") == "True"
-
+print(DEBUG)
 # Set DATABASES depending on the environment
 if DEBUG:
     # Development: Use SQLite database
@@ -108,16 +108,16 @@ if DEBUG:
 else:
     # Production: Use Supabase PostgreSQL database
     DATABASE_URL = os.getenv("PROD_DATABASE_URL")
+    print(DATABASE_URL)
     url = urlparse(DATABASE_URL)
+    print(url.path[1:])
+    print(url.port)
+    print(url.hostname)
     DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql_psycopg2",
-            "NAME": url.path[1:],  
-            "USER": url.username,
-            "PASSWORD": url.password,
-            "HOST": url.hostname,
-            "PORT": url.port or 5432,  
-        }
+        'default': dj_database_url.config(
+            conn_max_age=600,
+            conn_health_checks=True,
+        ),
     }
 
 # DATABASES = {
