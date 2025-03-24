@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
 
-const LoginForm = ({ onSubmit }) => {
+const ForgotPasswordForm = ({ onSubmit, onBack }) => {
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
     const handleSubmit = (event) => {
         event.preventDefault();
         setError("");
-        onSubmit({ email: email, password })
+        onSubmit({ email })
             .catch((err) => {
                 setError(err?.response?.data?.error || "Something went wrong");
             });
@@ -29,33 +28,12 @@ const LoginForm = ({ onSubmit }) => {
                         "& fieldset": {
                             borderColor: "gray",
                             borderRadius: '10px'
-                        }, // Default border color
-                        "&:hover fieldset": { borderColor: "#38793b" }, // Border color on hover
-                        "&.Mui-focused fieldset": { borderColor: "#38793b", borderWidth: "2px" } // Green border when focused
+                        },
+                        "&:hover fieldset": { borderColor: "#38793b" },
+                        "&.Mui-focused fieldset": { borderColor: "#38793b", borderWidth: "2px" }
                     },
                     "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#38793b" // Green label when focused
-                    },
-                }}
-            />
-            <TextField
-                label="Password"
-                type="password"
-                variant="outlined"
-                fullWidth
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                sx={{
-                    "& .MuiOutlinedInput-root": {
-                        "& fieldset": {
-                            borderColor: "gray",
-                            borderRadius: '10px'
-                        }, // Default border color
-                        "&:hover fieldset": { borderColor: "#38793b" }, // Border color on hover
-                        "&.Mui-focused fieldset": { borderColor: "#38793b", borderWidth: "2px" } // Green border when focused
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                        color: "#38793b" // Green label when focused
+                        color: "#38793b"
                     },
                 }}
             />
@@ -67,10 +45,13 @@ const LoginForm = ({ onSubmit }) => {
                     borderRadius: '10px'
                 }}
             >
-                Login
+                Send Password Reset Link
+            </Button>
+            <Button variant="text" onClick={onBack} sx={{ color: '#38793b', borderRadius: '10px' }}>
+                Back to Login
             </Button>
         </Box>
     );
 };
 
-export default LoginForm;
+export default ForgotPasswordForm;
