@@ -61,18 +61,12 @@ function LoginPage() {
                     ) : isRegistering ? (
                         <RegisterForm onSubmit={handleSignup} />
                     ) : (
-                        <LoginForm onSubmit={handleLogin} />
+                        <LoginForm onSubmit={handleLogin} onForgotPassword={() => setIsForgotPassword(true)}/>
                     )}
 
                     {/* Only show the following buttons based on the form state */}
                     {!isForgotPassword && !isRegistering && (
                         <>
-                            <Button
-                                variant="text"
-                                sx={{ borderRadius: '10px', color: '#38793b' }}
-                                onClick={() => setIsForgotPassword(true)}>
-                                Forgot Password?
-                            </Button>
                             <Button
                                 variant="outlined"
                                 color="primary"

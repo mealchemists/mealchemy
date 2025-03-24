@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
 
-const LoginForm = ({ onSubmit }) => {
+const LoginForm = ({ onSubmit, onForgotPassword }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -16,7 +16,7 @@ const LoginForm = ({ onSubmit }) => {
     };
 
     return (
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             <TextField
                 label="Email"
                 type="email"
@@ -59,16 +59,29 @@ const LoginForm = ({ onSubmit }) => {
                     },
                 }}
             />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                <Button
+                    variant="text"
+                    sx={{
+                        borderRadius: '10px',
+                        color: '#38793b',
+                    }}
+                    onClick={onForgotPassword}
+                >
+                    Forgot Password?
+                </Button>
+            </Box>
             {error && <Typography color="error" variant="body2">{error}</Typography>}
             <Button variant="contained" color="primary" type="submit" fullWidth
                 sx={{
-                    backgroundColor:'#38793b',
-
-                    borderRadius: '10px'
+                    backgroundColor: '#38793b',
+                    borderRadius: '10px',
+                    marginBottom:'10px',
                 }}
             >
                 Login
             </Button>
+
         </Box>
     );
 };
