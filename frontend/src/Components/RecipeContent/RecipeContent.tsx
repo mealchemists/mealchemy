@@ -167,19 +167,19 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 total_time: Number(tempTotalTime)
             }
         };
-        console.log(updatedRecipe);
         putRecipe(updatedRecipe);
         handleCloseTagModal();
     };
 
-    const handleSave = async (newTitle = title, newIngredients = ingredients, newInstructions = instructions) => {
+    const handleSave = async () => {
+        // tags are managed by applyTagChanges
         const body = {
             ...recipeIngredient, 
             recipe: {
-                ...recipeIngredient.recipe, // Spread the properties of the 'recipe' object
-                name: newTitle // Change the 'name' field (or any other property)
+                ...recipeIngredient.recipe,
+                name: title 
             },
-            ingredients: newIngredients
+            ingredients: ingredients
         };
         await putRecipe(body);
         // const filteredIngredients = newIngredients.filter(ingredient => ingredient.trim() !== "");
@@ -276,7 +276,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                             color: 'white',
                             borderRadius: '10px'
                         }}
-                        onClick={() => handleSave(title, ingredients, instructions)}>Save</Button>
+                        onClick={() => handleSave()}>Save</Button>
                 )}
 
             </div>
