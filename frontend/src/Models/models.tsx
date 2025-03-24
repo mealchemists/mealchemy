@@ -13,7 +13,9 @@ export interface Recipe{
 
 export interface Ingredient {
     id: Number,
-    name: string
+    name: string,
+    quantity: Number,
+    unit: string,
     calories_per_100g: Number,
     protein_per_100g: Number,
     carbs_per_100g: Number,
