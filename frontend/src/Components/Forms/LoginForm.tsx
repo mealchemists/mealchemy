@@ -1,18 +1,32 @@
 import React, { useState } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
+import {validatePassword, validateEmail} from '../../utils/formValidation';
 
-const LoginForm = ({ onSubmit }) => {
+const LoginForm = ({ onSubmit, formError }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
+    
 
-    const handleSubmit = (event) => {
+    const [emailError, setEmailError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
+    const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        setError("");
-        onSubmit({ email: email, password })
-            .catch((err) => {
-                setError(err?.response?.data?.error || "Something went wrong");
-            });
+        let valid = true;
+
+        // Reset errors
+        setEmailError("");
+        setPasswordError("");
+        setConfirmPasswordError("");
+
+        const isEmailValid = validateEmail(email, setEmailError);
+        const isPasswordValid = validatePassword(password, setPasswordError);
+
+        if (!isEmailValid || !isPasswordValid) return;
+
+        await onSubmit({ email, password });
     };
 
     return (
@@ -24,6 +38,8 @@ const LoginForm = ({ onSubmit }) => {
                 fullWidth
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                error={!!emailError}
+                helperText={emailError}
                 sx={{
                     "& .MuiOutlinedInput-root": {
                         "& fieldset": {
@@ -45,6 +61,8 @@ const LoginForm = ({ onSubmit }) => {
                 fullWidth
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                error={!!passwordError}
+                helperText={passwordError}
                 sx={{
                     "& .MuiOutlinedInput-root": {
                         "& fieldset": {
@@ -59,7 +77,11 @@ const LoginForm = ({ onSubmit }) => {
                     },
                 }}
             />
-            {error && <Typography color="error" variant="body2">{error}</Typography>}
+            {formError && (
+                <Typography color="error" variant="body2" sx={{ marginTop: 2 }}>
+                    {formError}
+                </Typography>
+            )}
             <Button variant="contained" color="primary" type="submit" fullWidth
                 sx={{
                     backgroundColor:'#38793b',

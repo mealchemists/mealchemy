@@ -7,20 +7,26 @@ import RegisterForm from '../Forms/RegisterForm';
 import ForgotPasswordForm from '../Forms/ForgotPasswordForm';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import validatePassword from '../../utils/passwordSecuity';
 
 function LoginPage() {
     const [isRegistering, setIsRegistering] = useState(false);
     const [isForgotPassword, setIsForgotPassword] = useState(false);
     const navigate = useNavigate();
+    const [formError, setFormError] = useState("");
+
+    const clearForm = () => {
+        setFormError(""); 
+    };
 
     const handleLogin = async (creds) => {
         try {
             const response = await loginUser(creds);
             navigate("/Recipes");
             toast.success('Login successful! 🎉');
+            clearForm();
         } catch (error) {
-            toast.error("Login failed: " + (error.response?.data?.error || "Something went wrong"));
+            const errorMessage = error.response?.data || "Something went wrong";
+            setFormError(errorMessage);
         }
     };
 
@@ -30,27 +36,31 @@ function LoginPage() {
             await forgotPassword(data);
             toast.success('Password reset link sent to your email!');
             setIsForgotPassword(false); // Hide Forgot Password form
+            clearForm()
         } catch (error) {
-            toast.error("Error: " + (error.response?.data?.error || "An unexpected error occurred"));
+            const errorMessage = error.response?.data || "Something went wrong";
+            setFormError(errorMessage);
         }
     };
 
     const handleSignup = async (creds) => {
-        const { email, password } = creds;
-        
-        const passwordValidation = validatePassword(password);
-
-        if (!passwordValidation.isValid) {
-            console.log(passwordValidation.message);
-            return; 
-        }
-
         try {
             await registerUser(creds);
             toast.success('Registration successful! Please Login');
             setIsRegistering(false);
+            clearForm();
         } catch (error) {
-            toast.error("Registration failed: " + (error.response?.data?.error || "Something went wrong"));
+            const data = error.response?.data
+        console.log(data)
+            if (data.email) {
+                setFormError(data.email[0]); 
+                return;
+            }
+            if (data.password) {
+                setFormError(data.password[0]);
+                return;
+            }
+            setFormError("Unexpected Error, Try Again Later");
         }
     };
 
@@ -69,9 +79,9 @@ function LoginPage() {
                     {isForgotPassword ? (
                         <ForgotPasswordForm onSubmit={handleForgotPassword} onBack={() => setIsForgotPassword(false)} />
                     ) : isRegistering ? (
-                        <RegisterForm onSubmit={handleSignup} />
+                        <RegisterForm onSubmit={handleSignup} formError={formError}/>
                     ) : (
-                        <LoginForm onSubmit={handleLogin} />
+                        <LoginForm onSubmit={handleLogin} formError={formError}/>
                     )}
 
                     {/* Only show the following buttons based on the form state */}
