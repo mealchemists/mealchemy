@@ -1,18 +1,20 @@
 import React, { useState } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
+import { validateEmail} from '../../utils/formValidation';
 
 const ForgotPasswordForm = ({ onSubmit, onBack }) => {
     const [email, setEmail] = useState("");
-    const [error, setError] = useState("");
+    const [emailError, setEmailError] = useState(""); 
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        setError("");
-        onSubmit({ email })
-            .catch((err) => {
-                setError(err?.response?.data?.error || "Something went wrong");
-            });
+        
+        setEmailError("");        
+        const isEmailValid = validateEmail(email, setEmailError);
+
+        if (!isEmailValid ) return;
     };
+
 
     return (
         <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -37,7 +39,6 @@ const ForgotPasswordForm = ({ onSubmit, onBack }) => {
                     },
                 }}
             />
-            {error && <Typography color="error" variant="body2">{error}</Typography>}
             <Button variant="contained" color="primary" type="submit" fullWidth
                 sx={{
                     backgroundColor:'#38793b',
