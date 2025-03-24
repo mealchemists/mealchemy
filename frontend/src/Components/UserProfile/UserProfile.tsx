@@ -32,11 +32,10 @@ function UserProfile() {
   };
   const handleSavePassword = async () => {
     console.log("New Password:", newPassword); 
-    await changePassword(email, newPassword);
+    await changePassword({email: email, newPassword});
     setShowPasswordInput(false);
     setNewPassword(newPassword);
     navigate('/login');
-
   };
   return (
     <Card sx={{ maxWidth: 400, margin: "auto", mt: 5, p: 3, textAlign: "center", borderRadius: '10px' }}>
