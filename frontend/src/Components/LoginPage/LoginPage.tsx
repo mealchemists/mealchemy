@@ -7,6 +7,7 @@ import RegisterForm from '../Forms/RegisterForm';
 import ForgotPasswordForm from '../Forms/ForgotPasswordForm';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import validatePassword from '../../utils/passwordSecuity';
 
 function LoginPage() {
     const [isRegistering, setIsRegistering] = useState(false);
@@ -35,6 +36,15 @@ function LoginPage() {
     };
 
     const handleSignup = async (creds) => {
+        const { email, password } = creds;
+        
+        const passwordValidation = validatePassword(password);
+
+        if (!passwordValidation.isValid) {
+            console.log(passwordValidation.message);
+            return; 
+        }
+
         try {
             await registerUser(creds);
             toast.success('Registration successful! Please Login');
