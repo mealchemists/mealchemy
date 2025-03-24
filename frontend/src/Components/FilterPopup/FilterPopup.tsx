@@ -41,13 +41,14 @@ function valuetext(range: number) {
 
 export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSortBy, sliderRange: initialSliderRange, selectedTags: initialTags }: FilterPopupProps) {
   const [sortBy, setSortBy] = useState<string>(initialSortBy);
-  const [sliderRange, setSliderRange] = useState<number[]>(initialSliderRange);
+  const [sliderRange, setSliderRange] = useState<number[]>([0,10]);
+  const [sliderValue, setSliderValue] = useState<number[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>(initialTags);
 
   const applyFilters = (e: React.MouseEvent) => {
     const filters: string[] = [];
 
-    if (sortBy) filters.push(`Sort By: ${sortBy === "alpha" ? "Alphabetical (A-Z)" : "Cooking Time"}`);
+    if (sortBy) filters.push(`Sort By: ${sortBy === "recipe__name" ? "Alphabetical (A-Z)" : "Cooking Time"}`);
     if (sliderRange) filters.push(`Cooking Time: ${sliderRangeToText()}`);
     if (selectedTags.length > 0) filters.push(`Tags: ${selectedTags.join(", ")}`);
   
@@ -57,7 +58,10 @@ export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSo
   };
 
   const onSliderChange = (event: Event, newRange: number | number[]) => {
-    setSliderRange(newRange as number[]);
+    const updatedRange = newRange as number[];
+    setSliderRange(updatedRange);
+    setSliderValue(updatedRange);
+
   };
 
   const handleSortChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,10 +73,11 @@ export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSo
   }
 
   const resetFilters = () => {
-    setSortBy("alpha");
-    setSliderRange([0,10]);
+    setSortBy("");
+    setSliderValue([]);
     setSelectedTags([]);
-    onFilterChange([], sortBy, sliderRange, selectedTags); 
+    onFilterChange([], "", sliderValue, selectedTags); 
+    console.log(sortBy)
   };
 
 
@@ -105,7 +110,7 @@ export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSo
 
               >
                 <FormControlLabel
-                  value="alpha"
+                  value="recipe__name"
                   control={<Radio size="small"
                     sx={{
                       color: "#b0dbb2",
@@ -121,7 +126,7 @@ export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSo
                   }}
                 />
                 <FormControlLabel
-                  value="cookingTime"
+                  value="recipe__cooking_time"
                   control={<Radio size="small"
                     sx={{
                       color: "#b0dbb2",

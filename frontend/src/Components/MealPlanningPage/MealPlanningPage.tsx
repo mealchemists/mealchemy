@@ -75,7 +75,6 @@ function MealPlanningPage() {
   const fetchRecipes = async () => {
     try {
       const response = await getRecipeIngredients();
-      console.log(response);
       setRecipeIngredients(response);
       setTotalPages(Math.ceil(response.length/recipesPerPage));
     } catch (error) {
@@ -98,7 +97,6 @@ function MealPlanningPage() {
   }, [recipeIngredients]);
 
   const handleSearchRecipe = (searchInput) => {
-    console.log(searchInput);
     if (searchInput.trim() === "") {
       setSearchRecipes(recipeIngredients);
     } else {
@@ -379,7 +377,7 @@ function MealPlanningPage() {
 
         <div className="recipeGrid">
           <h3>Recipes</h3>
-          <RecipeSearch searchRecipe={handleSearchRecipe}></RecipeSearch>
+          {/* <RecipeSearch searchRecipe={handleSearchRecipe}></RecipeSearch> */}
           <div className="recipe-grid">
             {visibleRecipes.map((recipe, index) => (
               <div key={index} className="grid-item" draggable onDragStart={() => handleDragStart(recipe)}>

@@ -62,7 +62,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const deleteRecipe = async (id) => {
          try {
             const response = await deleteRecipeIngredients(id);
-            console.log(response)
             // Notify parent to delete the recipe from the list
             onDeleteRecipe(recipeIngredient);
         } catch (error) {
@@ -74,7 +73,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const putRecipe = async(data: RecipeIngredient) => {
         try {
             const response = await putRecipeIngredients(data);
-            console.log(response)
         } catch (error) {
             setError("Error fetching recipes");
             console.error("Error fetching recipes:", error);
@@ -123,7 +121,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             handleOptionsClose();
         } else if (option == "Delete") {
             deleteRecipe(recipeIngredient.id);
-            console.log(recipeIngredient.id)
         }
     };
 
@@ -150,7 +147,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 total_time: Number(tempTotalTime)
             }
         };
-        console.log(updatedRecipe);
         putRecipe(updatedRecipe);
         handleCloseTagModal();
     };

@@ -14,6 +14,14 @@ interface RecipePanelProps {
     setRecipeEditMode: (editMode: boolean) => void;
 }
 
+interface FilterObject {
+    searchQuery?: string;
+    filters?: string[];
+    sortBy?: string;
+    range?: number[];
+    tags?: string[];
+}
+
 const RecipePanel: React.FC<RecipePanelProps> = ({
     recipeIngredient,
     setRecipeIngredients,
@@ -31,7 +39,6 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const fetchRecipes = async () => {
         try {
             const response = await getRecipeIngredients();
-            console.log(response);
             setRecipeIngredients(response);
         } catch (error) {
             setError("Error fetching recipes");
@@ -122,16 +129,29 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
 
 
 
-    const handleSearchRecipe = async (searchInput: string) => {
+    // This function receives the filter object and applies it to the GET request
+    const handleFilterApply = async (filterObj: FilterObject) => {
+        // Construct the query string based on the filters
+        const { searchQuery, filters, sortBy, range, tags } = filterObj;
+        const queryParams = new URLSearchParams();
+        // Add filters to query params (example)
+        if (searchQuery) queryParams.append('search', searchQuery);
+
+        if (sortBy) queryParams.append('ordering', sortBy);
+        if (range.length) queryParams.append('cook_time_min', range[0].toString());
+        if (range.length > 1) queryParams.append('cook_time_max', range[1].toString());
+
+        if (tags.length) queryParams.append('tags', tags.join(','));
+        
         // If searchInput is empty or just whitespace, reset to the original list
-        if (!searchInput.trim()) {
-            setRecipeIngredients(recipeIngredient); // Reset to the original list
-            return;
-        }
+        // if (!searchQuery.trim()) {
+        //     setRecipeIngredients(recipeIngredient); // Reset to the original list
+        //     return;
+        // }
 
         try {
             // Call the API with the search parameter
-            const response = await getRecipeIngredients({ search: searchInput.trim() });
+            const response = await getRecipeIngredients(queryParams);
 
             // Set the recipe ingredients with the API response
             setRecipeIngredients(response);
@@ -146,7 +166,10 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     return (
         <div className="recipe-container">
 
-            <RecipeSearch onSelect={handleSelectOption} searchRecipe={handleSearchRecipe} ref = {recipeSearchRef}/>
+            <RecipeSearch 
+                onSelect={handleSelectOption} 
+                applyFiltering={handleFilterApply } 
+                ref = {recipeSearchRef}/>
             <div className='recipeListContainer'>
                 {searchRecipes.map((recipeIngredient, index) => (
                     <ListItem 
