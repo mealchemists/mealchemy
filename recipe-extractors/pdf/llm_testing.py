@@ -20,8 +20,8 @@ USE_OPENAI = False
 FILE_PATH = ""
 
 PDF_SYSTEM_PROMPT = (
-    "You are a text processing expert. Your task is to take as input a list of strings "
-    '(named "content") that are the results of OCR applied to scanned recipe pages. These strings may contain various sections such as the recipe name, description, source URL, '
+    "You are a text processing expert. Your task is to take as input a series of strings"
+    "that are the results of OCR applied to scanned recipe pages. These strings may contain various sections such as the recipe name, description, source URL, "
     "cook time, prep time, total time, ingredients, and recipe steps. Note that OCR may introduce minor spelling errors; please correct these errors as best as possible without "
     "changing the intended grammatical structure.\n\n"
     "Your output should be a JSON object formatted exactly as follows (with proper indentation, no markdown code block formatting, and no extra text):\n\n"
@@ -29,6 +29,7 @@ PDF_SYSTEM_PROMPT = (
     '  "recipe": {{\n'
     '    "name": "<recipe name>",\n'
     '    "description": "<recipe description>",\n'
+    '    "main_ingredient": "<main ingredient of the recipe>",\n'
     '    "source_url": "<source URL or null>",\n'
     '    "cook_time": <cook time as an integer, in minutes>,\n'
     '    "prep_time": <prep time as an integer, in minutes>,\n'
@@ -46,6 +47,7 @@ PDF_SYSTEM_PROMPT = (
     "**Important:**\n"
     "- Organize the OCR content into the appropriate fields (recipe metadata, ingredients list, and steps).\n"
     "- Correct any minor spelling errors due to OCR without changing the overall grammatical structure.\n"
+    "- If not specified, you will most likely have to infer the main ingredient from the context."
     '- Ensure that numerical values (times, quantities) are represented as numbers. If times or quantities are not explicitly specified, then set them to "null".\n'
     '- For fields that are not available or are extraneous (such as URLs, dates, or links), set them to "null" or exclude them as appropriate.\n'
     "- **For the ingredients list:**\n"
@@ -76,7 +78,7 @@ else:
 
 def main():
     # initialize LLM components
-    human_template = "Content: {content}"
+    human_template = "{input}"
     human_message = HumanMessagePromptTemplate.from_template(human_template)
     system_message = SystemMessagePromptTemplate.from_template(PDF_SYSTEM_PROMPT)
     chat_prompt = ChatPromptTemplate.from_messages([system_message, human_message])
@@ -118,7 +120,7 @@ def main():
         tstart = perf_counter()
         content = PDFUtils.extract_text(deskewed, regions)
         print(f"  Extracted content in {(perf_counter() - tstart):.2f}s")
-        formatted = chain.invoke({"content": "\n".join(content)})
+        formatted = chain.invoke({"input": "\n".join(content)})
 
         try:
             parsed = json.loads(str(formatted.content))

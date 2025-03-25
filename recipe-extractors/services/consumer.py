@@ -1,14 +1,17 @@
+import os
+import json
 import pika
 from typing import Callable
 
-RABBITMQ_URL = (
-    "amqps://njslbjoh:qSWAVgxBywu6oIRcn5IS4LkCihc8LwHS@horse.lmq.cloudamqp.com/njslbjoh"
-)
+from dotenv import load_dotenv
+
+load_dotenv()
+PIKA_URL = os.environ["PIKA_URL"]
 
 
 def start_consumer(
-    rabbitmq_url: str,
     callback_function: Callable[[str], None],
+    rabbitmq_url: str = PIKA_URL,
     queue_name: str = "admin",
 ):
     """
