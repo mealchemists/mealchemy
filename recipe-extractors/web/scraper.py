@@ -2,8 +2,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
-from lookup import lookup_data
-from util import extract_base_domain
+from .lookup import lookup_data
+from .util import extract_base_domain
 
 
 class Scraper:

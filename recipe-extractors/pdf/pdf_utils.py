@@ -448,7 +448,7 @@ class PDFUtils:
             regions = cls.identify_text_regions(rotated)
             if verbose:
                 print(
-                    f"identfied {len(regions)} regions in {perf_counter() - start_time:.2f}s"
+                    f"identified {len(regions)} regions in {perf_counter() - start_time:.2f}s"
                 )
             if len(regions) <= 1:
                 warnings.warn(f"Unable to extract page {i + 1}")

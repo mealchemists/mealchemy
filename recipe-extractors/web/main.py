@@ -1,5 +1,5 @@
-from scraper import Scraper
-from parse import parse_with_ollame
+from .scraper import Scraper
+from .parse import parse_with_ollame
 import sys
 import json
 import requests
@@ -9,7 +9,8 @@ import time
 django_url = "http://localhost:8000/api/recipe-ingredients"
 
 
-def get_recipe_data(url, user, token):
+def extract_recipe_data_url(url, user, token):
+    #
     if validators.url(url):
         # scraper = Scraper(url)
         # result = scraper.scrape_website(url)

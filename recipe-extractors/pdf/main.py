@@ -1,34 +1,55 @@
+from llm import setup_llm_chain
 from .pdf_utils import PDFUtils
 import requests
+import os
+import sys
+import json
+from pathlib import Path
+
+# allow relative import
+sys.path.append(str(Path(__file__).parent.parent))
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 django_url = "http://localhost:8000/api/recipe-ingredients"
 
 
 def extract_recipe_data_pdf(rest_url, user, token):
-    # get PDF data from server
-    # NOTE: temp hardcoded path for now
-    TEMP_PATH = "./pdf/source_material/hardcopy_scans/multi/Healthy Family Week1.pdf"
+    # TODO: get PDF data from server
+    # NOTE: for testing, use a temporary hardcoded path...
+
+    # TEMP_PATH = "./pdf/source_material/hardcopy_scans/multi/Healthy Family Week1.pdf"
+    TEMP_PATH = "./pdf/source_material/hardcopy_scans/single/Crunchy Orange Chicken.pdf"
 
     # load and extract
     pages = PDFUtils.load_pdf_pages_path(TEMP_PATH)
     raw_texts = PDFUtils.extract_raw_text_hardcopy(pages, verbose=True)
 
     # LLM?
+    chain = setup_llm_chain(mode="pdf", api_key=os.getenv("OPENAI_ECE493_G06_KEY"))
+    for text in raw_texts:
+        concatenated = "\n".join(text)
+        recipe_data_str = str(chain.invoke({"input": concatenated}).content)
+        recipe_data = json.loads(recipe_data_str)
 
-    # post to server
-    # result["recipe"]["source_url"] = url
-    # result["recipe"]["user"] = user
-    #
-    # headers = {
-    #     "Authorization": f"Bearer {token}",  # Add the token in Authorization header
-    # }
-    # response = requests.post(url=django_url, json=result, headers=headers)
-    #
-    # # Check if the request was successful
-    # if response.status_code == 201:
-    #     print("Successfully sent the recipe data.")
-    # else:
-    #     print(
-    #         f"Failed to send recipe data. Status Code: {response.status_code}, Response: {response.text}"
-    #     )
+        # post to server
+        # it might be a good idea a post multiple endpoint
+        # result["recipe"]["source_url"] = url
+        # result["recipe"]["user"] = user
+        #
+        # headers = {
+        #     "Authorization": f"Bearer {token}",  # Add the token in Authorization header
+        # }
+        # response = requests.post(url=django_url, json=result, headers=headers)
+        #
+        # # Check if the request was successful
+        # if response.status_code == 201:
+        #     print("Successfully sent the recipe data.")
+        # else:
+        #     print(
+        #         f"Failed to send recipe data. Status Code: {response.status_code}, Response: {response.text}"
+        #     )
     return
