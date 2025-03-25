@@ -66,3 +66,7 @@ export const createRecipeIngredients = async (recipeData) => {
   return response.data;
 };
 
+export const getAllIngredients = async () => {
+    const response = await apiClient.get('ingredient');
+    return response.data;
+  };

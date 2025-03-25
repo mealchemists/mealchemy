@@ -24,8 +24,10 @@ class RegisterView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(
-                {"message": "Account Created Login"}, status=status.HTTP_201_CREATED
+                {"message": "Account Created. Please login."},
+                status=status.HTTP_201_CREATED,
             )
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -104,7 +106,7 @@ class UpdateAccountView(APIView):
     authentication_classes = [
         SessionAuthentication,
         JWTAuthentication,
-    ] 
+    ]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
