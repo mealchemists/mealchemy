@@ -8,6 +8,7 @@ import time
 
 django_url = "http://localhost:8000/api/recipe-ingredients"
 
+
 def get_recipe_data(url, user, token):
     if validators.url(url):
         # scraper = Scraper(url)
@@ -19,21 +20,21 @@ def get_recipe_data(url, user, token):
         # start_time = time.time()
         # result = parse_with_ollame(cleaned_content)
         # print("--- %s seconds ---" % (time.time() - start_time))
-        
         with open("output.json", "r") as f:
             result = json.load(f)
-        
+
         result["recipe"]["source_url"] = url
         result["recipe"]["user"] = user
-        
+
         headers = {
-            'Authorization': f'Bearer {token}',  # Add the token in Authorization header
+            "Authorization": f"Bearer {token}",  # Add the token in Authorization header
         }
         response = requests.post(url=django_url, json=result, headers=headers)
-        
+
         # Check if the request was successful
         if response.status_code == 201:
             print("Successfully sent the recipe data.")
         else:
-            print(f"Failed to send recipe data. Status Code: {response.status_code}, Response: {response.text}")
-
+            print(
+                f"Failed to send recipe data. Status Code: {response.status_code}, Response: {response.text}"
+            )

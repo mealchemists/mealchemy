@@ -6,6 +6,7 @@ from main import get_recipe_data
 
 load_dotenv()
 params = pika.URLParameters(os.environ["PIKA_URL"])
+print(params)
 
 connection = pika.BlockingConnection(params)
 

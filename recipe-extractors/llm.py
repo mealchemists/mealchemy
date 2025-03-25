@@ -61,7 +61,7 @@ Now, based on the provided text, generate the following fields in the JSON:
 1. **Recipe:**
    - Name
    - Description (use context from the text)
-   - Main ingredient (infer from context)
+   - Main ingredient (if not specified, you will most likely need to infer from the context)
    - Source URL (if provided)
    - Cook time (in minutes)
    - Prep time (in minutes)
@@ -70,8 +70,27 @@ Now, based on the provided text, generate the following fields in the JSON:
 2. **Ingredients:**
    - For each ingredient, include:
      - Name
+        - Extract the ingredient names exactly as they appear.
+            - For example, if the text is "three cloves of garlic", then the ingredient's "name" should be "cloves of garlic", the "quantity" should be 3, and the "unit" should be "null" if no explicit unit is provided.\n'
+            - For example, if the text is "1 cup milk", then the ingredient's "name" should be "milk", the "quantity" should be 1, and the "unit" should be "cup".\n'
+            - For example, if the text is "1 can of olives", then the ingredient's "name" should be "can of olives", the "quantity" should be 1, and the "unit" should be "null".\n'
      - Quantity (if specified)
      - Unit (if specified)
+        - **All measurement units must be converted to their most common abbreviated forms:**
+            - tsp (teaspoon)\n"
+            - tbsp (tablespoon)\n"
+            - pt (pint)\n"
+            - qt (quart)\n"
+            - cup (cup)\n"
+            - gal (gallon)\n"
+            - oz (ounce)\n"
+            - fl oz (fluid ounce)\n"
+            - lb (pound)\n"
+            - mL (milliliter)\n"
+            - L (liter)\n"
+            - g (gram)\n"
+            - kg (kilogram)\n"
+            - If the ingredient quantity is based on a count unit (e.g., "1 can of coconut milk"), do not abbreviate.\n'
 
 3. **Steps:**
    - A list of steps, each containing:
@@ -80,49 +99,6 @@ Now, based on the provided text, generate the following fields in the JSON:
 
 Please ensure that the structure strictly follows the example provided, and avoid adding any redundant information. The generated JSON must be valid and properly formatted.
 """
-
-# TODO: Prompt needs to be adjusted for ingredient units
-
-# PDF_SYSTEM_PROMPT = (
-#     "You are a text processing expert. Your task is to take as input a series of strings"
-#     "that are the results of OCR applied to scanned recipe pages. These strings may contain various sections such as the recipe name, description, source URL, "
-#     "cook time, prep time, total time, ingredients, and recipe steps. Note that OCR may introduce minor spelling errors; please correct these errors as best as possible without "
-#     "changing the intended grammatical structure.\n\n"
-#     "Your output should be a JSON object formatted exactly as follows (with proper indentation, no markdown code block formatting, and no extra text):\n\n"
-#     "{{\n"
-#     '  "recipe": {{\n'
-#     '    "name": "<recipe name>",\n'
-#     '    "description": "<recipe description>",\n'
-#     '    "main_ingredient": "<main ingredient of the recipe>",\n'
-#     '    "source_url": "<source URL or null>",\n'
-#     '    "cook_time": <cook time as an integer, in minutes>,\n'
-#     '    "prep_time": <prep time as an integer, in minutes>,\n'
-#     '    "total_time": <total time as an integer, in minutes>\n'
-#     "  }},\n"
-#     '  "ingredients": [\n'
-#     '    {{"name": "<ingredient name>", "quantity": <quantity as a number>, "unit": "<unit>"}},\n'
-#     "    ...\n"
-#     "  ],\n"
-#     '  "steps": [\n'
-#     '    {{"step": <step number as integer>, "description": "<step description>"}},\n'
-#     "    ...\n"
-#     "  ]\n"
-#     "}}\n\n"
-#     "**Important:**\n"
-#     "- Organize the OCR content into the appropriate fields (recipe metadata, ingredients list, and steps).\n"
-#     "- Correct any minor spelling errors due to OCR without changing the overall grammatical structure.\n"
-#     "- If not specified, you will most likely have to infer the main ingredient from the context."
-#     '- Ensure that numerical values (times, quantities) are represented as numbers. If times or quantities are not explicitly specified, then set them to "null".\n'
-#     '- For fields that are not available or are extraneous (such as URLs, dates, or links), set them to "null" or exclude them as appropriate.\n'
-#     "- **For the ingredients list:**\n"
-#     "  - Extract the ingredient names exactly as they appear.\n"
-#     "  - If an ingredient description includes a commonly used measurement phrase, parse it as follows:\n"
-#     '      - For example, if the text is "three cloves of garlic", then the ingredient\'s "name" should be "cloves of garlic", the "quantity" should be 3, and the "unit" should be "null" if no explicit unit is provided.\n'
-#     '      - For example, if the text is "1 cup milk", then the ingredient\'s "name" should be "milk", the "quantity" should be 1, and the "unit" should be "cup".\n'
-#     '      - For example, if the text is "1 can of olives", then the ingredient\'s "name" should be "can of olives", the "quantity" should be 1, and the "unit" should be "null".\n'
-#     "- Output the JSON exactly in the specified format with proper keys and data types.\n"
-#     "- Your response should consist solely of the structured, prettily printed JSON string without any additional Markdown formatting."
-# )
 
 PDF_SYSTEM_PROMPT = (
     "You are a text processing expert. Your task is to take as input a series of strings "
