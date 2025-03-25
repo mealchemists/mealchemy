@@ -62,9 +62,17 @@ class PDFUtils:
                 break
 
     @classmethod
-    def load_pdf_pages(cls, path, dpi=DPI):
-        n_threads = mp.cpu_count()
+    def load_pdf_pages_path(cls, path, dpi=DPI):
+        n_threads = mp.cpu_count() - 1
         images = pdf2image.convert_from_path(path, dpi=dpi, thread_count=n_threads)
+        return [cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR) for img in images]
+
+    @classmethod
+    def load_pdf_pages(cls, pdf_bytes, dpi=DPI):
+        n_threads = mp.cpu_count() - 1
+        images = pdf2image.convert_from_bytes(
+            pdf_bytes, dpi=dpi, thread_count=n_threads
+        )
         return [cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR) for img in images]
 
     @classmethod
@@ -402,7 +410,7 @@ class PDFUtils:
         return regions
 
     @classmethod
-    def load_extract_text_hardcopy(cls, path, dpi=DPI, verbose=False):
+    def extract_raw_text_hardcopy(cls, pages, verbose=False):
         """
         Pipeline to load a PDF from a path and extract raw text in a (possibly) unordered fashion.
         """
@@ -411,12 +419,6 @@ class PDFUtils:
 
         # TODO: Look into debug logging, warnings, etc.
         # Also look into potential performance improvements.
-
-        if verbose:
-            start_time = perf_counter()
-        pages = cls.load_pdf_pages(path, dpi)
-        if verbose:
-            print(f"loaded {len(pages)} in {perf_counter() - start_time:.2f} s")
 
         for i, page in enumerate(pages):
             # 1. rotate the page.
@@ -468,7 +470,7 @@ def main():
     ELECTRONIC_SINGLE_PATH = "./source_material/electronic_printouts/single/Slow Cooker Pineapple Pork Chops.pdf"
 
     print("Loading pages")
-    pages = PDFUtils.load_pdf_pages(HARDCOPY_MULTI_PATH_2, dpi=DPI)
+    pages = PDFUtils.load_pdf_pages_path(HARDCOPY_MULTI_PATH_2, dpi=DPI)
     print("Pages loaded")
 
     for i, page in enumerate(pages):
