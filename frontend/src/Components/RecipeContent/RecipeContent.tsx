@@ -7,7 +7,7 @@ import { Button, Chip, TextField } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
-import { deleteRecipeIngredients, putRecipeIngredients } from '../../api/recipeIngredientApi';
+import { deleteRecipeIngredients, putRecipeIngredients, createRecipeIngredients } from '../../api/recipeIngredientApi';
 import AddIngredientModal from '../AddIngredientModal/AddIngredientModal';
 import EditTagModal from '../EditTagModal/EditTagModal';
 import { Ingredient, Recipe, RecipeIngredient } from '../../Models/models';
@@ -94,7 +94,17 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             console.log(response)
         } catch (error) {
             setError("Error fetching recipes");
-            console.error("Error fetching recipes:", error);
+            console.error("Error updating recipe ingredient:", error);
+            return;
+        }
+    }
+
+    const createRecipe = async (data) => {
+        try {
+            const response = await createRecipeIngredients(data);
+        } catch (error) {
+            console.error("Error creating recipe Ingredient");
+            return;
         }
     }
 
@@ -156,32 +166,40 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         setTotalTime(String(tempTotalTime));
 
         // Create the updated recipe object with changes
-        console.log(tempCookTime)
-        const updatedRecipe = {
-            ...recipeIngredient,
-            recipe: {
-                ...recipe,
-                main_ingredient: tempMainIngredient,
-                cook_time: Number(tempCookTime),
-                prep_time: Number(tempPrepTime),
-                total_time: Number(tempTotalTime)
-            }
-        };
-        putRecipe(updatedRecipe);
+        // const updatedRecipe = {
+        //     ...recipeIngredient,
+        //     recipe: {
+        //         ...recipe,
+        //         main_ingredient: tempMainIngredient,
+        //         cook_time: Number(tempCookTime),
+        //         prep_time: Number(tempPrepTime),
+        //         total_time: Number(tempTotalTime)
+        //     }
+        // };
+        // putRecipe(updatedRecipe);
         handleCloseTagModal();
     };
 
     const handleSave = async () => {
         // tags are managed by applyTagChanges
         const body = {
-            ...recipeIngredient, 
+            ...recipeIngredient,
             recipe: {
                 ...recipeIngredient.recipe,
-                name: title 
+                name: title,
+                main_ingredient: mainIngredient,
+                cook_time: Number(cookTime),
+                prep_time: Number(prepTime),
+                total_time: Number(totalTime)
             },
             ingredients: ingredients
         };
-        await putRecipe(body);
+
+        if(recipeIngredient.id != -1){
+            await putRecipe(body);
+        }else{
+            await createRecipe(body);
+        }
         // const filteredIngredients = newIngredients.filter(ingredient => ingredient.trim() !== "");
         // const filteredInstructions = newInstructions.filter(instruction => instruction.trim() !== "");
 
@@ -193,7 +211,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         // TODO: Save to database
     };
 
-    const handleIngredientChange = (index:number, field: keyof Ingredient, value:string) => {
+    const handleIngredientChange = (index: number, field: keyof Ingredient, value: string) => {
         setIngredients((prevIngredients) =>
             prevIngredients.map((ingredient, i) =>
                 i === index ? { ...ingredient, [field]: value } : ingredient
@@ -316,12 +334,16 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                         }}
                     />
                 ))}
-                <IconButton onClick={handleOpenTagModal}>
-                    <EditIcon
-                        sx={{
-                            color: "#38793b",
-                        }} />
-                </IconButton>
+
+                {editMode && (
+                    <IconButton onClick={handleOpenTagModal}>
+                        <EditIcon
+                            sx={{
+                                color: "#38793b",
+                            }}
+                        />
+                    </IconButton>
+                )}
 
             </div>
             <EditTagModal
@@ -346,32 +368,33 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                             value={ingredient.quantity}
                                             onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
                                             variant="outlined"
-                                            sx={{ 
-                                                "& .MuiOutlinedInput-root": { fontSize: "14px" 
+                                            sx={{
+                                                "& .MuiOutlinedInput-root": {
+                                                    fontSize: "14px"
                                                 },
-                                                width:'50px',
-                                        }}
+                                                width: '50px',
+                                            }}
                                         />
                                         <TextField
                                             value={ingredient.unit}
                                             onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
                                             variant="outlined"
                                             sx={{
-                                                "& .MuiOutlinedInput-root": { 
+                                                "& .MuiOutlinedInput-root": {
                                                     fontSize: "14px",
-                                                 },
-                                                width:'75px',
+                                                },
+                                                width: '75px',
 
-                                             }}
+                                            }}
                                         />
                                         <TextField
                                             value={ingredient.name}
                                             onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
                                             variant="outlined"
                                             sx={{
-                                                "& .MuiOutlinedInput-root": { 
+                                                "& .MuiOutlinedInput-root": {
                                                     fontSize: "14px",
-                                                 },
+                                                },
                                             }}
                                         />
                                     </li>

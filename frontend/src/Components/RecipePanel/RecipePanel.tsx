@@ -20,9 +20,9 @@ const blankRecipe: Recipe = {
     cook_time: 0,
     prep_time: 0,
     total_time: 0,
-    main_ingredient: "",
+    main_ingredient: "Main Ingredient",
     ingredients: [],
-    steps: "",
+    steps: "Enter instructions here",
     imageSrc: "",
 };
 
