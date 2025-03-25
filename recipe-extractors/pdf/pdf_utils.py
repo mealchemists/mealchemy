@@ -4,6 +4,7 @@ import numpy as np
 import argparse
 import warnings
 import multiprocessing as mp
+import os
 
 from time import perf_counter
 from cv2 import dnn_superres  # type: ignore
@@ -267,7 +268,10 @@ class PDFUtils:
             return binary
 
         sr = dnn_superres.DnnSuperResImpl_create()  # type: ignore
-        sr.readModel(MODEL_PATH)
+
+        module_path = os.path.dirname(os.path.abspath(__file__))
+        model_path = os.path.join(module_path, MODEL_PATH)
+        sr.readModel(model_path)
         sr.setModel("lapsrn", 2)
 
         # sharpen the image a little bit
@@ -426,8 +430,10 @@ class PDFUtils:
                 start_time = perf_counter()
             rotated, angle = cls.deskew_image(page)  # type: ignore
             if verbose:
+                # blank pad string for fancy debug info
+                pageno = str(i + 1).rjust(len(str(len(pages))))
                 print(
-                    f"deskewed page by {angle:.2f} degrees in {perf_counter() - start_time} s"
+                    f"deskewed page {pageno}/{len(pages)} by {angle:.2f} degrees in {perf_counter() - start_time:.2f}s"
                 )
             if rotated is None:
                 warnings.warn(
@@ -442,7 +448,7 @@ class PDFUtils:
             regions = cls.identify_text_regions(rotated)
             if verbose:
                 print(
-                    f"identfied {len(regions)} in {perf_counter() - start_time:.2f} s"
+                    f"identfied {len(regions)} regions in {perf_counter() - start_time:.2f}s"
                 )
             if len(regions) <= 1:
                 warnings.warn(f"Unable to extract page {i + 1}")
@@ -453,7 +459,7 @@ class PDFUtils:
                 start_time = perf_counter()
             raw_text_sections = cls.extract_text(rotated, regions)
             if verbose:
-                print(f"extracted text in {(perf_counter() - start_time):.2f} s")
+                print(f"extracted text in {(perf_counter() - start_time):.2f}s")
 
             extracted_raw_texts.append(raw_text_sections)
 
