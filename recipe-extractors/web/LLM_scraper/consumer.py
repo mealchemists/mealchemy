@@ -3,6 +3,7 @@ import json
 import pika
 from dotenv import load_dotenv
 from main import get_recipe_data
+
 load_dotenv()
 params = pika.URLParameters(os.environ["PIKA_URL"])
 
@@ -15,7 +16,7 @@ channel.queue_declare(queue="admin")
 
 def callback(ch, method, properties, body):
     print(f"Received message: {body}")
-    data =  json.loads(body.decode("utf-8"))
+    data = json.loads(body.decode("utf-8"))
     url = data.get("url")
     user = data.get("user")
     token = data.get("token")
