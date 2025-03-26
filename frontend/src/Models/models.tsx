@@ -28,6 +28,6 @@ export interface Ingredient {
 
 export interface RecipeIngredient {
     id: Number,
-    recipe: Recipe
+    recipe: Recipe,
     ingredients: Ingredient[]
 }

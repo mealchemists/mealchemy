@@ -173,13 +173,13 @@ class RecipeIngredientsAPIView(APIView):
 
                 # TODO handle nutrition information
                 # TODO handle Aisle
-                calories_per_100g=random.uniform(50, 500),
-                protein_per_100g=random.uniform(1, 30),
-                carbs_per_100g=random.uniform(1, 50),
-                sugar_per_100g=random.uniform(0, 30),
-                fat_per_100g=random.uniform(0, 20),
-                sodium_per_100mg=random.uniform(0,1500),
-                fiber_per_100g=random.uniform(0, 15),
+                calories_per_100g=random.uniform(50, 500)
+                protein_per_100g=random.uniform(1, 30)
+                carbs_per_100g=random.uniform(1, 50)
+                sugar_per_100g=random.uniform(0, 30)
+                fat_per_100g=random.uniform(0, 20)
+                sodium_per_100mg=random.uniform(0,1500)
+                fiber_per_100g=random.uniform(0, 15)
                 
                 try:
                     ingredient, created = Ingredient.objects.get_or_create(
