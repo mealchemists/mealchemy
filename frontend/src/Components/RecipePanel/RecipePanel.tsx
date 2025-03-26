@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ListItem from '../ListItem/ListItem';
 import RecipeSearch from '../RecipeSearch/RecipeSearch';
-import { Recipe, RecipeIngredient } from '../../Models/models';
+import { Recipe, RecipeIngredient, Ingredient } from '../../Models/models';
 import './RecipePanel.css';
 import { getRecipeIngredients } from '../../api/recipeIngredientApi';
 import Button from '@mui/material/Button';
@@ -14,6 +14,24 @@ interface RecipePanelProps {
     setRecipeEditMode: (editMode: boolean) => void;
 }
 
+const blankRecipe: Recipe = {
+    id: -1,
+    name: "",
+    cook_time: 0,
+    prep_time: 0,
+    total_time: 0,
+    main_ingredient: "Main Ingredient",
+    ingredients: [],
+    steps: "Enter instructions here",
+    imageSrc: "",
+};
+
+const blankRecipeIngredient:RecipeIngredient = {
+    id:-1,
+    recipe: blankRecipe,
+    ingredients: [] as Ingredient[], 
+};
+
 const RecipePanel: React.FC<RecipePanelProps> = ({
     recipeIngredient,
     setRecipeIngredients,
@@ -21,6 +39,7 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     setRecipeEditMode
 }) => {
     const [searchRecipes, setSearchRecipes] = useState<RecipeIngredient[]>(recipeIngredient);
+    const [allRecipeIngredients, setAllRecipeIngredients] = useState<RecipeIngredient[]>([]);
     const [buttonVisibility, setButtonVisibility] = useState(false);
     const [multiSelect, setMultiSelect] = useState(false);
     const [selectedRecipes, setSelectedRecipes] = useState<Number[]>([]);
@@ -33,6 +52,7 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
             const response = await getRecipeIngredients();
             console.log(response);
             setRecipeIngredients(response);
+            setAllRecipeIngredients(response);
         } catch (error) {
             setError("Error fetching recipes");
             console.error("Error fetching recipes:", error);
@@ -61,9 +81,9 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
 
     // TODO convert this to recipe ingredients instead
     const handleAddManualRecipe = () => {
-        // setRecipeEditMode(true);
-        // setRecipes(prevRecipes => [...prevRecipes, blankRecipe]);
-        // onRecipeSelect(blankRecipe);
+        setRecipeEditMode(true);
+        setAllRecipeIngredients(prevRecipes => [...prevRecipes, blankRecipeIngredient]);
+        onRecipeSelect(blankRecipeIngredient);
     };
 
     const handleSelectOption = (option: string) => {
@@ -89,7 +109,7 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
                     recipeIngredient => recipeIngredient.recipe.id === recipeId
                 );
                 if (recipeToDelete) {
-                    await deleteRecipe(recipeToDelete.recipe.id); 
+                    await deleteRecipe(recipeToDelete.recipe.id);
                 }
             }
 
@@ -146,16 +166,16 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     return (
         <div className="recipe-container">
 
-            <RecipeSearch onSelect={handleSelectOption} searchRecipe={handleSearchRecipe} ref = {recipeSearchRef}/>
+            <RecipeSearch onSelect={handleSelectOption} searchRecipe={handleSearchRecipe} ref={recipeSearchRef} />
             <div className='recipeListContainer'>
                 {searchRecipes.map((recipeIngredient, index) => (
-                    <ListItem 
-                        key={index} 
-                        recipeIngredient={recipeIngredient} 
-                        multiSelect={multiSelect} 
-                        onCheckboxChange={handleCheckboxChange} 
-                        isChecked={selectedRecipes.includes(recipeIngredient.recipe.id)} 
-                        onClick={() => onRecipeSelect(recipeIngredient)} 
+                    <ListItem
+                        key={index}
+                        recipeIngredient={recipeIngredient}
+                        multiSelect={multiSelect}
+                        onCheckboxChange={handleCheckboxChange}
+                        isChecked={selectedRecipes.includes(recipeIngredient.recipe.id)}
+                        onClick={() => onRecipeSelect(recipeIngredient)}
                     />
                 ))}
             </div>

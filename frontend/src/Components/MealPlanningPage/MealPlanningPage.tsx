@@ -30,29 +30,29 @@ import { getRecipeIngredients } from '../../api/recipeIngredientApi';
 
 // ]
 
-const blankRecipe: Recipe = {
-  id: 999,
-  name: "Chicken",
-  cook_time: 0,
-  prep_time: 0,
-  total_time: 0,
-  main_ingredient: "Chicken",
-  ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-  steps: "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-  imageSrc: "/salad.jpg"
-};
+// const blankRecipe: Recipe = {
+//   id: 999,
+//   name: "Chicken",
+//   cook_time: 0,
+//   prep_time: 0,
+//   total_time: 0,
+//   main_ingredient: "Chicken",
+//   ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
+//   steps: "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+//   imageSrc: "/salad.jpg"
+// };
 
-const blankRecipe2: Recipe = {
-  id: 100,
-  name: "Salad",
-  cook_time: 0,
-  prep_time: 0,
-  total_time: 0,
-  main_ingredient: "Chicken",
-  ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-  steps: null,
-  imageSrc: "/salad.jpg"
-};
+// const blankRecipe2: Recipe = {
+//   id: 100,
+//   name: "Salad",
+//   cook_time: 0,
+//   prep_time: 0,
+//   total_time: 0,
+//   main_ingredient: "Chicken",
+//   ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
+//   steps: null,
+//   imageSrc: "/salad.jpg"
+// };
 
 // const recipes = [blankRecipe, blankRecipe2, blankRecipe, blankRecipe2, blankRecipe, blankRecipe, blankRecipe, blankRecipe, blankRecipe];
 const localizer = momentLocalizer(moment);
