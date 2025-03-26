@@ -2,12 +2,11 @@ import os
 import json
 import threading
 import pika
-from pathlib import Path
 
 from dotenv import load_dotenv
 
-from pdf.main import extract_recipe_data_pdf
-from web.main import get_recipe_data
+from pdf.main import extract_recipe_data_pdf  # type: ignore
+from web.main import extract_recipe_data_url
 
 load_dotenv()
 PIKA_URL = os.environ["PIKA_URL"]
@@ -29,13 +28,14 @@ def start_consumer(
 
     def callback(ch, method, properties, body):
         """
-        Process a received message and perform the given callback function
-        `callback_function`.
+        Process a received message and perform a runtime-defined
+        callback function.
         """
         callback_function = None
         args = ()
-        data = json.loads(body.decode("utf-8"))
 
+        # unpack pub/sub message
+        data = json.loads(body.decode("utf-8"))
         user = data.get("user")
         token = data.get(
             "token"
@@ -43,17 +43,18 @@ def start_consumer(
         task_type = data.get("task_type")  # "web" | "pdf"
         payload = data.get("payload")
 
+        print(data)
+
         # define callback function and payload from arguments
         # the consumer will POST to the server once finished
+        # for PDF extraction, use an additonal API call to retrieve the uploaded PDF
         if task_type == "web":
-            callback_function = get_recipe_data
+            callback_function = extract_recipe_data_url
             url = payload.get("url")
             args = (url, user, token)
         elif task_type == "pdf":
-            callback_function = extract_recipe_data_pdf
-
-            # use an additional API call to retrieve the uploaded PDF
             # TODO: Implement file retrieval, server-side
+            callback_function = extract_recipe_data_pdf
             api_path = payload.get("api_path")
             args = (api_path, user, token)
         else:
@@ -75,3 +76,8 @@ def start_consumer(
     print(f"Started consuming on queue: {queue_name}")
 
     return
+
+
+if __name__ == "__main__":
+    start_consumer()
+    # extract_recipe_data_pdf(None, None, None)
