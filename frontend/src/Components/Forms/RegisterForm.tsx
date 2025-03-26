@@ -3,7 +3,7 @@ import { TextField, Button, Box, Typography } from "@mui/material";
 import {validatePassword, validateEmail, validateConfirmPassword} from '../../utils/formValidation';
 
 
-const RegisterForm = ({ onSubmit, formError }) => {
+const RegisterForm = ({ onSubmit, formError, onBack }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -24,14 +24,10 @@ const RegisterForm = ({ onSubmit, formError }) => {
         const isEmailValid = validateEmail(email, setEmailError);
         const isPasswordValid = validatePassword(password, setPasswordError);
         const isConfirmPasswordValid = validateConfirmPassword(password, confirmPassword, setConfirmPasswordError);
-        console.log(isEmailValid)
-        console.log(isPasswordValid)
-        console.log(isConfirmPasswordValid)
         if (!isEmailValid || !isPasswordValid || !isConfirmPasswordValid) return;
 
         await onSubmit({ email, password });
     };
-
 
     return (
         <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -107,7 +103,7 @@ const RegisterForm = ({ onSubmit, formError }) => {
             />
             {formError && (
                 <Typography color="error" variant="body2" sx={{ marginTop: 2 }}>
-                    {formError}
+                    {formError.error ? "" : formError}
                 </Typography>
             )}
             <Button variant="contained" color="primary" type="submit" fullWidth
@@ -117,6 +113,9 @@ const RegisterForm = ({ onSubmit, formError }) => {
                 }}
             >
                 Register
+            </Button>
+            <Button variant="text" onClick={onBack} sx={{ color: '#38793b', borderRadius: '10px' }}>
+                Back to Login
             </Button>
         </Box>
     );
