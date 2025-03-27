@@ -8,17 +8,28 @@ from .models.meal_plan import MealPlan
 
 class MealPlanSerializer(serializers.ModelSerializer):
     recipe = RecipeSerializer()
+    day_planned = serializers.DateField(format='%Y-%m-%d')
     
     class Meta:
         model = MealPlan
-        fields = '__all__'
+        fields = ['id', 'recipe', 'day_planned']
+    
+    def update(self, instance, validated_data):
+        recipe = Recipe.objects.get(id=self.initial_data["recipe"]["id"])
+        instance.recipe = recipe
+        instance.save()
+        print(instance)
+        
+        return instance
         
     def create(self, validated_data):
         recipe_data = validated_data.pop('recipe')
+        recipe = Recipe.objects.get(id=self.initial_data["recipe"]["id"])
         
-        recipe = Recipe.objects.get(id=recipe_data['id'])
-        
-        meal_plan = MealPlan.objects.create(recipe=recipe, **validated_data)
+        meal_plan = MealPlan.objects.create(
+            day_planned = validated_data.get("day_planned"),
+            recipe = recipe
+        )
         
         return meal_plan
     

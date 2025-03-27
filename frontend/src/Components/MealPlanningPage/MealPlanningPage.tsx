@@ -11,7 +11,7 @@ import { CustomToolbar, CustomEvent, CustomDayHeader } from "./CalendarComponent
 import NutritionalAccordion from "../NutritionAccordion/NutritionAccordion";
 
 import { getRecipeIngredients } from '../../api/recipeIngredientApi';
-import { getMealPlans } from "../../api/mealPlanApi";
+import { getMealPlans, putMealPlan, deleteMealPlan } from "../../api/mealPlanApi";
 
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar)
@@ -20,6 +20,8 @@ interface MealPlanSearchParams {
   start_date?: string; // start_date is optional
   end_date?: string; // end_date is required
 }
+
+
 
 function MealPlanningPage() {
   const [myEventsList, setMyEventsList] = useState([]);
@@ -69,8 +71,6 @@ function MealPlanningPage() {
     }
 
     const { startDate, endDate } = getStartAndEndOfWeek(newDate);
-    console.log('Start Date:', startDate);
-    console.log('End Date:', endDate);
 
     setCurrentDate(newDate); // Update the current date state
     fetchMealPlans(startDate, endDate);
@@ -79,55 +79,69 @@ function MealPlanningPage() {
   const fetchRecipes = async () => {
     try {
       const response = await getRecipeIngredients();
-      console.log(response);
-      setRecipeIngredients(response);
-      setTotalPages(Math.ceil(response.length/recipesPerPage));
+      setRecipeIngredients(response); // Store fetched recipes
+      const pageCount = Math.ceil(response.length / recipesPerPage);
+      setTotalPages(pageCount);
+
     } catch (error) {
       console.error("Error fetching recipes:", error);
     } 
+
   };
 
-  const mapMealPlansToEvents = (mealPlans) => {
-    return mealPlans.map((mealPlan) => {
-      const { day_planned, id, recipe, meal_type} = mealPlan;
-      const day_planned_date = new Date(day_planned);
-
-      return {
-        title: recipe.name, // Meal name
-        recipe: recipe, // The recipe for the meal (can be used for more details)
-        start: day_planned_date,
-        end: day_planned_date,
-      };
-    });
-  };
 
   const fetchMealPlans = async (startDate, endDate) => {
-      const searchParams: MealPlanSearchParams = {};
-      
-      if (startDate && endDate){
-        searchParams.start_date = startDate.toISOString().split('T')[0]
-        searchParams.end_date = endDate.toISOString().split('T')[0]
-      }
-      console.log(searchParams)
-      try {
-        const response = await getMealPlans(searchParams);
-        console.log("meal plan", response.meal_plan)
-        setMealPlans(response.meal_plan)
-            // Transform meal plans into calendar events
-        const events = mapMealPlansToEvents(response.meal_plan);
-        console.log(events)
-        // Set the events in the state
-        setMyEventsList(events);
-
-      } catch (error) {
-        console.error('Error fetching meal plans:', error);
-      }
+    setMyEventsList([]);
+    const searchParams = {
+      start_date: startDate.toISOString().split("T")[0],
+      end_date: endDate.toISOString().split("T")[0],
     };
+
+  try {
+    const response = await getMealPlans(searchParams);
+    const fetchedMealPlans = response?.meal_plan ?? []; // Use an empty array if meal_plan is undefined
+    
+    weekDays.forEach((day) => {
+    // Filter the fetchedMealPlans to get only the meal plans for the specific day
+    const mealPlansForDay = fetchedMealPlans.filter((mealPlan) =>
+      moment(mealPlan.day_planned).isSame(day, "day"),
+    );
+
+    const mealCountForDay = mealPlansForDay.length;
+    
+    for(let i=0; i < mealCountForDay; i++){
+      handleMealChange(day, mealCountForDay, mealPlansForDay[i]); 
+    }    
+  });
+
+  } catch (error) {
+    console.error("Error fetching meal plans:", error);
+  }
+};
+
+  
+  const updateMealPlan = async () => {
+    try {
+      const meal_plan_data = myEventsList
+        .filter((events) => events.placeholder === false)
+        .map(({ id, start, end, mealPlan_id, allDay, title, placeholder, ...rest }) => ({
+        ...rest,
+        id: mealPlan_id,  
+        day_planned: start
+      }));
+
+      console.log(meal_plan_data)
+      const response = await putMealPlan(meal_plan_data);
+    } catch (error) {
+      console.error('Error fetching meal plans:', error);
+    }
+  }
 
 
   useEffect(() => {
+    const { startDate, endDate } = getStartAndEndOfWeek(new Date())
     fetchRecipes();
-    fetchMealPlans(null, null);
+    fetchMealPlans(startDate, endDate);
   }, []);
 
   useEffect(() => {
@@ -163,10 +177,9 @@ function MealPlanningPage() {
   };
 
   
-
-
   const handleDragStart = (recipe) => {
-    setDraggedRecipe(recipe);
+    console.log("recipe", recipe)
+    setDraggedRecipe(recipe.recipe);
   };
 
   const dragFromOutsideItem = useCallback(() => {
@@ -181,12 +194,11 @@ function MealPlanningPage() {
       setMyEventsList((prevEvents) => {
         return prevEvents.map((ev) => {
           if (ev.id === event.id && ev.placeholder) {
-            return { ...ev, title: draggedRecipe.recipe.name, placeholder: false, recipe: draggedRecipe };
+            return { ...ev, title: draggedRecipe.name, start: start, end: end, placeholder: false, recipe: draggedRecipe };
           }
           return ev;
         });
       });
-      console.log(myEventsList)
       setDraggedRecipe(null);
     },
     [draggedRecipe]
@@ -195,7 +207,7 @@ function MealPlanningPage() {
   const moveEvent = useCallback(
     ({ event, start, end }) => {
       setMyEventsList((prevEvents) =>
-        prevEvents.map((ev) => (ev.id === event.id ? { ...ev, start, end } : ev))
+        prevEvents.map((ev) => (ev.id === event.id ? { ...ev, start, end } : ev)),
       );
     },
     []
@@ -205,11 +217,12 @@ function MealPlanningPage() {
     moment().startOf("week").add(i, "days")
   );
 
-  const handleMealChange = (day, mealCount) => {
+  const handleMealChange = (day, mealCount, mealPlan = null) => {
+    // Update the selected meal count for the day
+    console.log("updated", myEventsList);
     setSelectedMeals((prev) => ({ ...prev, [day]: mealCount }));
-    console.log("changed")
-    // TODO: do a check for if meals are more than number of meal slots
 
+    // Update events list based on new meal count
     setMyEventsList((prevEvents) => {
       // Separate non-placeholder and placeholder events for the current day
       const existingNonPlaceholderEvents = prevEvents.filter(
@@ -220,38 +233,59 @@ function MealPlanningPage() {
         (event) => moment(event.start).isSame(day, "day") && event.placeholder
       );
 
-      // Calculate the difference between the new meal count and the current number of placeholders
-      const difference = mealCount - existingNonPlaceholderEvents.length - existingPlaceholderEvents.length;
 
-      // Create new placeholder events if the difference is positive
-      const newPlaceholderEvents =
-        difference > 0
-          ? Array.from({ length: difference }, (_, i) => ({
-            id: `${day}-slot-${existingNonPlaceholderEvents.length + existingPlaceholderEvents.length + i}`,
-            start: moment(day).startOf("day").toDate(),
-            end: moment(day).startOf("day").toDate(),
-            allDay: true,
-            title: "Drag meal here",
-            placeholder: true,
-          }))
-          : [];
+      // Calculate the total number of existing meal slots (both actual meals and placeholders)
+      const totalExistingEvents = existingNonPlaceholderEvents.length + existingPlaceholderEvents.length;
+      // Calculate the difference between the new meal count and the total existing events
+      const difference = mealCount - totalExistingEvents;
+      const newEvents = difference > 0
+        ? mealPlan // mealPlan is passed in as a single object
+          ? [{
+              id: `${day}-${mealPlan.recipe.id}`, // Unique ID for the meal plan
+              mealPlan_id: mealPlan.id,
+              start: moment(mealPlan.day_planned).startOf("day").toDate(),
+              end: moment(mealPlan.day_planned).startOf("day").toDate(),
+              day_planned: mealPlan.day_planned,
+              allDay: true,
+              title: mealPlan.recipe.name, // Using the title from the single meal plan
+              placeholder: false, // This is an actual meal plan
+              recipe: mealPlan.recipe
+            }]
+          : Array.from({ length: difference }, (_, i) => ({
+              id: `${day}-slot-${totalExistingEvents + i}`,
+              start: moment(day).startOf("day").toDate(),
+              end: moment(day).startOf("day").toDate(),
+              allDay: true,
+              title: "Drag meal here", // Placeholder title
+              placeholder: true, // This is a placeholder event
+            }))
+        : [];
 
       // Remove excess placeholders if the difference is negative
       const updatedPlaceholderEvents =
         difference < 0
-          ? existingPlaceholderEvents.slice(0, mealCount)
-          : [...existingPlaceholderEvents, ...newPlaceholderEvents];
-
-      // Combine the non-placeholder events with the updated placeholder events
+          ? existingPlaceholderEvents.slice(0, mealCount) // Only keep necessary placeholders
+          : [...existingPlaceholderEvents, ...newEvents]; // Append new placeholders if necessary
+          
+      // Return the updated events list combining existing events and adjusted placeholders
       return [
         ...prevEvents.filter((event) => !moment(event.start).isSame(day, "day")), // Keep events for other days
         ...existingNonPlaceholderEvents, // Keep existing non-placeholder events
-        ...updatedPlaceholderEvents, // Update placeholders
+        ...updatedPlaceholderEvents, // Updated list of placeholders
       ];
     });
   };
 
-  const resetEventToPlaceholder = (event) => {
+  const resetEventToPlaceholder = async (event) => {
+    console.log(event)
+    if (event.placeholder === false) {
+      try {
+        const response = await deleteMealPlan(event.mealPlan_id);
+      } catch (error) {
+        console.error("Error fetching meal plans:", error);
+      }
+    }
+    console.log("before", myEventsList)
     setMyEventsList((prevEvents) =>
       prevEvents.map((ev) =>
         ev.id === event.id
@@ -259,17 +293,17 @@ function MealPlanningPage() {
           : ev
       )
     );
+    console.log("after", myEventsList)
   };
   const handleViewChange = (event, newView) => {
-    console.log(newView)
     if (newView !== null) {
       setView(newView);
     }
   };
 
   const saveMealPlan = () => {
-    
-    console.log(myEventsList);
+    console.log("save", myEventsList)
+    updateMealPlan() 
   };
 
   return (

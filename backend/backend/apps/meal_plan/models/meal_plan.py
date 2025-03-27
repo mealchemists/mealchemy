@@ -29,3 +29,4 @@ class MealPlan(TimeStampedModel):
         if user:
             queryset = queryset.filter(recipe__user=user)
         return queryset
+    
