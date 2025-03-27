@@ -24,12 +24,10 @@
 
 .gridItemTitle {
     text-align: center;
-}
-
-.gridItemImage {
-    width: 80px;
-    border-radius: 10px; 
-
+    text-overflow: ellipsis;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap; 
 }
 
 .gridItemContainer h3{
@@ -39,7 +37,8 @@
 .gridItemContainer .tagsContainer {
     display: flex;
     justify-content: center;
-    flex-wrap:wrap;
+    flex-wrap: wrap;
+    overflow: hidden;
 }
 
 .contentContainer h3{

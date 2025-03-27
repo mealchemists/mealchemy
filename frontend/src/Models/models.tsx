@@ -7,7 +7,7 @@ export interface Recipe{
     main_ingredient?:string | null;
     ingredients: Array<string>;
     steps: string | null;
-    imageSrc: string; //Change later
+    image_url: string | null; //Change later
     sourceUrl?: string | null
 }
 
