@@ -13,6 +13,12 @@ from rest_framework import status
 from .models.meal_plan import MealPlan
 from .serializers import MealPlanSerializer
 from rest_framework.exceptions import NotFound
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models.meal_plan import MealPlan
+from .serializers import MealPlanSerializer
+from rest_framework.exceptions import NotFound
 
 
 class MealPlanAPIView(APIView):
