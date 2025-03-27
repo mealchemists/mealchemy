@@ -28,7 +28,7 @@ function MealPlanningPage() {
   const [selectedMeals, setSelectedMeals] = useState({});
   const [draggedRecipe, setDraggedRecipe] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const recipesPerPage = 4;
+  const recipesPerPage = 8;
   const [view, setView] = useState("recipes");
   const [totalPages, setTotalPages] = useState(0);
   const [searchRecipes, setSearchRecipes] = useState<RecipeIngredient[]>([]); //TODO: pass the recipes from database
