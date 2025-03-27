@@ -16,7 +16,7 @@ class Aisle(TimeStampedModel):
     updated_by_user = models.BooleanField(
         default=False
     )  # To track if a user modified the tag
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=255, unique=True)
