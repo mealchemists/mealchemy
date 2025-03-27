@@ -8,11 +8,11 @@ from django.contrib.auth.models import User
 import random
 from django.http import Http404
 from ..meal_plan.models.meal_plan import MealPlan
-from .models.ingredients import Ingredient, RecipeIngredient
+from .models.ingredients import Ingredient, RecipeIngredient, Aisle
 from .models.recipe import Recipe
 from .producer import publish
 from .serializers import (IngredientSerializer, RecipeIngredientSerializer,
-                          RecipeSerializer)
+                          RecipeSerializer, AisleSerializer)
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -163,6 +163,7 @@ class RecipeIngredientsAPIView(APIView):
                 quantity = ingredient_data.get('quantity')
                 unit = ingredient_data.get('unit')
                 display_name = ingredient_data.get('display_name')
+                aisle = ingredient_data.get('aisle')
 
                 if not display_name:
                     display_name = ingredient_name 
@@ -171,8 +172,14 @@ class RecipeIngredientsAPIView(APIView):
                 if not ingredient_name:
                     return Response({"error": "Missing ingredient data"}, status=status.HTTP_400_BAD_REQUEST)
 
+                if not aisle:
+                    #TODO implement the api call
+                    pass
+                else:
+                    #TODO 
+                    pass
+
                 # TODO handle nutrition information
-                # TODO handle Aisle
                 calories_per_100g=random.uniform(50, 500)
                 protein_per_100g=random.uniform(1, 30)
                 carbs_per_100g=random.uniform(1, 50)
@@ -381,3 +388,18 @@ class RecipeIngredientViewSet(viewsets.ViewSet):
         recipe_ingredient.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+class AisleAPIView(APIView):
+    def get(self, request, user_id, *args, **kwargs):
+        aisles = Aisle.objects.filter(user_id = user_id)
+        serializer = AisleSerializer(aisles, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, user_id, *args, **kwargs):
+        data = request.data
+        data['user_id'] = user_id  
+        
+        serializer = AisleSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save() 
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
