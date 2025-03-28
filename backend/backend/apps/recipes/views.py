@@ -74,8 +74,8 @@ def recipe_url(request):
 class RecipeIngredientsAPIView(APIView):
     # Apply filter backends for search and filtering
     filter_backends = (filters.SearchFilter, DjangoFilterBackend, filters.OrderingFilter)
-    filterset_fields = ["recipe__cook_time"] 
-    search_fields = ['recipe__name', 'ingredient__name']  # Allow search on recipe and ingredient name
+    filterset_fields = ["recipe__cook_time", "recipe__main_ingredient"] 
+    search_fields = ['recipe__name', 'ingredient__name', 'recipe__main_ingredient'] 
     ordering_fields = ['recipe__cook_time']  
     ordering = 'recipe__created_at'
     
@@ -93,7 +93,6 @@ class RecipeIngredientsAPIView(APIView):
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
 
-        # Manually apply search filter
         
         queryset = self.parse_query_params(queryset, request)
         
@@ -304,12 +303,17 @@ class RecipeIngredientsAPIView(APIView):
         
         cook_time_min = query_params.get('cook_time_min', None)
         cook_time_max = query_params.get('cook_time_max', None)
+        main_ingredient = query_params.get("main_ingredient", None)
         
         if cook_time_min:
             queryset = queryset.filter(recipe__cook_time__gte=cook_time_min)
         if cook_time_max:
             queryset = queryset.filter(recipe__cook_time__lte=cook_time_max)
-        
+            
+            # Apply main ingredient filter
+        if main_ingredient and isinstance(main_ingredient, str) and main_ingredient.strip():
+            queryset = queryset.filter(recipe__main_ingredient__iexact=main_ingredient.strip())
+
         ordering = query_params.get('ordering', None)
         if ordering:
             queryset = queryset.order_by(ordering)
