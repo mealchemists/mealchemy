@@ -37,7 +37,7 @@ function UserProfile() {
     navigate('/login');
   };
   return (
-    <Card sx={{ maxWidth: 400, margin: "auto", mt: 5, p: 3, textAlign: "center", borderRadius: '10px' }}>
+    <Card sx={{ maxWidth: 400, margin: "auto", mt: 5, p: 3, textAlign: "center", borderRadius: '10px', boxShadow: "0px 3px 7px #38793b" }}>
       <CardContent>
         <Typography variant="h5" gutterBottom>
           User Account

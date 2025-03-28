@@ -1,26 +1,32 @@
 import React, { useState } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
+import {validatePassword, validateEmail, validateConfirmPassword} from '../../utils/formValidation';
 
-const RegisterForm = ({ onSubmit }) => {
+
+const RegisterForm = ({ onSubmit, formError, onBack }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [error, setError] = useState("");
+    
 
-    const handleSubmit = (event) => {
+    const [emailError, setEmailError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
+    const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        setError(""); // Clear previous errors
 
-        // Check if passwords match
-        if (password !== confirmPassword) {
-            setError("Passwords do not match.");
-            return;
-        }
+        // Reset errors
+        setEmailError("");
+        setPasswordError("");
+        setConfirmPasswordError("");
 
-        onSubmit({ email: email, password })
-            .catch((err) => {
-                setError(err?.response?.data?.error || "Something went wrong");
-            });
+        const isEmailValid = validateEmail(email, setEmailError);
+        const isPasswordValid = validatePassword(password, setPasswordError);
+        const isConfirmPasswordValid = validateConfirmPassword(password, confirmPassword, setConfirmPasswordError);
+        if (!isEmailValid || !isPasswordValid || !isConfirmPasswordValid) return;
+
+        await onSubmit({ email, password });
     };
 
     return (
@@ -32,6 +38,8 @@ const RegisterForm = ({ onSubmit }) => {
                 fullWidth
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                error={!!emailError}
+                helperText={emailError}
                 sx={{
                     "& .MuiOutlinedInput-root": {
                         "& fieldset": {
@@ -53,6 +61,8 @@ const RegisterForm = ({ onSubmit }) => {
                 fullWidth
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                error={!!passwordError}
+                helperText={passwordError}
                 sx={{
                     "& .MuiOutlinedInput-root": {
                         "& fieldset": {
@@ -75,6 +85,8 @@ const RegisterForm = ({ onSubmit }) => {
                 fullWidth
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                error={!!confirmPasswordError}
+                helperText={confirmPasswordError}
                 sx={{
                     "& .MuiOutlinedInput-root": {
                         "& fieldset": {
@@ -89,10 +101,11 @@ const RegisterForm = ({ onSubmit }) => {
                     },
                 }}
             />
-
-            {/* Display error message if passwords do not match */}
-            {error && <Typography color="error" variant="body2">{error}</Typography>}
-
+            {formError && (
+                <Typography color="error" variant="body2" sx={{ marginTop: 2 }}>
+                    {formError.error ? "" : formError}
+                </Typography>
+            )}
             <Button variant="contained" color="primary" type="submit" fullWidth
                 sx={{
                     backgroundColor: '#38793b',
@@ -100,6 +113,9 @@ const RegisterForm = ({ onSubmit }) => {
                 }}
             >
                 Register
+            </Button>
+            <Button variant="text" onClick={onBack} sx={{ color: '#38793b', borderRadius: '10px' }}>
+                Back to Login
             </Button>
         </Box>
     );
