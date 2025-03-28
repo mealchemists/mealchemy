@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'backend.apps.recipes',
     'backend.apps.meal_plan',
     'backend.apps.user',
+    'backend.apps.shopping_list',
     'rest_framework_simplejwt',
 ]
 
