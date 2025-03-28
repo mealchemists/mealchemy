@@ -14,6 +14,8 @@ connection = pika.BlockingConnection(params)
 channel = connection.channel()
 channel.queue_declare(queue="admin")
 
+# NOTE: Deprecated.
+
 
 def callback(ch, method, properties, body):
     print(f"Received message: {body}")

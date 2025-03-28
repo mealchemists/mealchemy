@@ -8,7 +8,12 @@ export const postRecipeUrl = async (url) => {
 
     const response = await apiClient.post(
       RECIPE_ADD_BY_URL_URI, 
-      { url },  // The request body
+      { 
+        "payload": {
+          "url": url,
+        },
+        "task_type": "web" 
+      },  // The request body
       {
         headers: {
           'X-CSRFToken': csrfToken,  // Include CSRF token
@@ -23,6 +28,8 @@ export const postRecipeUrl = async (url) => {
     throw error;  // Throw the error to be handled by the calling function
   }
 };
+
+// TODO: add postRecipePDF()
 
 export const deleteRecipe = async (recipe_id) => {
   try {

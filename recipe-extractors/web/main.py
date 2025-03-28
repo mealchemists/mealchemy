@@ -1,5 +1,5 @@
 from .scraper import Scraper
-from .parse import parse_with_ollame
+from .parse import parse_with_openai
 import sys
 import json
 import requests
@@ -12,20 +12,31 @@ django_url = "http://localhost:8000/api/recipe-ingredients"
 def extract_recipe_data_url(url, user, token):
     #
     if validators.url(url):
-        # scraper = Scraper(url)
-        # result = scraper.scrape_website(url)
-        # body_content = scraper.extract_body_content(result)
-        # cleaned_content = scraper.clean_body_content(body_content)
-        # with open("cleanedcontent.txt", "w") as f:
-        #     f.write(cleaned_content)
-        # start_time = time.time()
-        # result = parse_with_ollame(cleaned_content)
-        # print("--- %s seconds ---" % (time.time() - start_time))
-        with open("output.json", "r") as f:
-            result = json.load(f)
+        scraper = Scraper(url)
+        result = scraper.scrape_website(url)
+        body_content = scraper.extract_body_content(result)
+        cleaned_content = scraper.clean_body_content(body_content)
+        with open("cleanedcontent.txt", "w") as f:
+            f.write(cleaned_content)
+        start_time = time.time()
+        result = parse_with_openai(cleaned_content)
+        print("--- %s seconds ---" % (time.time() - start_time))
 
-        result["recipe"]["source_url"] = url
-        result["recipe"]["user"] = user
+        # NOTE: temporary; print the aisles found.
+        AISLES_URL = "http://localhost:8000/api/aisles"
+        temp_headers = {
+            "Authorization": f"Bearer {token}",  # Add the token in Authorization header
+        }
+        response = requests.get(url=f"{AISLES_URL}/{user}", headers=temp_headers)
+
+        with open("output.json", "w") as f:
+            response_json = json.loads(response.json())
+            json.dump(response_json, f, indent=4)
+
+            # result = dict()
+            #
+            # result["recipe"]["source_url"] = url
+            # result["recipe"]["user"] = user
 
         headers = {
             "Authorization": f"Bearer {token}",  # Add the token in Authorization header

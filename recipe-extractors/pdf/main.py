@@ -18,7 +18,7 @@ django_url = "http://localhost:8000/api/recipe-ingredients"
 
 
 def extract_recipe_data_pdf(rest_url, user, token):
-    # TODO: get PDF data from server
+    # TODO: get PDF data from server (or via messages)
     # NOTE: for testing, use a temporary hardcoded path...
 
     # TEMP_PATH = "./pdf/source_material/hardcopy_scans/multi/Healthy Family Week1.pdf"
@@ -27,6 +27,8 @@ def extract_recipe_data_pdf(rest_url, user, token):
     # load and extract
     pages = PDFUtils.load_pdf_pages_path(TEMP_PATH)
     raw_texts = PDFUtils.extract_raw_text_hardcopy(pages, verbose=True)
+
+    # TODO: Get aisles using the token and then pass it into the chain.
 
     # LLM?
     chain = setup_llm_chain(mode="pdf", api_key=os.getenv("OPENAI_ECE493_G06_KEY"))

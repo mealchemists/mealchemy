@@ -156,6 +156,14 @@ PDF_SYSTEM_PROMPT = (
     "- Your response should consist solely of the structured, prettily printed JSON string without any additional Markdown formatting."
 )
 
+# append to either of the prompts
+# TODO: refine
+AISLE_PROMPT = (
+    "You are also given the following list of aisles. For each ingredient extracted, assign the most likely"
+    "aisle that it belongs to in a typical grocery store. If the aisle that you found does not appear on the list",
+    "feel free to create one.",
+)
+
 
 def setup_llm_chain(mode=None, api_key=None):
     """
@@ -176,12 +184,13 @@ def setup_llm_chain(mode=None, api_key=None):
         api_key=api_key,  # type: ignore
     )
 
-    # Chain should be invoked as `chain.invoke({"input": <USER_QUERY>})`
-    human_message = HumanMessagePromptTemplate.from_template("{input}")
+    # Chain should be invoked as `chain.invoke({"input": <USER_QUERY>, "aisles": "<AISLES_FROM_SERVER>"})`
+    input_message = HumanMessagePromptTemplate.from_template("Input: {input}")
+    aisles_message = HumanMessagePromptTemplate.from_template("Aisles: {aisles}")
     system_message = SystemMessagePromptTemplate.from_template(
         PDF_SYSTEM_PROMPT if mode == "pdf" else WEB_PROMPT
     )
-    chat_prompt = ChatPromptTemplate.from_messages([system_message, human_message])
+    chat_prompt = ChatPromptTemplate.from_messages([system_message, input_message])
 
     chain = chat_prompt | llm
 
