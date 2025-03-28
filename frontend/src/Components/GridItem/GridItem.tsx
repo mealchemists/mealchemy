@@ -13,8 +13,7 @@ function GridItem({ recipe }: { recipe: Recipe }) {
   return (
     <div className="gridItemContainer">
       <div className="contentContainer">
-        <h3 className="gridItemTitle">{ }</h3>
-        <img src={recipe.imageSrc} alt={recipe.name} className="gridItemImage" />
+        <h3 className="gridItemTitle">{recipe.name}</h3>
         <div className="tagsContainer">
           {tags.map((tag: string, index: number) => {
             let icon = null;
@@ -35,7 +34,7 @@ function GridItem({ recipe }: { recipe: Recipe }) {
             return (
               <Tooltip key={index} title={tooltipLabel} arrow disableHoverListener={!tooltipLabel}>
                 <Chip
-                  label={tag}
+                   label={tag && tag.length > 20 ? `${tag.substring(0, 20)}...` : tag || ""} 
                   icon={icon}
                   variant="outlined"
                   sx={{

@@ -5,26 +5,22 @@ import {validatePassword, validateEmail} from '../../utils/formValidation';
 const LoginForm = ({ onSubmit, onForgotPassword, formError }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    
-
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
-    const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+    const anyEmptyFields = !email || !password;
 
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        let valid = true;
 
         // Reset errors
         setEmailError("");
         setPasswordError("");
-        setConfirmPasswordError("");
 
         const isEmailValid = validateEmail(email, setEmailError);
-        const isPasswordValid = validatePassword(password, setPasswordError);
 
-        if (!isEmailValid || !isPasswordValid) return;
+        if (!isEmailValid) return;
 
         await onSubmit({ email, password });
     };
@@ -91,10 +87,10 @@ const LoginForm = ({ onSubmit, onForgotPassword, formError }) => {
             </Box>
             {formError && (
                 <Typography color="error" variant="body2" sx={{ marginTop: 2 }}>
-                    {formError}
+                    {formError.error}
                 </Typography>
             )}
-            <Button variant="contained" color="primary" type="submit" fullWidth
+            <Button variant="contained" color="primary" type="submit" fullWidth disabled={anyEmptyFields}
                 sx={{
                     backgroundColor: '#38793b',
                     borderRadius: '10px',

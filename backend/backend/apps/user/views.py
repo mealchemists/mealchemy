@@ -28,7 +28,10 @@ class RegisterView(APIView):
                 status=status.HTTP_201_CREATED,
             )
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Should be guaranteed that RegisterSerializer only raises one error.
+        first_error = next(iter(serializer.errors.values()))
+
+        return Response({"email": first_error}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginView(APIView):

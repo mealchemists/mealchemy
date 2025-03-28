@@ -23,7 +23,7 @@ const blankRecipe: Recipe = {
     main_ingredient: "Main Ingredient",
     ingredients: [],
     steps: "Enter instructions here",
-    imageSrc: "",
+    image_url: "",
 };
 
 const blankRecipeIngredient:RecipeIngredient = {

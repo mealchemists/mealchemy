@@ -50,8 +50,7 @@ function LoginPage() {
             setIsRegistering(false);
             clearForm();
         } catch (error) {
-            const data = error.response?.data
-        console.log(data)
+            const data = error.response?.data;
             if (data.email) {
                 setFormError(data.email[0]); 
                 return;
@@ -79,7 +78,7 @@ function LoginPage() {
                     {isForgotPassword ? (
                         <ForgotPasswordForm onSubmit={handleForgotPassword} onBack={() => setIsForgotPassword(false)} />
                     ) : isRegistering ? (
-                        <RegisterForm onSubmit={handleSignup} formError={formError}/>
+                        <RegisterForm onSubmit={handleSignup} onBack={() => setIsRegistering(false)} formError={formError}/>
                     ) : (
                         <LoginForm onSubmit={handleLogin} onForgotPassword={() => setIsForgotPassword(true)}formError={formError}/>
                     )}

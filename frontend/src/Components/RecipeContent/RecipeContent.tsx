@@ -3,9 +3,14 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
-import { Button, Chip, TextField } from '@mui/material';
+import { Avatar, Button, Chip, styled, TextField, Tooltip } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import SoupKitchenIcon from '@mui/icons-material/SoupKitchen'; 
+import FlatwareIcon from '@mui/icons-material/Flatware';
+import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
+import DinnerDiningIcon from '@mui/icons-material/DinnerDining';
 
 import { deleteRecipeIngredients, putRecipeIngredients, createRecipeIngredients } from '../../api/recipeIngredientApi';
 import AddIngredientModal from '../AddIngredientModal/AddIngredientModal';
@@ -46,6 +51,19 @@ const blankRecipe = {
     aisle: ""
 }
 
+const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+});
+
+
 const RecipeContent: React.FC<RecipeContentProps> = ({
     recipeIngredient,
     initialEditMode = false,
@@ -75,6 +93,21 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
     const [tags, setTags] = useState([mainIngredient, cookTime, prepTime, totalTime]);
     const [error, setError] = useState("");
+
+    const [imageBase64, setImageBase64] = useState<string>(recipe.image_url);
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                if (typeof reader.result === "string") {
+                    setImageBase64(reader.result); // Base64 string
+                }
+            };
+        }
+    };
 
     const deleteRecipe = async (id) => {
         try {
@@ -190,14 +223,15 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 main_ingredient: mainIngredient,
                 cook_time: Number(cookTime),
                 prep_time: Number(prepTime),
-                total_time: Number(totalTime)
+                total_time: Number(totalTime),
+                image_url: imageBase64
             },
             ingredients: ingredients
         };
 
-        if(recipeIngredient.id != -1){
+        if (recipeIngredient.id != -1) {
             await putRecipe(body);
-        }else{
+        } else {
             await createRecipe(body);
         }
         // const filteredIngredients = newIngredients.filter(ingredient => ingredient.trim() !== "");
@@ -225,6 +259,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
         handleCloseIngredientModal();
     };
+
 
     // const handleInstructionChange = (index, value) => {
     //     const newInstructions = [...instructions];
@@ -308,7 +343,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                         "& .MuiOutlinedInput-root": {
                             fontSize: "24px", // Match h1 size
                             fontWeight: "bold",
-                            textAlign: "center"
+                        },
+                        "& .MuiInputBase-input": { 
+                            textAlign: "center",
                         },
                     }}
                 />
@@ -317,23 +354,41 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             )}
             <div className="tagContainer">
                 <span className="tagLabel">Tags:</span>
-                {tags.map((tag, index) => (
-                    <Chip
-                        key={index}
-                        label={tag}
-                        variant="outlined"
-                        sx={{
-                            color: "#38793b",
-                            backgroundColor: "white",
-                            fontWeight: "bold",
-                            border: "3px solid #38793b",
-                            "& .MuiChip-deleteIcon": { color: "#38793b" },
-                            "& .MuiChip-deleteIcon:hover": {
-                                color: "#b0dbb2",
-                            },
-                        }}
-                    />
-                ))}
+                {tags.map((tag: string, index: number) => {
+                        let icon = null;
+                        let tooltipLabel = "";
+
+                        if (index === 1) {
+                            icon = <SoupKitchenIcon />;
+                            tooltipLabel = "Cook Time";
+                        } 
+                        if (index === 2) { 
+                            icon = <FlatwareIcon />;
+                            tooltipLabel = "Prep Time";
+                         } 
+                        if (index === 3) {
+                            icon = <HourglassBottomIcon/>;
+                            tooltipLabel = "Total Time";
+                        }
+                        return (
+                            <Tooltip key={index} title={tooltipLabel} arrow disableHoverListener={!tooltipLabel}>
+                                <Chip
+                                    label={tag}
+                                    icon={icon}
+                                    variant="outlined"
+                                    sx={{
+                                        color: "#38793b",
+                                        backgroundColor: "#f8f8f8",
+                                        fontWeight: "bold",
+                                        border: "3px solid #38793b",
+                                        "& .MuiChip-icon": {
+                                            color: "#38793b", 
+                                        },
+                                    }}
+                                />
+                            </Tooltip>
+                        );
+                    })}
 
                 {editMode && (
                     <IconButton onClick={handleOpenTagModal}>
@@ -356,8 +411,55 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             ></EditTagModal>
             <AddIngredientModal open={openAddIngredientModal} onClose={handleCloseIngredientModal} onAddIngredient={handleAddIngredient} ></AddIngredientModal>
             <div className="imgIngredients">
-                <img src={recipe.imageSrc} alt={recipe.name} className="itemImage" />
+                <div className='imageContainer'>
+                    <Avatar
+                                    src={imageBase64}
+                                    alt={recipe.name}
+                                    variant = "square"
+                                    sx={{
+                                        width: "300px",
+                                        height: "300px",
+                                        objectFit: "cover",
+                                        borderRadius: "10px",
+                                        display: "flex", 
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontSize: "20rem",
+                                        backgroundColor: "#f0f0f0"
+                                    }}
+                                >
+                                    <DinnerDiningIcon sx={{ 
+                                        fontSize: "inherit",
+                                        color:'#38793b'
+                                        }}/>
+                                </Avatar>
+                    {editMode && (
+                        <Button
+                            component="label"
+                            role={undefined}
+                            variant="contained"
+                            tabIndex={-1}
+                            startIcon={
+                                <CloudUploadIcon />
+                            }
+                            sx={{
+                                width: "fit-content",
+                                backgroundColor: '#b0dbb2',
+                                color: 'black',
+                            }}
+                        >
+                            Upload a picture
+                            <VisuallyHiddenInput
+                                type="file"
+                                accept="image/png, image/jpeg"
+                                onChange={handleFileChange}
+                            />
+                        </Button>
+                    )}
+                </div>
+
                 <div className="ingredientContainer">
+
                     <h2>Ingredients</h2>
                     {editMode ? (
                         <>
