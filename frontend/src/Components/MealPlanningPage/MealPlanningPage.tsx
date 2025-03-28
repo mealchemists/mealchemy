@@ -10,12 +10,13 @@ import {
 } from "@mui/material";
 import React, { useState, useEffect, useCallback } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
-import moment from "moment";
+import moment, { weekdays } from "moment";
 import "./MealPlanningPage.css";
 import RecipeSearch from "../RecipeSearch/RecipeSearch";
 import GridItem from "../GridItem/GridItem";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import { RecipeIngredient } from "../../Models/models";
+import { toast } from "react-toastify";
 import {
   CustomToolbar,
   CustomEvent,
@@ -35,7 +36,7 @@ const DragAndDropCalendar = withDragAndDrop(Calendar);
 
 function MealPlanningPage() {
   const [myEventsList, setMyEventsList] = useState([]);
-  const [selectedMeals, setSelectedMeals] = useState({});
+  // const [selectedMeals, setSelectedMeals] = useState({});
   const [draggedRecipe, setDraggedRecipe] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const recipesPerPage = 8;
@@ -47,7 +48,6 @@ function MealPlanningPage() {
     RecipeIngredient[]
   >([]);
   const [currentDate, setCurrentDate] = useState(new Date()); // Track the current date
-  const [slotValue, setSlotValue] = useState(0);
 
   const getStartAndEndOfWeek = (date) => {
     const start = new Date(date);
@@ -123,14 +123,14 @@ function MealPlanningPage() {
       }, {});
 
       // Update selectedMeals with meal counts for each day
-      const updatedSelectedMeals = {};
-      Object.keys(groupedMealPlans).forEach((dayString) => {
-        const mealPlansForDay = groupedMealPlans[dayString];
-        updatedSelectedMeals[dayString] = mealPlansForDay.length; // Set meal count as the length of mealPlansForDay
-      });
+      // const updatedSelectedMeals = {};
+      // Object.keys(groupedMealPlans).forEach((dayString) => {
+      //   const mealPlansForDay = groupedMealPlans[dayString];
+      //   updatedSelectedMeals[dayString] = mealPlansForDay.length; // Set meal count as the length of mealPlansForDay
+      // });
 
       // Set the updated selected meals in state
-      setSelectedMeals(updatedSelectedMeals);
+      // setSelectedMeals(updatedSelectedMeals);
 
       Object.keys(groupedMealPlans).forEach((dayString) => {
         const day = moment(dayString); // Convert string back to moment object
@@ -260,20 +260,38 @@ function MealPlanningPage() {
     for (let i = 0; i < 7; i++) {
       weekDays.push(startOfWeek.clone().add(i, "days")); // Add i days to the start of the week
     }
-
-    console.log(weekDays.map((day) => day.format("YYYY-MM-DD"))); // Format to YYYY-MM-DD
     return weekDays;
   };
 
-  // Example: Pass in a Thursday to see if it starts on Sunday
-  const selectedDate = "2025-04-10"; // Thursday
-  const weekDays = getWeekDays(selectedDate);
+  const calculateEventCounts = () => {
+	const eventCounts = {};
+  
+	// Loop through myEventsList and update the event count for each day
+	myEventsList.forEach((event) => {
+	  const dayString = moment(event.start).format('YYYY-MM-DD'); // Format event start date to 'YYYY-MM-DD'
+  
+	  // If the day does not exist in the eventCounts object, initialize it
+	  if (!eventCounts[dayString]) {
+		eventCounts[dayString] = 0;
+	  }
+  
+	  // Increment the count for this specific day
+	  eventCounts[dayString]++;
+	});
+  
+	// Return the complete event count object
+	return eventCounts;
+  };
+
+  const eventCountPerday = (day) => {
+	const eventCounts = calculateEventCounts();
+	const dayString = day.format('YYYY-MM-DD'); 
+	
+	// Return the count for the specific day or 0 if no events are found
+	return eventCounts[dayString] || 0; 
+  };
 
   const handleMealChange = (day, mealCount, mealPlan = null) => {
-    if (mealPlan === null) {
-      setSelectedMeals((prev) => ({ ...prev, [day]: mealCount }));
-    }
-    console.log("selected meals", getWeekDays(currentDate));
     // Update events list based on new meal count
     setMyEventsList((prevEvents) => {
       // Separate non-placeholder and placeholder events for the current day
@@ -334,6 +352,7 @@ function MealPlanningPage() {
   };
 
   const resetEventToPlaceholder = async (event) => {
+    console.log("Deleted");
     if (event.placeholder === false) {
       try {
         const response = await deleteMealPlan(event.mealPlan_id);
@@ -341,12 +360,10 @@ function MealPlanningPage() {
         console.error("Error fetching meal plans:", error);
       }
     }
+
+    // Remove deleted item from event list
     setMyEventsList((prevEvents) =>
-      prevEvents.map((ev) =>
-        ev.id === event.id
-          ? { ...ev, title: "Drag meal here", placeholder: true }
-          : ev
-      )
+      prevEvents.filter((ev) => ev.id != event.id)
     );
   };
   const handleViewChange = (event, newView) => {
@@ -355,8 +372,28 @@ function MealPlanningPage() {
     }
   };
 
+  const validateMealCount = () => {
+	const weekDays = getWeekDays(currentDate).map((day) => eventCountPerday(day)) 
+
+	const expectedMealCount = weekDays.reduce((partialSum, a) => partialSum + a, 0);
+    const mealCount = myEventsList.filter(
+      (meal) => meal.placeholder === false
+    ).length;
+
+    if (mealCount != expectedMealCount) {
+      return false
+    }
+    return true;
+  };
+
   const saveMealPlan = () => {
-    updateMealPlan();
+
+    if (validateMealCount()) {
+		updateMealPlan();
+		toast.success("Your Meal-Plan  has been saved! 🍔");
+		return
+	}
+    toast.error('Please add meals to each slot or reduce number of meal plans ❌');
   };
 
   return (
@@ -423,7 +460,7 @@ function MealPlanningPage() {
             }}
           >
             <Select
-              value={selectedMeals[day.format("YYYY-MM-DD")] || ""}
+              value={eventCountPerday(day)}
               onChange={(e) =>
                 handleMealChange(
                   day.format("YYYY-MM-DD"),
