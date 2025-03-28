@@ -1,4 +1,4 @@
-import { Stack, FormControl, MenuItem, Select, IconButton, Box, ToggleButton, ToggleButtonGroup, Button } from "@mui/material";
+import { Stack, FormControl, MenuItem, Select, Box, ToggleButton, ToggleButtonGroup, Button } from "@mui/material";
 import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
@@ -6,72 +6,76 @@ import './MealPlanningPage.css';
 import RecipeSearch from "../RecipeSearch/RecipeSearch";
 import GridItem from "../GridItem/GridItem";
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
-import { Recipe, RecipeIngredient } from "../../Models/models";
+import { RecipeIngredient } from "../../Models/models";
 import { CustomToolbar, CustomEvent, CustomDayHeader } from "./CalendarComponents";
 import NutritionalAccordion from "../NutritionAccordion/NutritionAccordion";
 
 import { getRecipeIngredients } from '../../api/recipeIngredientApi';
+import { getMealPlans } from "../../api/mealPlanApi";
 
-// const events = [
-//   {
-//     'title': 'All Day 1',
-//     'bgColor': '#ff7f50',
-//     'allDay': true,
-//     'start': new Date(2025, 2, 3),
-//     'end': new Date(2025, 2, 3)
-//   },
-//   {
-//     'title': 'All Day 2',
-//     'bgColor': '#ff7f50',
-//     'allDay': true,
-//     'start': new Date(2025, 2, 3),
-//     'end': new Date(2025, 2, 3)
-//   }
-
-// ]
-
-// const blankRecipe: Recipe = {
-//   id: 999,
-//   name: "Chicken",
-//   cook_time: 0,
-//   prep_time: 0,
-//   total_time: 0,
-//   main_ingredient: "Chicken",
-//   ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-//   steps: "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-//   imageSrc: "/salad.jpg"
-// };
-
-// const blankRecipe2: Recipe = {
-//   id: 100,
-//   name: "Salad",
-//   cook_time: 0,
-//   prep_time: 0,
-//   total_time: 0,
-//   main_ingredient: "Chicken",
-//   ingredients: ["A whole chicken", "1/3 onions", "1 head of lettuce", "3 tomatoes"],
-//   steps: null,
-//   imageSrc: "/salad.jpg"
-// };
-
-// const recipes = [blankRecipe, blankRecipe2, blankRecipe, blankRecipe2, blankRecipe, blankRecipe, blankRecipe, blankRecipe, blankRecipe];
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar)
 
+interface MealPlanSearchParams {
+  start_date?: string; // start_date is optional
+  end_date?: string; // end_date is required
+}
 
 function MealPlanningPage() {
   const [myEventsList, setMyEventsList] = useState([]);
   const [selectedMeals, setSelectedMeals] = useState({});
   const [draggedRecipe, setDraggedRecipe] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const recipesPerPage = 8; // Show 8 recipes per page (4 columns x 2 rows)
+  const recipesPerPage = 4;
   const [view, setView] = useState("recipes");
   const [totalPages, setTotalPages] = useState(0);
   const [searchRecipes, setSearchRecipes] = useState<RecipeIngredient[]>([]); //TODO: pass the recipes from database
   const [visibleRecipes, setVisibleRecipes] = useState<RecipeIngredient[]>([]);
-
   const [recipeIngredients, setRecipeIngredients] = useState<RecipeIngredient[]>([]);
+  const [currentDate, setCurrentDate] = useState(new Date()); // Track the current date
+  const [mealPlans, setMealPlans] = useState([]);
 
+  const getStartAndEndOfWeek = (date) => {
+    const start = new Date(date);
+    const end = new Date(date);
+
+    // Set start date to the beginning of the week (Sunday)
+    start.setDate(date.getDate() - date.getDay());
+    start.setHours(0, 0, 0, 0);
+
+    // Set end date to the end of the week (Saturday)
+    end.setDate(date.getDate() + (6 - date.getDay()));
+    end.setHours(23, 59, 59, 999);
+
+    return { startDate: start, endDate: end };
+  };
+
+  // Navigation handler for Today, Next, and Previous
+  const handleNavigate = (action) => {
+    let newDate = new Date(currentDate);
+
+    switch (action) {
+      case 'TODAY':
+        newDate = new Date(); // Set to current date
+        break;
+      case 'NEXT':
+        newDate.setDate(currentDate.getDate() + 7); // Move to next week
+        break;
+      case 'PREV':
+        newDate.setDate(currentDate.getDate() - 7); // Move to previous week
+        break;
+      default:
+        break;
+    }
+
+    const { startDate, endDate } = getStartAndEndOfWeek(newDate);
+    console.log('Start Date:', startDate);
+    console.log('End Date:', endDate);
+
+    setCurrentDate(newDate); // Update the current date state
+    fetchMealPlans(startDate, endDate);
+  };
+  
   const fetchRecipes = async () => {
     try {
       const response = await getRecipeIngredients();
@@ -83,8 +87,47 @@ function MealPlanningPage() {
     } 
   };
 
+  const mapMealPlansToEvents = (mealPlans) => {
+    return mealPlans.map((mealPlan) => {
+      const { day_planned, id, recipe, meal_type} = mealPlan;
+      const day_planned_date = new Date(day_planned);
+
+      return {
+        title: recipe.name, // Meal name
+        recipe: recipe, // The recipe for the meal (can be used for more details)
+        start: day_planned_date,
+        end: day_planned_date,
+      };
+    });
+  };
+
+  const fetchMealPlans = async (startDate, endDate) => {
+      const searchParams: MealPlanSearchParams = {};
+      
+      if (startDate && endDate){
+        searchParams.start_date = startDate.toISOString().split('T')[0]
+        searchParams.end_date = endDate.toISOString().split('T')[0]
+      }
+      console.log(searchParams)
+      try {
+        const response = await getMealPlans(searchParams);
+        console.log("meal plan", response.meal_plan)
+        setMealPlans(response.meal_plan)
+            // Transform meal plans into calendar events
+        const events = mapMealPlansToEvents(response.meal_plan);
+        console.log(events)
+        // Set the events in the state
+        setMyEventsList(events);
+
+      } catch (error) {
+        console.error('Error fetching meal plans:', error);
+      }
+    };
+
+
   useEffect(() => {
     fetchRecipes();
+    fetchMealPlans(null, null);
   }, []);
 
   useEffect(() => {
@@ -98,14 +141,12 @@ function MealPlanningPage() {
   }, [recipeIngredients]);
 
   const handleSearchRecipe = (searchInput) => {
-    console.log(searchInput);
     if (searchInput.trim() === "") {
       setSearchRecipes(recipeIngredients);
     } else {
       const filtered = recipeIngredients.filter((recipeIngredient) =>
         recipeIngredient.recipe.name.toLowerCase().includes(searchInput.toLowerCase())
       );
-      console.log(filtered);
       setSearchRecipes(filtered);
     }
   }
@@ -121,6 +162,8 @@ function MealPlanningPage() {
     }
   };
 
+  
+
 
   const handleDragStart = (recipe) => {
     setDraggedRecipe(recipe);
@@ -132,19 +175,18 @@ function MealPlanningPage() {
   }, [draggedRecipe]);
 
   const onDropFromOutside = useCallback(
-
+  
     ({ event, start, end }) => {
       if (!draggedRecipe) return;
-
       setMyEventsList((prevEvents) => {
         return prevEvents.map((ev) => {
           if (ev.id === event.id && ev.placeholder) {
-            return { ...ev, title: draggedRecipe.title, placeholder: false };
+            return { ...ev, title: draggedRecipe.recipe.name, placeholder: false, recipe: draggedRecipe };
           }
           return ev;
         });
       });
-
+      console.log(myEventsList)
       setDraggedRecipe(null);
     },
     [draggedRecipe]
@@ -165,7 +207,7 @@ function MealPlanningPage() {
 
   const handleMealChange = (day, mealCount) => {
     setSelectedMeals((prev) => ({ ...prev, [day]: mealCount }));
-
+    console.log("changed")
     // TODO: do a check for if meals are more than number of meal slots
 
     setMyEventsList((prevEvents) => {
@@ -210,7 +252,6 @@ function MealPlanningPage() {
   };
 
   const resetEventToPlaceholder = (event) => {
-    console.log(event);
     setMyEventsList((prevEvents) =>
       prevEvents.map((ev) =>
         ev.id === event.id
@@ -220,13 +261,14 @@ function MealPlanningPage() {
     );
   };
   const handleViewChange = (event, newView) => {
+    console.log(newView)
     if (newView !== null) {
       setView(newView);
     }
   };
 
   const saveMealPlan = () => {
-    // TODO: Save the meal plan to database
+    
     console.log(myEventsList);
   };
 
@@ -234,17 +276,25 @@ function MealPlanningPage() {
     <div>
       <div className="calendarContainer">
         <DragAndDropCalendar
-          localizer={localizer}
-          events={myEventsList}
-          defaultView="week"
-          views={{ week: true }}
+        localizer={localizer}
+        events={myEventsList}
+        defaultView="week"
+        views={{ week: true }}
+        date={currentDate} // Pass the currentDate to update the calendar view
+        onNavigate={handleNavigate} // Attach the navigation handler
           components={{
-            event: (props) => <CustomEvent {...props} resetEventToPlaceholder={resetEventToPlaceholder} />,
-            toolbar: CustomToolbar,
-            week: {
-              header: CustomDayHeader,
-            }
-          }}
+          event: (props) => <CustomEvent {...props} resetEventToPlaceholder={resetEventToPlaceholder} />,
+          toolbar: (props) => (
+            <CustomToolbar 
+              {...props} 
+              label={currentDate.toLocaleDateString()} 
+              onNavigate={handleNavigate} 
+            />
+          ),
+          week: {
+            header: CustomDayHeader,
+          },
+        }}
           onEventDrop={moveEvent}
           onDropFromOutside={({ start, end }) => {
             if (!start || !end) {
@@ -376,28 +426,29 @@ function MealPlanningPage() {
       </Box>
 
       {view === "recipes" ? (
-
-        <div className="recipeGrid">
-          <h3>Recipes</h3>
-          <RecipeSearch searchRecipe={handleSearchRecipe}></RecipeSearch>
-          <div className="recipe-grid">
-            {visibleRecipes.map((recipe, index) => (
-              <div key={index} className="grid-item" draggable onDragStart={() => handleDragStart(recipe)}>
-                <GridItem recipe={recipe.recipe} />
+          <div className="recipeGrid">
+            <h3>Recipes</h3>
+            <RecipeSearch searchRecipe={handleSearchRecipe}></RecipeSearch>
+            <div className="recipe-grid-container">
+              <div className="recipe-grid">
+                {visibleRecipes.map((recipe, index) => (
+                  <div key={index} className="grid-item" draggable onDragStart={() => handleDragStart(recipe)}>
+                    <GridItem recipe={recipe.recipe} />
+                  </div>
+                ))}
+                {visibleRecipes.length < recipesPerPage &&
+                  Array.from({ length: recipesPerPage - visibleRecipes.length }).map((_, index) => (
+                    <div key={`empty-${index}`} className="grid-item empty"></div>
+                  ))
+                }
               </div>
-            ))}
-            {visibleRecipes.length < recipesPerPage &&
-              Array.from({ length: recipesPerPage - visibleRecipes.length }).map((_, index) => (
-                <div key={`empty-${index}`} className="grid-item empty"></div>
-              ))
-            }
+            </div>
+            <div className="pagination">
+              <button onClick={handlePrev} disabled={currentPage === 0}>←</button>
+              <span>Page {currentPage + 1} of {totalPages}</span>
+              <button onClick={handleNext} disabled={currentPage === totalPages - 1}>→</button>
+            </div>
           </div>
-          <div className="pagination">
-            <button onClick={handlePrev} disabled={currentPage === 0}>←</button>
-            <span>Page {currentPage + 1} of {totalPages}</span>
-            <button onClick={handleNext} disabled={currentPage === totalPages - 1}>→</button>
-          </div>
-        </div>
       ) : (
         <Box
           sx={{

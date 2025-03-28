@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Ingredient, Recipe, RecipeIngredient, RecipeStep } from '../../Models/models';
+import './RecipeContent.css';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
@@ -15,7 +17,6 @@ import DinnerDiningIcon from '@mui/icons-material/DinnerDining';
 import { deleteRecipeIngredients, putRecipeIngredients, createRecipeIngredients } from '../../api/recipeIngredientApi';
 import AddIngredientModal from '../AddIngredientModal/AddIngredientModal';
 import EditTagModal from '../EditTagModal/EditTagModal';
-import { Ingredient, Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipeContent.css';
 
 
@@ -154,7 +155,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     // For editing the actual recipe content
     const [title, setTitle] = useState(recipe.name);
     const [ingredients, setIngredients] = useState<Ingredient[]>(recipeIngredient.ingredients);
-    const [instructions, setInstructions] = useState<string>(recipe.steps);
+    const [instructions, setInstructions] = useState<RecipeStep[]>(recipe.steps);
+    const sortedInstructions = instructions.sort((a, b) => Number(a.step_number) - Number(b.step_number));
+
 
     const openOptions = Boolean(anchorEl);
 
@@ -261,15 +264,15 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     };
 
 
-    // const handleInstructionChange = (index, value) => {
-    //     const newInstructions = [...instructions];
-    //     newInstructions[index] = value;
-    //     setInstructions(newInstructions);
-    // };
+    const handleInstructionChange = (index, value) => {
+        const newInstructions = [...instructions];
+        newInstructions[index] = value;
+        setInstructions(newInstructions);
+    };
 
-    // const handleAddInstruction = () => {
-    //     setInstructions([...instructions, ""]); // Add an empty ingredient field
-    // };
+    const handleAddInstruction = () => {
+        setInstructions([...instructions]); // Add an empty ingredient field
+    };
 
     return (
         <div className="recipeContent">
@@ -529,7 +532,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                 {/* {instructions.map((instruction, index) => (
                                     <li key={index}>
                                         <TextField
-                                            value={instruction}
+                                            value={instruction.description}
                                             onChange={(e) => handleInstructionChange(index, e.target.value)}
                                             variant="outlined"
                                             sx={{
@@ -552,15 +555,15 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                             color:'white',
                             borderRadius:'10px'
                             }}
-                             onClick={handleAddInstruction}>Add Instruction</Button> */}
+                             onClick={handleAddInstruction}>Add Instruction</Button>
 
                         </>
                     ) : (
-                        <ul>
-                            {instructions.split('\n').map((instruction, index) => (
-                                <li key={index}>{instruction}</li>
-                            ))}
-                        </ul>
+                       <ul>
+                        {sortedInstructions.map((instruction) => (
+                            <li key={String(instruction.id)}>{instruction.description}</li>  // Convert id to a string
+                        ))}
+                    </ul>
                     )}
                 </div>
             </div>

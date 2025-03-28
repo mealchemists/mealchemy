@@ -1,10 +1,7 @@
-import uuid
-
 from django.contrib.auth.models import User
 from django.db import models
 
 from backend.models import TimeStampedModel
-
 
 class Recipe(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
@@ -24,3 +21,9 @@ class Recipe(TimeStampedModel):
         
     def __str__(self):
         return f"{self.name}"
+    
+class Step(TimeStampedModel):
+    recipe = models.ForeignKey(Recipe, related_name='steps', on_delete=models.CASCADE)
+    step_number = models.IntegerField()
+    description = models.TextField(null=True, blank=True, max_length=255)
+
