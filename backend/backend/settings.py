@@ -232,6 +232,11 @@ CSRF_TRUSTED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app"]
 CORS_ALLOWED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app"]
 CORS_ALLOW_CREDENTIALS = True
 
+SESSION_COOKIE_SAMESITE = 'None'  # Allow cross-site cookies
+SESSION_COOKIE_SECURE = True  # Only send cookies over HTTPS
+CSRF_COOKIE_SAMESITE = 'None'  # CSRF cookies for cross-site requests
+CSRF_COOKIE_SECURE = True  # Only send cookies over HTTPS
+
 print(f" allowed {ALLOWED_HOSTS}")
 print(f" trusted_origins {CSRF_TRUSTED_ORIGINS}")
 print(f" allowed_origins {CORS_ALLOWED_ORIGINS}")
