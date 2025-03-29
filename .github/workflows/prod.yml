@@ -55,6 +55,4 @@ jobs:
             --command createsuperuser \
             --execute-now
 
-    # No `options` or `substitutions` here because they are not needed in GitHub Actions
-    images:
-      - "${{ secrets.IMAGE_NAME }}"
+ 
