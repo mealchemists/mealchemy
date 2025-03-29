@@ -28,7 +28,7 @@ jobs:
 
       - name: Migrate Database via Cloud Run Job
         run: |
-          gcloud run jobs create migrate-job \
+          gcloud run jobs update migrate-job \
             --region us-west1 \
             --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest \
             --set-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} \
@@ -38,7 +38,7 @@ jobs:
 
       - name: Create Django Superuser via Cloud Run Job
         run: |
-          gcloud run jobs create superuser-job \
+          gcloud run jobs update superuser-job \
             --region us-west1 \
             --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest \
             --set-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} \
