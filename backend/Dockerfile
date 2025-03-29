@@ -17,4 +17,4 @@ COPY . /app
 EXPOSE 8080
 
 # Start the application with Gunicorn (recommended for production)
-CMD [gunicorn backend.wsgi:application --bind 0.0.0.0:8080]
+CMD ["gunicorn", "backend.wsgi:application", "--bind", "0.0.0.0:8080"]
