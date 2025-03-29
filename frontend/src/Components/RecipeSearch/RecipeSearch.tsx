@@ -26,6 +26,7 @@ const ITEM_HEIGHT = 48;
 interface RecipeSearchProps {
     onSelect?: (value: string) => void;
     applyFiltering: (filterObj: object) => void;
+    mainIngredientList: string[];
 }
 
 export interface RecipeSearchRef {
@@ -33,12 +34,12 @@ export interface RecipeSearchRef {
   }
   
 
-const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, applyFiltering }, ref) => {
+const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, applyFiltering, mainIngredientList}, ref) => {
     const [isFilterPopupOpen, setIsFilterPopupOpen] = useState<boolean>(false);
     const [filterChips, setFilterChips] = useState([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [mainIngredient, setMainIngredient] = useState<string>();
     const [showCancelButton, setShowCancelButton] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [openAddRecipeModal, setOpenAddRecipeModal] = useState(false);
@@ -52,7 +53,7 @@ const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, 
     const [sortBy, setSortBy] = useState<string>("");
 
     // Filter
-    const [sliderRange, setSliderRange] = useState<number[]>([0, 10]);
+    const [sliderRange, setSliderRange] = useState<number[]>([0, 100]);
 
 
     const handleOptionsClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -76,11 +77,11 @@ const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, 
     };
 
     // Handle filters when the user applies them
-    const handleFilterChange = (filters: string[], sort: string, range: number[], tags: string[]) => {
+    const handleFilterChange = (filters: string[], sort: string, range: number[], main_ingredient: string) => {
         setFilterChips(filters);
         setSortBy(sort);
         setSliderRange(range);
-        setSelectedTags(tags);
+        setMainIngredient(mainIngredient);
 
         // Send the filter data back to the parent component
         applyFiltering({
@@ -88,7 +89,7 @@ const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, 
             filters,
             sortBy: sort,
             range,
-            tags
+            mainIngredient: main_ingredient
         });
     };
 
@@ -136,7 +137,7 @@ const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, 
             filters: filterChips,
             sortBy,
             range: sliderRange,
-            tags: selectedTags
+            mainIngredient: mainIngredient
         });
     }
 
@@ -214,7 +215,7 @@ const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, 
                             onFilterChange={handleFilterChange}
                             sortBy={sortBy}
                             sliderRange={sliderRange}
-                            selectedTags={selectedTags}
+                            mainIngredientList={mainIngredientList}
                         />
                     )}
                 </div>

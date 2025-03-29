@@ -31,3 +31,11 @@ export interface RecipeIngredient {
     recipe: Recipe,
     ingredients: Ingredient[]
 }
+
+export interface FilterObject {
+    searchQuery?: string;
+    filters?: string[];
+    sortBy?: string;
+    range?: number[];
+    mainIngredient?: string;
+}
