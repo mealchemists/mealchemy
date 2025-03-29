@@ -25,10 +25,23 @@ jobs:
           gcloud auth configure-docker us-west1-docker.pkg.dev
           docker build -t us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest ./backend
           docker push us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest
+# Step 5: Deploy the backend to Cloud Run
+      - name: Deploy backend to Cloud Run
+        run: |
+          gcloud run deploy backend-service \
+            --region us-west1 \
+            --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars SETTINGS_NAME=${{ secrets.DJANGO_SETTINGS_SECRET_NAME }} \
+            --set-env-vars CLOUD_SQL_CONNECTION_NAME=${{ secrets.CLOUD_SQL_CONNECTION_NAME }} \
+            --port 8080 \
+            --memory 512Mi
 
+      # Step 6: Migrate Database via Cloud Run Job
       - name: Migrate Database via Cloud Run Job
         run: |
-          gcloud run jobs update migrate-job \
+          gcloud run jobs create migrate-job \
             --region us-west1 \
             --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest \
             --set-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} \
@@ -36,9 +49,10 @@ jobs:
             --command migrate \
             --execute-now
 
+      # Step 7: Create Django Superuser via Cloud Run Job
       - name: Create Django Superuser via Cloud Run Job
         run: |
-          gcloud run jobs update superuser-job \
+          gcloud run jobs create superuser-job \
             --region us-west1 \
             --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest \
             --set-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} \
