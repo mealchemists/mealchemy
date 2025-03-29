@@ -16,22 +16,5 @@ services:
       - DJANGO_SECRET_KEY=your-secret-key
     command: >
         sh -c "python manage.py migrate && gunicorn backend.wsgi:application --bind 0.0.0.0:8000"
-    depends_on:
-      - cloud_sql_proxy  # Ensure Cloud SQL Proxy is running before backend starts
+
   
-  cloud_sql_proxy:
-    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:latest  # Use the latest v2 image
-    command: "--port 5432 /cloudsql modified-wonder-447918-q3:us-west1:mealchemy-db"  # Cloud SQL Proxy command with Unix socket output directory
-    environment:
-      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/cloud/sql/key.json
-      - CLOUD_SQL_CONNECTION_NAME=modified-wonder-447918-q3:us-west1:mealchemy-db
-    # network_mode: "host"  # Use host network mode to ensure proper access
-    volumes:
-      - /home/logan/gcp/modified-wonder-447918-q3-16838de2327c.json:/secrets/cloud/sql/key.json:ro  # Mount credentials
-      - /home/logan/mealchemy/backend/cloudsql:/cloudsql  # Mount the /cloudsql volume to store the socket
-    ports:
-      - "5432:5432"
-      - "5433:5433"  # Expose PostgreSQL port 5433 for TCP connections
-networks:
-  default:
-    driver: bridge
