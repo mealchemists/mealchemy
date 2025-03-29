@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY . /app
 
 # Expose the port that the app will run on
-EXPOSE 8000
+EXPOSE 8080
 
 # Start the application with Gunicorn (recommended for production)
-CMD [gunicorn backend.wsgi:application --bind 0.0.0.0:8000]
+CMD [gunicorn backend.wsgi:application --bind 0.0.0.0:8080]
