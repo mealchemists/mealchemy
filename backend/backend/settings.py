@@ -108,47 +108,20 @@ if DEBUG:
 else:
    # Get the DATABASE_URL from environment variables
     DATABASE_URL = os.getenv('DATABASE_URL')
+    print(DATABASE_URL)
 
-    # Parse the URI manually for Cloud SQL
-    match = re.match(
-        r'postgres://([^:]+):([^@]+)@//cloudsql/([^/]+)/([^/]+)', 
-        DATABASE_URL
-    )
-
-    if match:
-        # Extracting components from the URI
-        user = match.group(1)
-        password = match.group(2)
-        cloudsql_instance = match.group(3)
-        dbname = match.group(4)
         
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': dbname,
-                'USER': user,
-                'PASSWORD': password,
-                'HOST': f'/cloudsql/{cloudsql_instance}',  # Set the Cloud SQL socket path
-                'PORT': '5432',  # Default PostgreSQL port
-                'CONN_MAX_AGE': 0,
-                'CONN_HEALTH_CHECKS': False,
-                'DISABLE_SERVER_SIDE_CURSORS': False,
-            }
+    DATABASES = {
+        'default': {
+        'ENGINE': 'django.db.backends.postgresql',  # Use PostgreSQL as the backend
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': 'host.docker.internal',  # Cloud SQL socket path
+        'PORT': '5433',  # Default PostgreSQL port
         }
-        
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.getenv('POSTGRES_DB', 'test_db'),
-#         'USER': os.getenv('POSTGRES_USER', 'admin'),
-#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'root'),
-#         'HOST': os.getenv('POSTGRES_HOST', 'localhost' if os.getenv('GITHUB_ACTIONS') else 'db'),
-#         'PORT': os.getenv('POSTGRES_PORT', '5432'),
-#         'TEST': {
-#             'NAME': 'test_db_unittest'
-#         }
-#     }
-# }
+    }
+    
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -223,7 +196,7 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_EMAIL")
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-ALLOWED_HOSTS = ["*.run.app"]
+ALLOWED_HOSTS = ['*.run.app', 'localhost', '127.0.0.1']
 CSRF_TRUSTED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app"]
 CORS_ALLOWED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app"]
 CORS_ALLOW_CREDENTIALS = True
