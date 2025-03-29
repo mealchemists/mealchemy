@@ -227,7 +227,7 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_EMAIL")
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-ALLOWED_HOSTS = ['backend-service-102081122635.us-west1.run.app', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['backend-service-102081122635.us-west1.run.app', 'localhost', '127.0.0.1', 'frontend-service-102081122635.us-west1.run.app']
 CSRF_TRUSTED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app"]
 CORS_ALLOWED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app"]
 CORS_ALLOW_CREDENTIALS = True
