@@ -8,7 +8,6 @@ on:
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
-    needs: deploy-backend # Ensures the frontend deploy happens only after backend deploy is done
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
