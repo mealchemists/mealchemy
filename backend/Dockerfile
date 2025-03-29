@@ -3,6 +3,16 @@ FROM python:3.12
 # Set environment variables
 ENV PYTHONUNBUFFERED 1
 
+
+# Install the Cloud SQL Proxy
+RUN apt-get update && apt-get install -y \
+    curl \
+    && curl -sSL https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -o /cloud_sql_proxy \
+    && chmod +x /cloud_sql_proxy
+
+# Set the environment variable for the Cloud SQL instance
+ENV CLOUD_SQL_CONNECTION_NAME=your-project-id:us-west1:mealchemy-db
+
 # Set working directory inside the container
 WORKDIR /app
 
