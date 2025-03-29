@@ -13,12 +13,6 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 # Copy all project files into the container
 COPY . /app
 
-# Run database migrations (for when the container starts)
-RUN python manage.py migrate
-
-# Collect static files
-RUN python manage.py collectstatic --noinput
-
 # Expose the port that the app will run on
 EXPOSE 8000
 

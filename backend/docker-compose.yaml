@@ -14,7 +14,6 @@ services:
       - CLOUD_SQL_CONNECTION_NAME=modified-wonder-447918-q3:us-west1:mealchemy-db
       - DEBUG=True
       - DJANGO_SECRET_KEY=your-secret-key
-    command: >
-        sh -c "python manage.py migrate && gunicorn backend.wsgi:application --bind 0.0.0.0:8000"
+    command: "gunicorn backend.wsgi:application --bind 0.0.0.0:8000"
 
   
