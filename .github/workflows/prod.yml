@@ -8,16 +8,30 @@ on:
 jobs:
   deploy-backend:
     runs-on: ubuntu-latest
-    # [START cloudrun_django_cloudmigrate_yaml_python]
+
     steps:
+      # Step 1: Checkout the code from the repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Google Cloud SDK
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_JSON }}
+      
+      # Step 3: Build the container image
       - id: "Build Container Image"
         name: buildpacksio/pack
         args: ["build", "${_IMAGE_NAME}", "--builder=gcr.io/buildpacks/builder"]
 
+      # Step 4: Push the container image to Google Container Registry
       - id: "Push Container Image"
         name: "gcr.io/cloud-builders/docker"
         args: ["push", "${_IMAGE_NAME}"]
 
+      # Step 5: Run database migrations via Cloud Run Jobs
       - id: "Migrate database"
         name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
         entrypoint: /bin/bash
@@ -32,6 +46,7 @@ jobs:
               --command migrate \
               --execute-now
 
+      # Step 6: Create superuser via Cloud Run Jobs
       - id: "Create superuser"
         name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
         entrypoint: /bin/bash
@@ -64,4 +79,3 @@ jobs:
 
     images:
       - "${_IMAGE_NAME}"
-    # [END cloudrun_django_cloudmigrate_yaml_python]
