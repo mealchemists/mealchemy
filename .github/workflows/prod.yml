@@ -1,58 +1,37 @@
-name: Deploy to GCP & Supabase
+name: Build and Push Docker Image to GCP Artifact Registry
 
 on:
   push:
     branches:
-      - prod-deploy
+      - prod-deploy  # Trigger the workflow on push to the 'main' branch
 
 jobs:
-  deploy-backend:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the code from the repository
+      # Step 1: Check out the code
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      # Step 2: Set up Google Cloud SDK
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+      # Step 2: Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Step 3: Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v0.5.0
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          credentials_json: ${{ secrets.GCP_CREDENTIALS_JSON }}
+          credentials_json: ${{ secrets.GCP_KEY }}
 
-      # Step 3: Build the container image
-      - name: Build Container Image
+      # Step 4: Configure Docker to use Google Artifact Registry
+      - name: Configure Docker for Artifact Registry
         run: |
-          buildpacksio/pack build "${{ secrets.IMAGE_NAME }}" --builder=gcr.io/buildpacks/builder
+          gcloud auth configure-docker ${{ secrets.GCP_ARTIFACT_REGISTRY }} --quiet
 
-      # Step 4: Push the container image to Google Container Registry
-      - name: Push Container Image
+      # Step 5: Build and push the Docker image
+      - name: Build and Push Docker image to Artifact Registry
         run: |
-          gcr.io/cloud-builders/docker push "${{ secrets.IMAGE_NAME }}"
+          docker build -t ${{ secrets.GCP_ARTIFACT_REGISTRY }}/my-backend-image:latest ./backend
+          docker push ${{ secrets.GCP_ARTIFACT_REGISTRY }}/my-backend-image:latest
 
-      # Step 5: Run database migrations via Cloud Run Jobs
-      - name: Migrate database
-        run: |
-          gcloud run jobs create migrate-job \
-            --region ${{ secrets.REGION }} \
-            --image ${{ secrets.IMAGE_NAME }} \
-            --set-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} \
-            --set-env-vars SETTINGS_NAME=${{ secrets.SECRET_SETTINGS_NAME }} \
-            --command migrate \
-            --execute-now
-
-      # Step 6: Create superuser via Cloud Run Jobs
-      - name: Create superuser
-        run: |
-          gcloud run jobs create superuser-job \
-            --region ${{ secrets.REGION }} \
-            --image ${{ secrets.IMAGE_NAME }} \
-            --set-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} \
-            --set-env-vars SETTINGS_NAME=${{ secrets.SECRET_SETTINGS_NAME }} \
-            --set-env-vars DJANGO_SUPERUSER_EMAIL=${{ secrets.ADMIN_EMAIL }} \
-            --set-secrets DJANGO_SUPERUSER_PASSWORD=${{ secrets.ADMIN_PASSWORD_NAME }}:latest \
-            --command createsuperuser \
-            --execute-now
-
- 
