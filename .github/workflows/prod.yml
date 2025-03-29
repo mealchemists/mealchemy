@@ -53,17 +53,17 @@ jobs:
             --execute-now
 
       # Step 7: Create Django Superuser via Cloud Run Job
-      - name: Create Django Superuser via Cloud Run Job
-        run: |
-          gcloud run jobs create superuser-job \
-            --region us-west1 \
-            --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest \
-            --set-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} \
-            --set-env-vars SETTINGS_NAME=${{ secrets.DJANGO_SETTINGS_SECRET_NAME }} \
-            --set-env-vars DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }} \
-            --set-secrets DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD_SECRET }}:latest \
-            --command createsuperuser \
-            --execute-now
+      # - name: Create Django Superuser via Cloud Run Job
+      #   run: |
+      #     gcloud run jobs create superuser-job \
+      #       --region us-west1 \
+      #       --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest \
+      #       --set-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} \
+      #       --set-env-vars SETTINGS_NAME=${{ secrets.DJANGO_SETTINGS_SECRET_NAME }} \
+      #       --set-env-vars DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }} \
+      #       --set-secrets DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD_SECRET }}:latest \
+      #       --command createsuperuser \
+      #       --execute-now
 
 
   deploy-frontend:
