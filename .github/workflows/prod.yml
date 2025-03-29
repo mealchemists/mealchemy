@@ -22,14 +22,14 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v0.5.0
         with:
-          credentials_json: ${{ secrets.GCP_KEY }}
+          credentials_json: ${{ secrets.GCP_KEY }}  # Provide the service account JSON key stored as a secret
 
-      # Step 4: Configure Docker to use Google Artifact Registry
+      # Step 4: Configure Docker for Artifact Registry
       - name: Configure Docker for Artifact Registry
         run: |
           gcloud auth configure-docker ${{ secrets.GCP_ARTIFACT_REGISTRY }} --quiet
 
-      # Step 5: Build and push the Docker image
+      # Step 5: Build and Push Docker image to Artifact Registry
       - name: Build and Push Docker image to Artifact Registry
         run: |
           docker build -t ${{ secrets.GCP_ARTIFACT_REGISTRY }}/my-backend-image:latest ./backend
