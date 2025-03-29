@@ -1,19 +1,19 @@
-services:
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - 8000:8000
-    volumes:
-      - .:/app
-    environment:
-      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/cloud/sql/key.json
-      # - DATABASE_URL=postgres://postgres:Dl04gr1tVfOKhlQywoiIno8ma@/cloudsql/modified-wonder-447918-q3:us-west1:mealchemy-db/db
-      - DATABASE_URL=postgres://postgres:Dl04gr1tVfOKhlQywoiIno8ma@@localhost:5433/db
-      - CLOUD_SQL_CONNECTION_NAME=modified-wonder-447918-q3:us-west1:mealchemy-db
-      - DEBUG=True
-      - DJANGO_SECRET_KEY=your-secret-key
-    command: "gunicorn backend.wsgi:application --bind 0.0.0.0:8000"
+# services:
+#   backend:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     ports:
+#       - 8000:8000
+#     volumes:
+#       - .:/app
+#     environment:
+#       - GOOGLE_APPLICATION_CREDENTIALS=/secrets/cloud/sql/key.json
+#       # - DATABASE_URL=postgres://postgres:Dl04gr1tVfOKhlQywoiIno8ma@/cloudsql/modified-wonder-447918-q3:us-west1:mealchemy-db/db
+#       - DATABASE_URL=postgres://postgres:Dl04gr1tVfOKhlQywoiIno8ma@@localhost:5433/db
+#       - CLOUD_SQL_CONNECTION_NAME=modified-wonder-447918-q3:us-west1:mealchemy-db
+#       - DEBUG=True
+#       - DJANGO_SECRET_KEY=your-secret-key
+#     command: "gunicorn backend.wsgi:application --bind 0.0.0.0:8000"
 
   

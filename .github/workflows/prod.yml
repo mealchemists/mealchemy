@@ -36,7 +36,9 @@ jobs:
             --region us-west1 \
             --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest \
             --allow-unauthenticated \
-            
+            --platform managed \
+            --port 8080
+
       # Step 6: Migrate Database via Cloud Run Job
       - name: Migrate Database via Cloud Run Job
         run: |
