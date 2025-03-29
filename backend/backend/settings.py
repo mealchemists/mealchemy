@@ -117,7 +117,7 @@ else:
         'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': 'host.docker.internal',  # Cloud SQL socket path
+        'HOST': '/cloudsql/modified-wonder-447918-q3:us-west1:mealchemy-db',  # Cloud SQL socket path
         'PORT': '5433',  # Default PostgreSQL port
         }
     }
