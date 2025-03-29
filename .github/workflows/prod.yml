@@ -1,4 +1,4 @@
-name: Deploy to GCP & Supabase
+name: Deploy to GCP
 
 on:
   push:
