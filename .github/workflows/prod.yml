@@ -36,7 +36,7 @@ jobs:
             --region us-west1 \
             --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest \
             --allow-unauthenticated \
-            --set-env-vars ALLOWED_HOSTS=*.run.app,localhost,127.0.0.1 \
+            --set-env-vars ALLOWED_HOSTS=*.run.app \
             --platform managed \
             --port 8080
 
