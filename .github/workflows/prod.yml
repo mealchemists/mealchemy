@@ -55,19 +55,6 @@ jobs:
             --command createsuperuser \
             --execute-now
 
-    options:
-      dynamicSubstitutions: true
-
-    substitutions:
-      _INSTANCE_NAME: mealchemy-db
-      _CLOUD_SQL_CONNECTION_NAME: ${PROJECT_ID}:${_REGION}:${_INSTANCE_NAME}
-      _REGION: us-west1
-      _SERVICE_NAME: polls-service
-      _SECRET_SETTINGS_NAME: django_settings
-      _ARTIFACT_REGISTRY: cloud-run-source-deploy
-      _IMAGE_NAME: ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/${_SERVICE_NAME}
-      _ADMIN_EMAIL: example@example.com
-      _ADMIN_PASSWORD_NAME: superuser_password
-
+    # No `options` or `substitutions` here because they are not needed in GitHub Actions
     images:
-      - "${_IMAGE_NAME}"
+      - "${{ secrets.IMAGE_NAME }}"
