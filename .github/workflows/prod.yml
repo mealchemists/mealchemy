@@ -31,7 +31,6 @@ jobs:
           gcloud run deploy backend-service \
             --region us-west1 \
             --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest \
-            --platform managed \
             --allow-unauthenticated \
             --set-env-vars SETTINGS_NAME=${{ secrets.DJANGO_SETTINGS_SECRET_NAME }} \
             --set-env-vars CLOUD_SQL_CONNECTION_NAME=${{ secrets.CLOUD_SQL_CONNECTION_NAME }} \
