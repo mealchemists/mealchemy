@@ -34,21 +34,7 @@ interface RecipeContentProps {
     initialEditMode?: boolean;
     exitEditMode: () => void;
     onDeleteRecipe: (recipe: RecipeIngredient) => void; // Adjusted prop type
-}
-
-const blankRecipe = {
-    id: -1,
-    name: "",
-    quantity: 0,
-    unit: '',
-    calories_per_100g: 0,
-    protein_per_100g: 0,
-    carbs_per_100g: 0,
-    sugar_per_100g: 0,
-    fat_per_100g: 0,
-    fiber_per_100g: 0,
-    sodium_per_100mg: 0,
-    aisle: ""
+    onUpdateRecipe: (recipe: RecipeIngredient) => void; // Adjusted prop type
 }
 
 const VisuallyHiddenInput = styled('input')({
@@ -68,7 +54,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     recipeIngredient,
     initialEditMode = false,
     exitEditMode,
-    onDeleteRecipe
+    onDeleteRecipe,
+    onUpdateRecipe
 }) => {
     const [recipe, setRecipe] = useState(recipeIngredient.recipe)
     // 3 dot menu, edit and delete options
@@ -109,10 +96,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         }
     };
 
-    const deleteRecipe = async (id) => {
+    const deleteRecipe = () => {
         try {
-            const response = await deleteRecipeIngredients(id);
-            // Notify parent to delete the recipe from the list
             onDeleteRecipe(recipeIngredient);
         } catch (error) {
             setError("Error fetching recipes");
@@ -122,7 +107,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
     const putRecipe = async (data) => {
         try {
+
             const response = await putRecipeIngredients(data);
+            onUpdateRecipe(data)
         } catch (error) {
             setError("Error fetching recipes");
             console.error("Error updating recipe ingredient:", error);
@@ -180,7 +167,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             setEditMode(true);
             handleOptionsClose();
         } else if (option == "Delete") {
-            deleteRecipe(recipeIngredient.id);
+            deleteRecipe();
         }
     };
 

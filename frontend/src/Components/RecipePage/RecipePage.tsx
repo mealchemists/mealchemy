@@ -32,13 +32,21 @@ function RecipePage() {
         await deleteRecipe(recipeToDelete.recipe.id);
         setRecipeIngredients((prevRecipes) => {
             const updatedRecipes = prevRecipes.filter(recipe => recipe !== recipeToDelete);
-            // If the selected recipe is deleted, clear it
-            // TODO I think udapting the current content to be the next Recipe in the recipe panel would be better
+
             if (selectedRecipeIngredient === recipeToDelete) {
                 setSelectedRecipeIngredient(null);
             }
 
             return updatedRecipes;
+        });
+    };
+
+    const handleUpdateRecipe = (updatedRecipe: RecipeIngredient) => {
+        setRecipeIngredients(prevRecipeIngredients => {
+            const updatedRecipeIngredients = prevRecipeIngredients.map(recipeIngredient => 
+                recipeIngredient.id === updatedRecipe.id ? updatedRecipe : recipeIngredient
+            );
+            return updatedRecipeIngredients;
         });
     };
 
@@ -62,6 +70,7 @@ function RecipePage() {
                         initialEditMode={editMode}
                         exitEditMode={handleExitEditMode}
                         onDeleteRecipe={handleDeleteRecipe}
+                        onUpdateRecipe={handleUpdateRecipe}
                     />
                 )}
             </div>
