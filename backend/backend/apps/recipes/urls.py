@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.urls import path
+
 from .views import (IngredientViewSet, RecipeIngredientsAPIView, RecipeViewSet,
-                    recipe_url, save_scraped_data, AisleAPIView)
+                    recipe_url, save_scraped_data)
 
 urlpatterns = [
     path('recipe-ingredients/<str:pk>', RecipeIngredientsAPIView.as_view(), name='recipe-ingredients'),
@@ -26,7 +27,5 @@ urlpatterns = [
         'put': 'update',
         'delete': 'destroy'
     }),name="ingredient-detail"),
-    path('aisles/<str:user_id>', AisleAPIView.as_view(), name='aisles'),
-
     
 ]
