@@ -31,7 +31,6 @@ function UserProfile() {
     setShowPasswordInput(!showPasswordInput);
   };
   const handleSavePassword = async () => {
-    console.log("New Password:", newPassword); 
     await changePassword({email: email, newPassword});
     setShowPasswordInput(false);
     setNewPassword(newPassword);
