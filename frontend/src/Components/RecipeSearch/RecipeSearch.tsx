@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import './RecipeSearch.css';
 import AddRecipeModal from '../AddRecipeModal/AddRecipeModal';
 import { Chip, Icon } from '@mui/material';
@@ -12,7 +12,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
-import Button from '@mui/material';
+import Button from '@mui/material/Button';
 
 const options = [
     'Select',
@@ -23,9 +23,17 @@ const options = [
 
 const ITEM_HEIGHT = 48;
 
+interface RecipeSearchProps {
+    onSelect?: (value: string) => void;
+    searchRecipe?: (searchInput: string) => void;
+}
 
+export interface RecipeSearchRef {
+    handleCancel: () => void;
+  }
+  
 
-function RecipeSearch({ onSelect = null, searchRecipe=null }) {
+const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, searchRecipe }, ref) => {
     const [isFilterPopupOpen, setIsFilterPopupOpen] = useState<boolean>(false);
     const [filterChips, setFilterChips] = useState([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -47,10 +55,19 @@ function RecipeSearch({ onSelect = null, searchRecipe=null }) {
         setAnchorEl(null);
     };
 
+    // so that the parent can also use it
+    useImperativeHandle(ref, () => ({
+        handleCancel() {
+          onSelect(""); // Call onSelect with empty string
+          setShowCancelButton(false);
+        }
+      }));
+
     const handleCancel = () => {
         onSelect("");
         setShowCancelButton(false);
     };
+
 
     const handleOptionsSelect = (option: string) => {
         if (option === "Select") {
@@ -103,7 +120,14 @@ function RecipeSearch({ onSelect = null, searchRecipe=null }) {
             <div className="searchContainer">
                 <div className="searchLeft">
                     {showCancelButton ? (
-                        <button className="cancel-button" onClick={handleCancel} autoFocus>Cancel</button>
+                        <Button 
+                        variant="contained" 
+                        sx = {{
+                            backgroundColor: '#d2d2d2',
+                            borderRadius:'10px',
+                            color:'black'
+                        }} 
+                        onClick={handleCancel} autoFocus>Cancel</Button>
                     ) : (
 
                         onSelect &&
@@ -199,6 +223,6 @@ function RecipeSearch({ onSelect = null, searchRecipe=null }) {
             />
         </div>
     );
-}
+});
 
 export default RecipeSearch;

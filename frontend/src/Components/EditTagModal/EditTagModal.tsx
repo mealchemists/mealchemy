@@ -1,5 +1,6 @@
-import { Autocomplete, Box, InputAdornment, Modal, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, InputAdornment, Modal, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { getAllIngredients } from '../../api/recipeIngredientApi';
 
 const style = {
     position: 'absolute',
@@ -28,7 +29,7 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
     const [tempCookTime, setTempCookTime] = useState(cookTime);
     const [tempPrepTime, setTempPrepTime] = useState(prepTime);
     const [tempTotalTime, setTempTotalTime] = useState(parseInt(cookTime, 10) + parseInt(prepTime, 10));
-
+    const [allIngredients, setAllIngredients] = useState([]);
     useEffect(() => {
         setTempTotalTime(parseInt(tempCookTime, 10) + parseInt(tempPrepTime, 10))
     }, [tempCookTime,tempPrepTime]);
@@ -37,6 +38,15 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
         // TODO: check if tempMainIngredient exists in database, if not, add to database
         onApplyTagChanges(tempMainIngredient, tempCookTime, tempPrepTime, tempTotalTime);
     }
+   useEffect(() => {
+        const getIngredients = async () => {
+            const response = await getAllIngredients();
+            const ingredientNames = response.map((ingredient) => ingredient.name);
+            setAllIngredients(ingredientNames);
+        };
+
+        getIngredients();
+    },[])
 
 
 
@@ -58,7 +68,7 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
                             <label>Key Ingredient:</label>
                             <Autocomplete
                                 id="tags-outlined"
-                                options={allTags.map((option) => option.title)}
+                                options={allIngredients.map((option) => option)}
                                 value={tempMainIngredient}
                                 inputValue={tempMainIngredient || ""}
                                 onInputChange={(event, newInputValue) => setTempMainIngredient(newInputValue)}
@@ -92,7 +102,14 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
                                     />
                                 )}
                             />
-                            {/* <button className = "add-button" style={{ height: "40px" }}>Add</button> */}
+                            {/* <Button 
+                            variant = "contained"
+                            sx = {{
+                            backgroundColor:'#b0dbb2',
+                            color:'white',
+                            borderRadius:'10px'
+                            }}
+                            style={{ height: "40px" }}>Add</Button> */}
                         </div>
 
                         {/* Cook Time */}
@@ -161,7 +178,14 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
                     </div>
                 </div>
 
-                <button className = "done-button" onClick={sendTagsToParent}>Done</button>
+
+                <Button variant="contained" 
+                sx={{
+                    backgroundColor: '#6bb2f4',
+                    color: 'white',
+                    borderRadius:'10px'
+
+                }} onClick={sendTagsToParent}>Done</Button>
             </Box>
         </Modal>
     )

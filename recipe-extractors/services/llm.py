@@ -50,13 +50,6 @@ WEB_PROMPT = """
     The text is {dom_content}
 """
 
-PDF_PROMPT = """
-    You are a precise and efficient proofreader. Your task is to correct minor grammatical and punctuation errors in the
-    given test while preserving the original sentence structure, tone, and meaning. Do not rewrite or rephrase sentences
-    unless if absolutely necessary. Return only the corrected text, with no additional explanations or commentary:
-
-    {text}
-"""
 
 model = OllamaLLM(model="llama3")
 

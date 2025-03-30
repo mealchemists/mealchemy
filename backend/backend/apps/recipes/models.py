@@ -12,4 +12,4 @@ class Recipe(TimeStampedModel):
     total_time = models.IntegerField(help_text="Total time in minutes")
     cuisine = models.CharField(max_length=100, blank=True, null=True)
     source_url = models.URLField()  # URL where the recipe was scraped from
-    image_url = models.URLField(blank=True, null=True)  # Optional image URL
+    image_url = models.TextField(blank=True, null=True)  # Optional image URL

@@ -9,7 +9,6 @@ interface NavigationBarProps {
 const NavigationBar: React.FC<NavigationBarProps> = ({ onClick }) => {
     return (
         <nav className="navContainer">
-            <button onClick={() => onClick("Home")}><HomeIcon fontSize='large'/></button>
             <div className="middleNav">
                 <ul>
                     <li onClick={() => onClick("Recipes")}>Recipe</li>

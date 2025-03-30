@@ -3,15 +3,14 @@ import RecipePanel from '../RecipePanel/RecipePanel';
 import RecipeContent from '../RecipeContent/RecipeContent';
 import { Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipePage.css';
-
+import { deleteRecipe } from '../../api/recipes';
 
 
 function RecipePage() {
     const [selectedRecipeIngredient, setSelectedRecipeIngredient] = useState<RecipeIngredient | null>(null);
     const [editMode, setEditMode] = useState(false);
     const [recipeIngredient, setRecipeIngredients] = useState<RecipeIngredient[]>([]);
-    
-    
+
     const handleSelectedRecipe = (recipe: RecipeIngredient) => {
         setSelectedRecipeIngredient(null); // Reset first
         setTimeout(() => {
@@ -24,12 +23,13 @@ function RecipePage() {
         setEditMode(false);
     }
 
-    const handleChangeRecipeMode = (changeEditMode)=>{
+    const handleChangeRecipeMode = (changeEditMode) => {
         setEditMode(changeEditMode);
     }
 
-    const handleDeleteRecipe = (recipeToDelete: RecipeIngredient) => {
+    const handleDeleteRecipe = async (recipeToDelete: RecipeIngredient) => {
         // Delete the recipe from the list
+        await deleteRecipe(recipeToDelete.recipe.id);
         setRecipeIngredients((prevRecipes) => {
             const updatedRecipes = prevRecipes.filter(recipe => recipe !== recipeToDelete);
             // If the selected recipe is deleted, clear it
@@ -46,7 +46,7 @@ function RecipePage() {
     return (
         <div className="mainContainer">
             <div className="sideContainer">
-                <RecipePanel 
+                <RecipePanel
                     recipeIngredient={recipeIngredient}
                     setRecipeIngredients={setRecipeIngredients}
                     onRecipeSelect={handleSelectedRecipe}
@@ -55,14 +55,17 @@ function RecipePage() {
                 />
             </div>
             <div className="separator"></div>
-            {selectedRecipeIngredient && (
-                <RecipeContent 
-                    recipeIngredient={selectedRecipeIngredient} 
-                    initialEditMode={editMode} 
-                    exitEditMode = {handleExitEditMode} 
-                    onDeleteRecipe={handleDeleteRecipe}
-                />
-            )}
+            <div className="recipeContentContainer">
+                {selectedRecipeIngredient && (
+                    <RecipeContent
+                        recipeIngredient={selectedRecipeIngredient}
+                        initialEditMode={editMode}
+                        exitEditMode={handleExitEditMode}
+                        onDeleteRecipe={handleDeleteRecipe}
+                    />
+                )}
+            </div>
+
         </div>
     );
 }

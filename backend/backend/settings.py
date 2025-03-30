@@ -95,6 +95,7 @@ INSTALLED_APPS = [
     'backend.apps.recipes',
     'backend.apps.meal_plan',
     'backend.apps.user',
+    'backend.apps.shopping_list',
     'rest_framework_simplejwt',
 ]
 
@@ -109,7 +110,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
     {
@@ -208,17 +208,17 @@ STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Set access token lifetime to 15 minutes
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=5),     # Set refresh token lifetime to 1 day
-    'ROTATE_REFRESH_TOKENS': False,                   # Whether to rotate refresh tokens
-    'BLACKLIST_AFTER_ROTATION': False,                # Whether to blacklist refresh tokens after they are rotated
-    'ALGORITHM': 'HS256',                             # JWT algorithm to use (default is HS256)
-    'SIGNING_KEY': SECRET_KEY,                        # Your secret key for signing tokens
-    'VERIFYING_KEY': None,                            # Optional: specify a verifying key if you need to verify the signature externally
-    'AUTH_HEADER_TYPES': ('Bearer',),                 # Defines what type of authorization header is allowed
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    
+    'ROTATE_REFRESH_TOKENS': False,                  
+    'BLACKLIST_AFTER_ROTATION': False,               
+    'UPDATE_LAST_LOGIN': False,
+    'ALGORITHM': 'HS256',      
+    'SIGNING_KEY': 'your-secret-key',
 }
 
-# Forgot password email
+
+# Email Authentication
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_HOST_USER = os.getenv("EMAIL_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")

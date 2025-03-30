@@ -8,11 +8,14 @@
 .sideContainer {
     display: flex;
     flex-direction: column; 
-    width: 30%;            
+    width: 30%;        
+    height:inherit;    
 }
 
-.recipeContent {
-    width: 70%;             
+.recipeContentContainer {
+    width: 70%;         
+    transition: opacity 0.2s ease-in-out;    
+    min-width: 700px;
 }
 
 .separator {
@@ -22,3 +25,5 @@
     flex-shrink: 0;
     border-radius: 50px;
 }
+
+

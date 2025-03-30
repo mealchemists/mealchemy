@@ -58,7 +58,7 @@ def create_recipes(n=4, users=None):
     recipes = []
     for _ in range(n):
         user = random.choice(users) if users else None
-        my_user =User.objects.filter(id=16).first()
+        my_user =User.objects.filter(id=1).first()
         prep_time = random.randint(5, 30)
         cook_time = random.randint(10, 60)
         recipe = Recipe.objects.create(
@@ -94,7 +94,7 @@ def create_recipe_ingredients(recipes, ingredients):
             )
             used_ingredients.add(ingredient)
 
-def create_meal_plans(n=20, recipes=None):
+def create_meal_plans(n=5, recipes=None):
     meal_types = ["breakfast", "lunch", "dinner"]
     meal_plans = []
 
@@ -102,7 +102,7 @@ def create_meal_plans(n=20, recipes=None):
         recipe = random.choice(recipes)
         
         # Generate a date within the past or next 30 days
-        random_days_offset = random.randint(-30, 30)
+        random_days_offset = random.randint(-3,-1)
         day_planned = date.today() + timedelta(days=random_days_offset)
 
         meal_plan = MealPlan.objects.create(

@@ -6,6 +6,8 @@
     border-radius: 10px;
     width: inherit;
     margin-bottom:15px;
+    box-shadow: 0px 3px 7px #38793b;
+
 }
 
 .itemContainer:hover{
@@ -24,6 +26,8 @@
 .contentContainer {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
+    min-width: 0;
     gap: 8px;
     width:200px;
 }
@@ -32,8 +36,14 @@
     font-size: 1.5rem;
     font-weight: bold;
     margin: 0;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap; 
 }
 
 .tagsContainer {
     display: flex;
+    flex-wrap: wrap;
+    overflow: hidden;
 }

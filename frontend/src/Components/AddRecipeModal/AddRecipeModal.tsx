@@ -3,7 +3,7 @@ import { Recipe } from '../../Models/models';
 import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, Typography } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import { postRecipeUrl } from '../../api/recipeAddUrl.js';
+import { postRecipeUrl } from '../../api/recipes';
 
 
 const style = {
@@ -42,11 +42,11 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
     };
 
     const addByUrl = async () => {
-      try {
-        const response = await postRecipeUrl(recipeUrl);
-      } catch (error) {
-        console.error(error);
-      }
+        try {
+            const response = await postRecipeUrl(recipeUrl);
+        } catch (error) {
+            console.error(error);
+        }
 
     }
 
@@ -85,7 +85,7 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                                     },
                                 }}
                                 value={(recipeUrl)}
-                                onChange={(e) => setRecipeUrl(e.target.value)} 
+                                onChange={(e) => setRecipeUrl(e.target.value)}
                             />
                         </div>
                     )}
@@ -120,7 +120,15 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                     )}
                 </div>
 
-                <button className = "done-button" onClick={sendRecipeToParent}>Done</button>
+
+                <Button variant="contained"
+                    sx={{
+                        backgroundColor: '#6bb2f4',
+                        color: 'white',
+                        borderRadius:'10px'
+
+                    }} 
+                    onClick={sendRecipeToParent}>Done</Button>
             </Box>
         </Modal>
     );

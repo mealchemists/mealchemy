@@ -76,9 +76,16 @@ function AisleModal({ open, onClose, onEditAisle, ingredient }) {
                         )}
                     />
                 </div>
-                <button className="done-button" onClick={sendIngredientToParent}>Done</button>
+                <Button variant="contained" 
+                sx={{
+                    backgroundColor: '#6bb2f4',
+                    color: 'white',
+                    borderRadius:'10px'
+
+                }}
+                 onClick={sendIngredientToParent}>Done</Button>
             </Box>
-        </Modal>
+        </Modal >
     );
 }
 
