@@ -19,7 +19,6 @@ function AisleModal({ open, onClose, onEditAisle, ingredient }) {
     const [newAisle, setNewAisle] = useState<string>("");
 
     const sendIngredientToParent = () => {
-        console.log(newAisle);
         onEditAisle(ingredient, newAisle);
         onClose();
     }

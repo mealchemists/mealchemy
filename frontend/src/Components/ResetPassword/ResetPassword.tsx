@@ -39,7 +39,6 @@ const ResetPassword = () => {
 
     try {
       // Make POST request to your Django backend to reset password
-      console.log(token)
       const response = await axios.post(
         'http://localhost:8000/api/reset-password/', 
         { 
