@@ -124,15 +124,7 @@ class UpdateAccountView(APIView):
         new_email = request.data.get("email")
         new_password = request.data.get("password")
 
-        # Update the username if a new one is provided
-        if new_email:
-            # Check if the new username already exists
-            if User.objects.filter(username=new_email).exists():
-                return Response(
-                    {"message": "Email already taken."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            user.email = new_email
+        user.email = new_email
 
         # Update the password if a new one is provided
         if new_password:
@@ -144,8 +136,36 @@ class UpdateAccountView(APIView):
         return Response(
             {"message": "Account updated successfully."}, status=status.HTTP_200_OK
         )
+        
+class ResetPasswordView(APIView):
+    authentication_classes = [
+        JWTAuthentication,
+    ]
+    
+    def post(self, request):
+        user = request.user
 
+        if not user.is_authenticated:
+            return Response(
+                {"message": "Not authenticated."}, status=status.HTTP_401_UNAUTHORIZED
+            )
+            
+        if user.email:
+            if not User.objects.filter(username=user.email).exists():
+                return Response(
+                    {"Email not assigned"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+                
+        new_password = request.data.get("password")
+        if new_password:
+            user.set_password(new_password)
 
+        user.save()
+
+        return Response(
+            {"message": "Account updated successfully."}, status=status.HTTP_200_OK
+        )
 class CsrfView(APIView):
     permission_classes = [AllowAny]
 

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";  // Use useNavigate instead of useHistory
-import {validatePassword, validateEmail, validateConfirmPassword} from '../../utils/formValidation';
+import {validatePassword, validateConfirmPassword} from '../../utils/formValidation';
+import { toast } from 'react-toastify';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -39,17 +40,18 @@ const ResetPassword = () => {
     try {
       // Make POST request to your Django backend to reset password
       const response = await axios.post(
-      'http://localhost:8000/api/update-account/', 
-      { 
-        password,  // Send password if it's being updated
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,  // Correct format: 'Bearer <your-token>'
-          'Content-Type': 'application/json',  // Ensure the correct content type is set
+        'http://localhost:8000/api/reset-password/', 
+        { 
+          password,  // Send password if it's being updated
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,  // Correct format: 'Bearer <your-token>'
+            'Content-Type': 'application/json',  // Ensure the correct content type is set
+          }
         }
-      }
-    );
+      );
+      toast.success('Password was reset, please login! 🎉');
 
 
       setMessage(response.data.message);
