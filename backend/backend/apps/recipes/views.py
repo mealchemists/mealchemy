@@ -114,9 +114,12 @@ class RecipeIngredientsAPIView(APIView):
                     "unit": ri.unit,
                     "display_name": ri.display_name,
                     "name": ri.ingredient.name,
-                    "aisle":ri.ingredient.aisle.name,
                     "id":ri.ingredient.id
                 })
+                
+                # Add aisle only if it exists
+                if ri.ingredient and getattr(ri.ingredient, "aisle", None):
+                    ingredient_data["aisle"] = getattr(ri.ingredient.aisle, "name", None)
 
             return Response(list(recipes.values()), status=status.HTTP_200_OK)
 
@@ -274,7 +277,12 @@ class RecipeIngredientsAPIView(APIView):
                         "name": aisle
                     }
                     aisle_serializer = AisleSerializer(data = aisle_data)
-                    aisle_obj = aisle_serializer.save()
+                    if aisle_serializer.is_valid():
+                        aisle_serializer = aisle_serializer.save()
+                        aisle_obj = aisle_serializer.save().id
+                    else:
+                        aisle_obj = None
+                    
 
                 try:
                     # Check if the ingredient exists, if not, create it
@@ -288,7 +296,7 @@ class RecipeIngredientsAPIView(APIView):
                             'fat_per_100g': fat_per_100g,
                             'sodium_per_100mg': sodium_per_100mg,
                             'fiber_per_100g': fiber_per_100g,
-                            'aisle': aisle_obj.id
+                            'aisle': aisle_obj
                         }
                     )
                 except IntegrityError:
