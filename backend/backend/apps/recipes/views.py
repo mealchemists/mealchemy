@@ -9,11 +9,11 @@ import random
 from django.db.models import Q
 from django.http import Http404
 from ..meal_plan.models.meal_plan import MealPlan
-from .models.ingredients import Ingredient, RecipeIngredient
+from .models.ingredients import Ingredient, RecipeIngredient, Aisle
 from .models.recipe import Recipe
 from .producer import publish
 from .serializers import (IngredientSerializer, RecipeIngredientSerializer,
-                          RecipeSerializer)
+                          RecipeSerializer, AisleSerializer)
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -113,7 +113,9 @@ class RecipeIngredientsAPIView(APIView):
                     "quantity": ri.quantity,
                     "unit": ri.unit,
                     "display_name": ri.display_name,
-                    "name": ri.ingredient.name 
+                    "name": ri.ingredient.name,
+                    "aisle":ri.ingredient.aisle.name,
+                    "id":ri.ingredient.id
                 })
 
             return Response(list(recipes.values()), status=status.HTTP_200_OK)
@@ -135,7 +137,11 @@ class RecipeIngredientsAPIView(APIView):
                 "quantity": ri.quantity,
                 "unit": ri.unit,
                 "display_name": ri.display_name,
-                "name": ri.ingredient.name  # Assuming Ingredient has a `name` field
+                "name": ri.ingredient.name,  # Assuming Ingredient has a `name` field
+                "aisle":ri.ingredient.aisle,
+                "id":ri.ingredient.id
+
+
             }
             for ri in recipe_ingredients
         ]
@@ -164,6 +170,7 @@ class RecipeIngredientsAPIView(APIView):
                 quantity = ingredient_data.get('quantity')
                 unit = ingredient_data.get('unit')
                 display_name = ingredient_data.get('display_name')
+                aisle = ingredient_data.get('aisle')
 
                 if not display_name:
                     display_name = ingredient_name 
@@ -172,8 +179,16 @@ class RecipeIngredientsAPIView(APIView):
                 if not ingredient_name:
                     return Response({"error": "Missing ingredient data"}, status=status.HTTP_400_BAD_REQUEST)
 
+                aisle_obj = Aisle.objects.filter(user_id=data["recipe"]["user"], name=aisle)
+                if not aisle_obj:
+                    aisle_data = {
+                        "user":data["recipe"]["user"],
+                        "name": aisle
+                    }
+                    aisle_serializer = AisleSerializer(data = aisle_data)
+                    aisle_obj = aisle_serializer.save()
+
                 # TODO handle nutrition information
-                # TODO handle Aisle
                 calories_per_100g=random.uniform(50, 500)
                 protein_per_100g=random.uniform(1, 30)
                 carbs_per_100g=random.uniform(1, 50)
@@ -193,6 +208,7 @@ class RecipeIngredientsAPIView(APIView):
                             'fat_per_100g': fat_per_100g,
                             'sodium_per_100mg': sodium_per_100mg,
                             'fiber_per_100g': fiber_per_100g,
+                            'aisle':aisle_obj.id
                         }
                     )
                 except IntegrityError:
@@ -233,6 +249,7 @@ class RecipeIngredientsAPIView(APIView):
                 quantity = ingredient_data.get('quantity')
                 unit = ingredient_data.get('unit')
                 display_name = ingredient_data.get('display_name')
+                aisle = ingredient_data.get('aisle') # the aisle name
 
                 if not display_name:
                     display_name = ingredient_name
@@ -249,6 +266,16 @@ class RecipeIngredientsAPIView(APIView):
                 sodium_per_100mg = random.uniform(0, 1500)
                 fiber_per_100g = random.uniform(0, 15)
 
+                # Check if aisle exists
+                aisle_obj = Aisle.objects.filter(user_id=data["recipe"]["user"], name=aisle)
+                if not aisle_obj:
+                    aisle_data = {
+                        "user":data["recipe"]["user"],
+                        "name": aisle
+                    }
+                    aisle_serializer = AisleSerializer(data = aisle_data)
+                    aisle_obj = aisle_serializer.save()
+
                 try:
                     # Check if the ingredient exists, if not, create it
                     ingredient, created = Ingredient.objects.get_or_create(
@@ -261,6 +288,7 @@ class RecipeIngredientsAPIView(APIView):
                             'fat_per_100g': fat_per_100g,
                             'sodium_per_100mg': sodium_per_100mg,
                             'fiber_per_100g': fiber_per_100g,
+                            'aisle': aisle_obj.id
                         }
                     )
                 except IntegrityError:
@@ -414,4 +442,21 @@ class RecipeIngredientViewSet(viewsets.ViewSet):
         recipe_ingredient.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+class AisleAPIView(APIView):
+    def get(self, request, user_id, *args, **kwargs):
+        aisles = Aisle.objects.filter(user_id = user_id)
+        serializer = AisleSerializer(aisles, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, user_id, *args, **kwargs):
+        data = request.data
+        data['user'] = user_id  
+        name = data.get('name')
+        if Aisle.objects.filter(user_id=user_id, name=name).exists():
+            return Response({"detail": "An aisle with this name already exists for the given user."}, status=status.HTTP_400_BAD_REQUEST)
 
+        serializer = AisleSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save() 
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
