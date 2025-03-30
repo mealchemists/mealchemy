@@ -65,7 +65,7 @@ else:
 SECRET_KEY = env("SECRET_KEY")
 
 DEBUG = env("DEBUG")
-
+ROOT_URLCONF = 'backend.urls'
 # [START cloudrun_django_csrf]
 # SECURITY WARNING: It's recommended that you use this when
 # running in production. The URLs will be known once you first deploy
@@ -130,17 +130,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 
-# Database
-# [START cloudrun_django_database_config]
-# Use django-environ to parse the connection string
-DATABASES = {"default": env.db()}
+if os.getenv("USE_SQLITE3", "False").lower() == "true":
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
+else:
+    # Use Cloud SQL or another database if not in development
+    DATABASES = {
+        "default": env.db()  # Parse database connection string from environment
+    }
 
-# If the flag as been set, configure to use proxy
-if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
-    DATABASES["default"]["HOST"] = "127.0.0.1"
-    DATABASES["default"]["PORT"] = 5432
-
-# [END cloudrun_django_database_config]
+    # Optionally, use Cloud SQL Auth Proxy if the flag is set
+    if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
+        DATABASES["default"]["HOST"] = "127.0.0.1"
+        DATABASES["default"]["PORT"] = 5432
     
 
 # Password validation
@@ -228,8 +234,8 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_EMAIL")
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 ALLOWED_HOSTS = ['backend-service-102081122635.us-west1.run.app', 'localhost', '127.0.0.1', 'frontend-service-102081122635.us-west1.run.app']
-CSRF_TRUSTED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app", "https://react-service-102081122635.us-west1.run.app"]
-CORS_ALLOWED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app, https://react-service-102081122635.us-west1.run.app"]
+CSRF_TRUSTED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app", "https://react-service-102081122635.us-west1.run.app", 'http://localhost:3000']
+CORS_ALLOWED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app", "https://react-service-102081122635.us-west1.run.app", 'http://localhost:3000']
 CORS_ALLOW_CREDENTIALS = True
 
 SESSION_COOKIE_SAMESITE = 'None'  # Allow cross-site cookies
