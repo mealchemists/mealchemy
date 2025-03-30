@@ -17,6 +17,8 @@ class MealPlan(TimeStampedModel):
         today = now().date()
         start_of_week = today - timedelta(days=today.weekday())
         end_of_week = start_of_week + timedelta(days=6)
+        start_of_week = today - timedelta(days=today.weekday())
+        end_of_week = start_of_week + timedelta(days=6)
 
         return cls.objects.filter(
             day_planned__range=[start_of_week, end_of_week],
@@ -29,3 +31,4 @@ class MealPlan(TimeStampedModel):
         if user:
             queryset = queryset.filter(recipe__user=user)
         return queryset
+    

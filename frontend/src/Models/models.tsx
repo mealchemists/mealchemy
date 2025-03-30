@@ -38,3 +38,11 @@ export interface RecipeStep {
     description: String,
     recipe: Number
 }
+
+export interface FilterObject {
+    searchQuery?: string;
+    filters?: string[];
+    sortBy?: string;
+    range?: number[];
+    mainIngredient?: string;
+}

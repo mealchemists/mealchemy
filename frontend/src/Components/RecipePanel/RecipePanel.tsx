@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ListItem from '../ListItem/ListItem';
 import RecipeSearch from '../RecipeSearch/RecipeSearch';
-import { Recipe, RecipeIngredient, Ingredient, RecipeStep } from '../../Models/models';
+import { Recipe, RecipeIngredient, Ingredient, RecipeStep, FilterObject } from '../../Models/models';
 import './RecipePanel.css';
 import { getRecipeIngredients } from '../../api/recipeIngredientApi';
+import { handleFilterApply } from '../../utils/filter';
 import Button from '@mui/material/Button';
 import { deleteRecipe } from '../../api/recipes';
 
@@ -54,10 +55,10 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const [error, setError] = useState<string | null>(null);
     const recipeSearchRef = useRef<any>(null);
 
+
     const fetchRecipes = async () => {
         try {
             const response = await getRecipeIngredients();
-            console.log(response);
             setRecipeIngredients(response);
             setAllRecipeIngredients(response);
         } catch (error) {
@@ -84,7 +85,10 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
             }
         });
     };
-
+    
+    const filterApply = (filterObj: FilterObject) => {
+        handleFilterApply(filterObj, setRecipeIngredients);
+    }
 
     // TODO convert this to recipe ingredients instead
     const handleAddManualRecipe = () => {
@@ -147,33 +151,19 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
         setSearchRecipes(recipeIngredient);
     }, [recipeIngredient]);
 
-
-
-    const handleSearchRecipe = async (searchInput: string) => {
-        // If searchInput is empty or just whitespace, reset to the original list
-        if (!searchInput.trim()) {
-            setRecipeIngredients(recipeIngredient); // Reset to the original list
-            return;
-        }
-
-        try {
-            // Call the API with the search parameter
-            const response = await getRecipeIngredients({ search: searchInput.trim() });
-
-            // Set the recipe ingredients with the API response
-            setRecipeIngredients(response);
-        } catch (error) {
-            console.error('Error fetching recipe ingredients:', error);
-            // Optionally, you can handle errors (e.g., display a message to the user)
-        }
-    };
     if (loading) return <div>Loading...</div>;
     if (error) return <div>{error}</div>;
 
     return (
         <div className="recipe-container">
 
-            <RecipeSearch onSelect={handleSelectOption} searchRecipe={handleSearchRecipe} ref={recipeSearchRef} />
+            <RecipeSearch 
+                onSelect={handleSelectOption} 
+                applyFiltering={ filterApply }
+                mainIngredientList={allRecipeIngredients
+                    .filter(recipeIngredient => recipeIngredient.recipe.main_ingredient)  // Filter based on `main_ingredient`
+                    .map(recipeIngredient => recipeIngredient.recipe.main_ingredient)}
+                ref = {recipeSearchRef}/>
             <div className='recipeListContainer'>
                 {searchRecipes.map((recipeIngredient, index) => (
                     <ListItem

@@ -1,5 +1,5 @@
 import fractions
-
+from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models
 
@@ -16,6 +16,7 @@ class Aisle(TimeStampedModel):
     updated_by_user = models.BooleanField(
         default=False
     )  # To track if a user modified the tag
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=255, unique=True)

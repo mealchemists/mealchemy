@@ -72,7 +72,6 @@ export const changePassword = async (creds) =>{
 
 export const forgotPassword = async (username:object) =>{
     const csrfToken = await getCsrfToken();
-    console.log(username)
     const response = await apiClient.post(FORGOT_PASS_URI, 
         username,
          {
