@@ -18,12 +18,12 @@
     margin-right:5px;
 }
 
-.recipeContent .itemImage {
-    width:300px;
-    aspect-ratio: 1 / 1; 
-    object-fit: cover; 
-    border-radius: 10px; 
-    margin-right: 15px;
+.imageContainer{
+    display: flex;
+    flex-direction:column;
+    align-items: center;
+    gap: 10px;
+
 }
 
 .recipeContent .imgIngredients{
@@ -43,6 +43,7 @@
 .ingredientContainer h2{
     margin-top:0px;
     margin-bottom:5px;
+    text-align:center;
 }
 
 .ingredientContainer ul{
@@ -68,6 +69,11 @@
     width: 100%; 
     padding-top:0px;
     margin-top:0px;
+}
+
+.instructionActions{
+    padding-inline-start:2rem;
+    margin-bottom:10px;
 }
 
 .instructionContainer h2{

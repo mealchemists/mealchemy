@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import './RecipeSearch.css';
 import AddRecipeModal from '../AddRecipeModal/AddRecipeModal';
 import { Chip, Icon } from '@mui/material';
@@ -11,7 +11,7 @@ import { Recipe } from '../../Models/models'
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
-import { Add } from '@mui/icons-material';
+import { Add, Filter } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 
 const options = [
@@ -23,22 +23,38 @@ const options = [
 
 const ITEM_HEIGHT = 48;
 
+interface RecipeSearchProps {
+    onSelect?: (value: string) => void;
+    applyFiltering: (filterObj: object) => void;
+    mainIngredientList: string[];
+}
 
+export interface RecipeSearchRef {
+    handleCancel: () => void;
+  }
+  
 
-function RecipeSearch({ onSelect = null, searchRecipe=null }) {
+const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, applyFiltering, mainIngredientList}, ref) => {
     const [isFilterPopupOpen, setIsFilterPopupOpen] = useState<boolean>(false);
     const [filterChips, setFilterChips] = useState([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const [sortBy, setSortBy] = useState<string>("alpha");
-    const [sliderRange, setSliderRange] = useState<number[]>([0, 10]);
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    
+    const [mainIngredient, setMainIngredient] = useState<string>();
     const [showCancelButton, setShowCancelButton] = useState(false);
-
+    const [searchQuery, setSearchQuery] = useState("");
     const [openAddRecipeModal, setOpenAddRecipeModal] = useState(false);
     const handleOpenAddRecipeModal = () => setOpenAddRecipeModal(true);
     const handleCloseAddRecipeModal = () => setOpenAddRecipeModal(false);
     const [addRecipeFormat, setAddRecipeFormat] = useState<number>(null);
     const openOptions = Boolean(anchorEl);
+
+
+    // SortBY
+    const [sortBy, setSortBy] = useState<string>("");
+
+    // Filter
+    const [sliderRange, setSliderRange] = useState<number[]>([0, 100]);
+
 
     const handleOptionsClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -47,10 +63,40 @@ function RecipeSearch({ onSelect = null, searchRecipe=null }) {
         setAnchorEl(null);
     };
 
+    // so that the parent can also use it
+    useImperativeHandle(ref, () => ({
+        handleCancel() {
+          onSelect(""); // Call onSelect with empty string
+          setShowCancelButton(false);
+        }
+      }));
+
     const handleCancel = () => {
         onSelect("");
         setShowCancelButton(false);
     };
+
+    // Handle filters when the user applies them
+    const handleFilterChange = (filters: string[], sort: string, range: number[], main_ingredient: string) => {
+        setFilterChips(filters);
+        setSortBy(sort);
+        setSliderRange(range);
+        setMainIngredient(mainIngredient);
+
+        // Send the filter data back to the parent component
+        applyFiltering({
+            searchQuery,
+            filters,
+            sortBy: sort,
+            range,
+            mainIngredient: main_ingredient
+        });
+    };
+
+    const handleFilterClick = () => {
+        setIsFilterPopupOpen((prev) => !prev);
+    };
+
 
     const handleOptionsSelect = (option: string) => {
         if (option === "Select") {
@@ -80,24 +126,21 @@ function RecipeSearch({ onSelect = null, searchRecipe=null }) {
     const handleAddRecipe = (recipe:Recipe) => {
         handleCloseAddRecipeModal();
     }
-    const handleFilterClick = (event?: React.MouseEvent) => {
-        event?.stopPropagation();
-        setIsFilterPopupOpen((prev) => !prev);
-    };
 
-    const handleFilterChange = (filters: string[], sort: string, range: number[], tags: string[]) => {
-        setFilterChips(filters);
+    const onSearchRecipe = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const query = event.target.value;
+        setSearchQuery(query);
 
-        setSortBy(sort);
-        setSliderRange(range);
-        setSelectedTags(tags);
-
-        // TODO: Filter the recipes here
-    };
-
-    const onSearchRecipe = (event: React.ChangeEvent<HTMLInputElement>) =>{
-        searchRecipe(event.target.value);
+        // Send both search query and filter data to the parent whenever the search query changes
+        applyFiltering({
+            searchQuery: query,
+            filters: filterChips,
+            sortBy,
+            range: sliderRange,
+            mainIngredient: mainIngredient
+        });
     }
+
     return (
         <div>
             <div className="searchContainer">
@@ -168,11 +211,11 @@ function RecipeSearch({ onSelect = null, searchRecipe=null }) {
                     </IconButton>
                     {isFilterPopupOpen && (
                         <FilterPopup
-                            onClose={(e) => handleFilterClick(e)}
+                            onClose={() => setIsFilterPopupOpen(false)}
                             onFilterChange={handleFilterChange}
                             sortBy={sortBy}
                             sliderRange={sliderRange}
-                            selectedTags={selectedTags}
+                            mainIngredientList={mainIngredientList}
                         />
                     )}
                 </div>
@@ -206,6 +249,6 @@ function RecipeSearch({ onSelect = null, searchRecipe=null }) {
             />
         </div>
     );
-}
+});
 
 export default RecipeSearch;

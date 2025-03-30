@@ -1,5 +1,6 @@
 import { Autocomplete, Box, Button, InputAdornment, Modal, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { getAllIngredients } from '../../api/recipeIngredientApi';
 
 const style = {
     position: 'absolute',
@@ -28,7 +29,7 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
     const [tempCookTime, setTempCookTime] = useState(cookTime);
     const [tempPrepTime, setTempPrepTime] = useState(prepTime);
     const [tempTotalTime, setTempTotalTime] = useState(parseInt(cookTime, 10) + parseInt(prepTime, 10));
-
+    const [allIngredients, setAllIngredients] = useState([]);
     useEffect(() => {
         setTempTotalTime(parseInt(tempCookTime, 10) + parseInt(tempPrepTime, 10))
     }, [tempCookTime,tempPrepTime]);
@@ -37,6 +38,15 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
         // TODO: check if tempMainIngredient exists in database, if not, add to database
         onApplyTagChanges(tempMainIngredient, tempCookTime, tempPrepTime, tempTotalTime);
     }
+   useEffect(() => {
+        const getIngredients = async () => {
+            const response = await getAllIngredients();
+            const ingredientNames = response.map((ingredient) => ingredient.name);
+            setAllIngredients(ingredientNames);
+        };
+
+        getIngredients();
+    },[])
 
 
 
@@ -58,7 +68,7 @@ function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, op
                             <label>Key Ingredient:</label>
                             <Autocomplete
                                 id="tags-outlined"
-                                options={allTags.map((option) => option.title)}
+                                options={allIngredients.map((option) => option)}
                                 value={tempMainIngredient}
                                 inputValue={tempMainIngredient || ""}
                                 onInputChange={(event, newInputValue) => setTempMainIngredient(newInputValue)}
