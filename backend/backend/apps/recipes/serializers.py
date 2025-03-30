@@ -10,7 +10,6 @@ class StepSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class RecipeSerializer(serializers.ModelSerializer):
-    steps = StepSerializer(many=True)
     class Meta:
         model = Recipe
         fields = '__all__'

@@ -10,8 +10,8 @@ class Recipe(TimeStampedModel):
     cook_time = models.IntegerField(help_text="Cooking time in minutes")
     total_time = models.IntegerField(help_text="Total time in minutes")
     source_url = models.URLField(blank=True)  # Source URL
-    image_url = models.TextField(null=True, blank=True)  # Optional image content
-    steps = models.TextField(null=True, max_length=255)
+    image_url = models.TextField(null=True, blank=True)
+    steps = models.JSONField(default=list)  
     main_ingredient = models.TextField(null=True, max_length=100)
     
     def save(self, *args, **kwargs):
@@ -23,7 +23,7 @@ class Recipe(TimeStampedModel):
         return f"{self.name}"
     
 class Step(TimeStampedModel):
-    recipe = models.ForeignKey(Recipe, related_name='steps', on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, related_name='recipe_steps', on_delete=models.CASCADE)
     step_number = models.IntegerField()
     description = models.TextField(null=True, blank=True, max_length=255)
 

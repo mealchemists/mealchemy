@@ -26,16 +26,16 @@ def create_users(n=5):
     return users
 
     
-# def create_aisles(n=10):
-#     aisles = []
-#     for _ in range(n):
-#         aisle, _ = Aisle.objects.get_or_create(
-#             name=fake.word().capitalize(),
-#             llm_generated=random.choice([True, False]),
-#             updated_by_user=random.choice([True, False])
-#         )
-#         aisles.append(aisle)
-#     return aisles
+def create_aisles(n=10):
+    aisles = []
+    for _ in range(n):
+        aisle, _ = Aisle.objects.get_or_create(
+            name=fake.word().capitalize(),
+            llm_generated=random.choice([True, False]),
+            updated_by_user=random.choice([True, False])
+        )
+        aisles.append(aisle)
+    return aisles
 
 def create_ingredients(n=20, aisles=None):
     ingredients = []
@@ -59,7 +59,7 @@ def create_recipes(n=4, users=None, steps=None):
     recipes = []
     for _ in range(n):
         # Pick a random user if provided, otherwise None
-        user = User.objects.get(id=21)
+        user = User.objects.get(id=1)
 
         # Random preparation and cooking times
         prep_time = random.randint(5, 30)
@@ -133,7 +133,7 @@ def create_meal_plans(n=20, recipes=None):
 def generate_fake_data():
     print("Generating test data...")
     users = create_users()
-    # aisles = create_aisles()
+    aisles = create_aisles()
     ingredients = create_ingredients()
     recipes = create_recipes(users=users)
     create_recipe_ingredients(recipes, ingredients)
