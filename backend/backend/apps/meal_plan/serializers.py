@@ -1,8 +1,7 @@
 from rest_framework import serializers
 
+from backend.apps.recipes.models.recipe import Recipe
 from backend.apps.recipes.serializers import RecipeSerializer
-from backend.apps.recipes.models.recipe import Recipe
-from backend.apps.recipes.models.recipe import Recipe
 
 from .models.meal_plan import MealPlan
 
