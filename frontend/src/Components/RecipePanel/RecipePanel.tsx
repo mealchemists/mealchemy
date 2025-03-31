@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ListItem from '../ListItem/ListItem';
 import RecipeSearch from '../RecipeSearch/RecipeSearch';
-import { Recipe, RecipeIngredient, Ingredient, FilterObject } from '../../Models/models';
+import { Recipe, RecipeIngredient, Ingredient, RecipeStep, FilterObject } from '../../Models/models';
 import './RecipePanel.css';
 import { getRecipeIngredients } from '../../api/recipeIngredientApi';
 import { handleFilterApply } from '../../utils/filter';
@@ -15,6 +15,12 @@ interface RecipePanelProps {
     setRecipeEditMode: (editMode: boolean) => void;
 }
 
+const blankStep: RecipeStep= {
+    id: -1,
+    step_number: 1,
+    description: "",
+    recipe: -1
+}
 
 const blankRecipe: Recipe = {
     id: -1,
@@ -24,7 +30,7 @@ const blankRecipe: Recipe = {
     total_time: 0,
     main_ingredient: "Main Ingredient",
     ingredients: [],
-    steps: "Enter instructions here",
+    steps: [blankStep],
     image_url: "",
 };
 
@@ -48,6 +54,7 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const recipeSearchRef = useRef<any>(null);
+
 
 
     const fetchRecipes = async () => {
@@ -83,6 +90,7 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const filterApply = (filterObj: FilterObject) => {
         handleFilterApply(filterObj, setRecipeIngredients);
     }
+    
 
     // TODO convert this to recipe ingredients instead
     const handleAddManualRecipe = () => {
@@ -150,7 +158,6 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
 
     return (
         <div className="recipe-container">
-
             <RecipeSearch 
                 onSelect={handleSelectOption} 
                 applyFiltering={ filterApply }

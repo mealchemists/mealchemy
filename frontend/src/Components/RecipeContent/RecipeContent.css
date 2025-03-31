@@ -71,6 +71,11 @@
     margin-top:0px;
 }
 
+.instructionActions{
+    padding-inline-start:2rem;
+    margin-bottom:10px;
+}
+
 .instructionContainer h2{
     margin-bottom:0px;
     padding-bottom:0px;

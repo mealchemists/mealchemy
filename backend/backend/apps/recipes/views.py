@@ -189,7 +189,8 @@ class RecipeIngredientsAPIView(APIView):
                         "name": aisle
                     }
                     aisle_serializer = AisleSerializer(data = aisle_data)
-                    aisle_obj = aisle_serializer.save()
+                    if aisle_serializer.is_valid():
+                        aisle_obj = aisle_serializer.save()
 
                 # TODO handle nutrition information
                 calories_per_100g=random.uniform(50, 500)

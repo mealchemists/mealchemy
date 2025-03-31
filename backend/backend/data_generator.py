@@ -9,7 +9,7 @@ from faker import Faker
 from backend.apps.meal_plan.models.meal_plan import MealPlan
 from backend.apps.recipes.models.ingredients import (Aisle, Ingredient,
                                                      RecipeIngredient)
-from backend.apps.recipes.models.recipe import Recipe
+from backend.apps.recipes.models.recipe import Recipe, Step
 
 # Initialize Faker
 fake = Faker()
@@ -25,6 +25,7 @@ def create_users(n=5):
         users.append(user)
     return users
 
+    
 def create_aisles(n=10):
     aisles = []
     for _ in range(n):
@@ -54,24 +55,36 @@ def create_ingredients(n=20, aisles=None):
         ingredients.append(ingredient)
     return ingredients
 
-def create_recipes(n=4, users=None):
+def create_recipes(n=4, users=None, steps=None):
     recipes = []
     for _ in range(n):
         user = random.choice(users) if users else None
-        my_user =User.objects.filter(id=1).first()
+        my_user =User.objects.filter(id=16).first()
         prep_time = random.randint(5, 30)
         cook_time = random.randint(10, 60)
+        
+        # Create the recipe
         recipe = Recipe.objects.create(
-            user=my_user,
+            user=user,
             name=fake.sentence(nb_words=3),
             prep_time=prep_time,
             cook_time=cook_time,
             total_time=prep_time + cook_time,
             source_url=fake.url(),
-            image_url=None,  # Can be replaced with an actual image path
-            steps=fake.paragraph(nb_sentences=5)
+            image_url=None,  # Can replace with an actual image URL if needed
+            main_ingredient=fake.word()  # Example main ingredient
         )
-        recipes.append(recipe)
+
+        # Create steps and associate with the recipe
+        for i in range(random.randint(3, 7)):  # For each recipe, create 3 to 7 steps
+            step, _ = Step.objects.get_or_create(
+                step_number=i + 1,
+                description=fake.sentence(),
+                recipe=recipe  # Link each step to the current recipe
+            )
+
+        recipes.append(recipe)  # Append the recipe to the list
+
     return recipes
 
 def create_recipe_ingredients(recipes, ingredients):

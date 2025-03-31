@@ -6,9 +6,9 @@ export interface Recipe{
     total_time: Number;
     main_ingredient?:string | null;
     ingredients: Array<string>;
-    steps: string | null;
     image_url: string | null; //Change later
     sourceUrl?: string | null
+    steps: Array<RecipeStep>
 }
 
 export interface Ingredient {
@@ -31,6 +31,22 @@ export interface RecipeIngredient {
     recipe: Recipe,
     ingredients: Ingredient[]
 }
+
+export interface RecipeStep {
+    id: Number,
+    step_number: Number,
+    description: String,
+    recipe: Number
+}
+
+export interface FilterObject {
+    searchQuery?: string;
+    filters?: string[];
+    sortBy?: string;
+    range?: number[];
+    mainIngredient?: string;
+}
+
 
 export interface FilterObject {
     searchQuery?: string;
