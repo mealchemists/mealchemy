@@ -179,7 +179,7 @@ class RecipeIngredientsAPIView(APIView):
                 if not ingredient_name:
                     return Response({"error": "Missing ingredient data"}, status=status.HTTP_400_BAD_REQUEST)
 
-                aisle_obj = Aisle.objects.filter(user_id=data["recipe"]["user"], name=aisle)
+                aisle_obj = Aisle.objects.filter(user_id=data["recipe"]["user"], name=aisle).first()
                 if not aisle_obj:
                     aisle_data = {
                         "user":data["recipe"]["user"],
@@ -188,6 +188,8 @@ class RecipeIngredientsAPIView(APIView):
                     aisle_serializer = AisleSerializer(data = aisle_data)
                     if aisle_serializer.is_valid():
                         aisle_obj = aisle_serializer.save()
+                    else:
+                        print(aisle_serializer.errors)
 
                 # TODO handle nutrition information
                 calories_per_100g=random.uniform(50, 500)
@@ -268,14 +270,15 @@ class RecipeIngredientsAPIView(APIView):
                 fiber_per_100g = random.uniform(0, 15)
 
                 # Check if aisle exists
-                aisle_obj = Aisle.objects.filter(user_id=data["recipe"]["user"], name=aisle)
+                aisle_obj = Aisle.objects.filter(user_id=data["recipe"]["user"], name=aisle).first()
                 if not aisle_obj:
                     aisle_data = {
                         "user":data["recipe"]["user"],
                         "name": aisle
                     }
                     aisle_serializer = AisleSerializer(data = aisle_data)
-                    aisle_obj = aisle_serializer.save()
+                    if aisle_serializer.is_valid():
+                        aisle_obj = aisle_serializer.save()
 
                 try:
                     # Check if the ingredient exists, if not, create it
@@ -451,7 +454,6 @@ class AisleAPIView(APIView):
     
     def post(self, request, user_id, *args, **kwargs):
         data = request.data
-        data['user'] = user_id  
         name = data.get('name')
         if Aisle.objects.filter(user_id=user_id, name=name).exists():
             return Response({"detail": "An aisle with this name already exists for the given user."}, status=status.HTTP_400_BAD_REQUEST)

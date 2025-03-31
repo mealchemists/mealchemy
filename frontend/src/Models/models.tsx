@@ -1,5 +1,5 @@
 export interface Recipe{
-    id:Number;
+    id:number;
     name:string,
     cook_time: Number;
     prep_time: Number;

@@ -80,3 +80,18 @@ export const getAllIngredients = async () => {
     const response = await apiClient.get('ingredient');
     return response.data;
 };
+
+export const updateIngredientAisle = async(ingredientData)=>{
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];
+    let ingredient_id = ingredientData.id
+    const response = await apiClient.put(
+        `ingredient/${ingredient_id}`,
+        ingredientData,
+        {
+            headers: {
+                'X-CSRFToken': csrfToken,  
+            },
+            withCredentials: true, 
+        });
+    return response.data;
+}

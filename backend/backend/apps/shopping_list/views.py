@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from .models.shopping_list import ShoppingList
 from backend.apps.recipes.models import Recipe, Ingredient, RecipeIngredient
 from django.contrib.auth.models import User
+from django.forms.models import model_to_dict
 
 from rest_framework import status
 from collections import defaultdict
@@ -22,6 +23,7 @@ class ShoppingListView(APIView):
         for item in shopping_list:
             aisle_name = item.ingredient.ingredient.aisle.name 
             ingredient_name = item.ingredient.ingredient.name
+            unit = item.ingredient.unit
             try:
                 ingredient_quantity = float(item.ingredient.quantity)  # Use float() to handle decimal quantities
             except ValueError:
@@ -38,12 +40,22 @@ class ShoppingListView(APIView):
 
             # If the ingredient doesn't exist, add a new entry
             if not ingredient_exists:
+                # aisle_dict[aisle_name].append({
+                #     "name": ingredient_name,
+                #     "quantity": ingredient_quantity,
+                #     "unit": unit
+                # })
                 aisle_dict[aisle_name].append({
-                    "name": ingredient_name,
-                    "quantity": ingredient_quantity
+                    **model_to_dict(item.ingredient.ingredient), 
+                    "quantity": ingredient_quantity,
+                    "unit": unit
                 })
 
-        return Response({"shopping_list": dict(aisle_dict)})
+        formatted_shopping_list = [
+            {"aisle": aisle, "items": ingredients}
+            for aisle, ingredients in aisle_dict.items()
+        ]
+        return Response({"shopping_list": formatted_shopping_list})
 
     def post(self, request, user_id):
         # request contains a list of recipe_ids

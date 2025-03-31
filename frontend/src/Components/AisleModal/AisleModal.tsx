@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Autocomplete, Box, Button, InputAdornment, MenuItem, Modal, Select, TextField, Typography } from '@mui/material';
+import { useAuth } from '../../api/useAuth';
+import { getAisles, addAisle } from '../../api/aisles';
+import { updateIngredientAisle } from '../../api/recipeIngredientApi';
 
 const style = {
     position: 'absolute',
@@ -15,16 +18,45 @@ const style = {
 };
 
 
-function AisleModal({ open, onClose, onEditAisle, ingredient }) {
+function AisleModal({ open, onClose, onEditAisle, ingredient, aisle_name }) {
     const [newAisle, setNewAisle] = useState<string>("");
-
-    const sendIngredientToParent = () => {
-        onEditAisle(ingredient, newAisle);
+    const {isAuthenticated, username, user_id} = useAuth();
+    const [allAisles, setAllAisles] = useState<string[]>([]);
+    const [completeAisles, setCompleteAisles] = useState([]);
+    const sendAisleToParent = () => {
+        // create new aisle
+        if (!allAisles.includes(newAisle)) {
+            addAisle(newAisle, user_id);
+        } else {
+            const foundItem = completeAisles.find(item => item.name === newAisle);
+            // update ingredient
+            const ingredientBody = {
+                    ...ingredient,
+                    aisle: foundItem.id
+            }
+            updateIngredientAisle(ingredientBody);
+        }
+    
+        onEditAisle("BACK");
         onClose();
     }
 
-    // TODO: get existing aisles
-    const aislenames = ["Dairy", "Produce", "Grains", "Proteins", "Snacks"];
+    useEffect(() => {
+        console.log(ingredient);
+            const getIngredientsAisles = async () => {
+                if (!user_id){
+                    return
+                }
+                const aisleData = await getAisles(user_id);
+                setCompleteAisles(aisleData);
+                console.log(aisleData);
+                const aisleNames = aisleData.map((aisle)=> aisle.name);
+                setAllAisles(aisleNames);
+            };
+    
+            getIngredientsAisles();
+        },[user_id])
+
     return (
         <Modal
             open={open}
@@ -36,11 +68,11 @@ function AisleModal({ open, onClose, onEditAisle, ingredient }) {
             <Box sx={style}>
                 <div>
                     <h3>
-                        Edit {ingredient} Aisle
+                        Edit {aisle_name} Aisle
                     </h3>
                     <Autocomplete
                         id="tags-outlined"
-                        options={aislenames.map((option) => option)}
+                        options={allAisles.map((option) => option)}
                         value={newAisle}
                         inputValue={newAisle || ""}
                         onInputChange={(event, newInputValue) => setNewAisle(newInputValue)}
@@ -82,7 +114,7 @@ function AisleModal({ open, onClose, onEditAisle, ingredient }) {
                     borderRadius:'10px'
 
                 }}
-                 onClick={sendIngredientToParent}>Done</Button>
+                 onClick={sendAisleToParent}>Done</Button>
             </Box>
         </Modal >
     );
