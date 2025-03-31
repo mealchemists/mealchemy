@@ -58,7 +58,7 @@ def create_ingredients(n=20, aisles=None):
 def create_recipes(n=4, users=None, steps=None):
     recipes = []
     user = random.choice(users) if users else None
-    my_user = User.objects.filter(id=1).first()
+    my_user = User.objects.filter(id=6).first()
     prep_time = random.randint(5, 30)
     cook_time = random.randint(10, 60)
 

@@ -62,7 +62,7 @@ class Ingredient(models.Model):
         # Determine if the recipe needs review
         
         #TODO nutriotion info?
-        self.needs_review = not (self.name and self.aisle)
+        self.needs_review = not (self.name)
 
         
         super().save(*args, **kwargs)

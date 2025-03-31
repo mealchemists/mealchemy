@@ -37,6 +37,9 @@ const ListItem: React.FC<ListItemProps> = ({
     };
 
     const checkNeedsReview = () => {
+        console.log(recipeIngredient.needs_review)
+        console.log(recipe.needs_review)
+        console.log(ingredients)
         if (recipeIngredient.needs_review || recipe.needs_review || ingredients.some(item => item.needs_review)) {
             return true
         }
@@ -93,7 +96,7 @@ const ListItem: React.FC<ListItemProps> = ({
                         textOverflow: "ellipsis",
                         maxWidth: "200px"  // Adjust as needed
                     }}>
-                    {checkNeedsReview && (
+                    {checkNeedsReview() && (
                         <Tooltip title="Needs Review" arrow>
                             <WarningIcon sx={{ color: "red", marginRight: "8px" }} />
                         </Tooltip>
