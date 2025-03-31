@@ -57,33 +57,34 @@ def create_ingredients(n=20, aisles=None):
 
 def create_recipes(n=4, users=None, steps=None):
     recipes = []
-    for _ in range(n):
-        user = random.choice(users) if users else None
-        my_user =User.objects.filter(id=16).first()
-        prep_time = random.randint(5, 30)
-        cook_time = random.randint(10, 60)
-        
-        # Create the recipe
-        recipe = Recipe.objects.create(
-            user=user,
-            name=fake.sentence(nb_words=3),
-            prep_time=prep_time,
-            cook_time=cook_time,
-            total_time=prep_time + cook_time,
-            source_url=fake.url(),
-            image_url=None,  # Can replace with an actual image URL if needed
-            main_ingredient=fake.word()  # Example main ingredient
-        )
+    user = random.choice(users) if users else None
+    my_user = User.objects.filter(id=1).first()
+    prep_time = random.randint(5, 30)
+    cook_time = random.randint(10, 60)
 
-        # Create steps and associate with the recipe
-        for i in range(random.randint(3, 7)):  # For each recipe, create 3 to 7 steps
-            step, _ = Step.objects.get_or_create(
-                step_number=i + 1,
-                description=fake.sentence(),
-                recipe=recipe  # Link each step to the current recipe
-            )
+    # Create steps
+    steps = []
+    num_steps = random.randint(3, 7)  # Random number of steps
+    for step_number in range(1, num_steps + 1):
+        steps.append({
+            "step_number": step_number,
+            "description": fake.sentence(nb_words=10)
+        })
 
-        recipes.append(recipe)  # Append the recipe to the list
+    # Create the recipe with steps
+    recipe = Recipe.objects.create(
+        user=my_user,
+        name=fake.sentence(nb_words=3),
+        prep_time=prep_time,
+        cook_time=cook_time,
+        total_time=prep_time + cook_time,
+        source_url=fake.url(),
+        image_url=None,  # Can replace with an actual image URL if needed
+        main_ingredient=fake.word(),  # Example main ingredient
+        steps=steps  # Add steps here
+    )
+
+    recipes.append(recipe)
 
     return recipes
 

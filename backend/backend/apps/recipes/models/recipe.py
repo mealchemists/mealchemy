@@ -13,10 +13,15 @@ class Recipe(TimeStampedModel):
     image_url = models.TextField(null=True, blank=True)
     steps = models.JSONField(default=list)  
     main_ingredient = models.TextField(null=True, max_length=100)
+    needs_review = models.BooleanField(default=True)
     
     def save(self, *args, **kwargs):
         if self.total_time is None:
             self.total_time = self.prep_time + self.cook_time
+            
+        # Determine if the recipe needs review
+        self.needs_review = not (self.name and self.steps and self.total_time and self.main_ingredient)
+
         super().save(*args, **kwargs)
         
     def __str__(self):

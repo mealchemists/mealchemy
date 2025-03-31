@@ -105,6 +105,7 @@ class RecipeIngredientsAPIView(APIView):
                 if recipe_id not in recipes:
                     recipes[recipe_id] = {
                         "id": ri.id,
+                        "needs_review": ri.needs_review,
                         "recipe": RecipeSerializer(ri.recipe).data,
                         "ingredients": []
                     }
@@ -114,7 +115,8 @@ class RecipeIngredientsAPIView(APIView):
                     "unit": ri.unit,
                     "display_name": ri.display_name,
                     "name": ri.ingredient.name,
-                    "id":ri.ingredient.id
+                    "id":ri.ingredient.id,
+                    "need_review": ri.needs_review
                 })
                 
                 # Add aisle only if it exists
@@ -142,9 +144,8 @@ class RecipeIngredientsAPIView(APIView):
                 "display_name": ri.display_name,
                 "name": ri.ingredient.name,  # Assuming Ingredient has a `name` field
                 "aisle":ri.ingredient.aisle,
-                "id":ri.ingredient.id
-
-
+                "id":ri.ingredient.id,
+                "need_review": ri.needs_review
             }
             for ri in recipe_ingredients
         ]

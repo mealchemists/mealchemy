@@ -9,6 +9,7 @@ import FlatwareIcon from '@mui/icons-material/Flatware';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import Avatar from "@mui/material/Avatar";
 import DinnerDiningIcon from '@mui/icons-material/DinnerDining';
+import { WarningAmber as WarningIcon } from "@mui/icons-material";
 
 interface ListItemProps {
     recipeIngredient: RecipeIngredient;
@@ -26,6 +27,7 @@ const ListItem: React.FC<ListItemProps> = ({
     isChecked = false
 }) => {
     const recipe = recipeIngredient.recipe;
+    const ingredients = recipeIngredient.ingredients;
     const [checked, setChecked] = useState(isChecked);
     const tags = [recipe.main_ingredient, recipe.cook_time, recipe.prep_time, recipe.total_time];
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,6 +35,13 @@ const ListItem: React.FC<ListItemProps> = ({
         setChecked(isChecked);
         onCheckboxChange(recipe.id, isChecked); // Notify parent
     };
+
+    const checkNeedsReview = () => {
+        if (recipeIngredient.needs_review || recipe.needs_review || ingredients.some(item => item.needs_review)) {
+            return true
+        }
+        return false
+    }
 
     useEffect(() => {
         setChecked(isChecked);
@@ -75,7 +84,25 @@ const ListItem: React.FC<ListItemProps> = ({
                     }}/>
             </Avatar>
             <div className="contentContainer">
-                <p className="itemTitle">{recipe.name}</p>
+                <p className="itemTitle" 
+                    style={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        whiteSpace: "nowrap", 
+                        overflow: "hidden", 
+                        textOverflow: "ellipsis",
+                        maxWidth: "200px"  // Adjust as needed
+                    }}>
+                    {checkNeedsReview && (
+                        <Tooltip title="Needs Review" arrow>
+                            <WarningIcon sx={{ color: "red", marginRight: "8px" }} />
+                        </Tooltip>
+                    )}
+                    
+                    <Tooltip title={recipe.name.length > 12 ? recipe.name : ""} arrow>
+                        <span>{recipe.name.length > 12 ? `${recipe.name.substring(0, 12)}...` : recipe.name}</span>
+                    </Tooltip>
+                </p>
                 <div className="tagsContainer">
                     {tags.map((tag: string, index: number) => {
                         let icon = null;
@@ -95,8 +122,9 @@ const ListItem: React.FC<ListItemProps> = ({
                         }
                         return (
                             <Tooltip key={index} title={tooltipLabel} arrow disableHoverListener={!tooltipLabel}>
+                                
                                 <Chip
-                                    label={tag && tag.length > 20 ? `${tag.substring(0, 20)}...` : tag || ""} 
+                                    label={tag && tag.length > 18 ? `${tag.substring(0, 18)}...` : tag || ""} 
                                     icon={icon}
                                     variant="outlined"
                                     sx={{
