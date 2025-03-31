@@ -14,10 +14,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-django_url = "http://localhost:8000/api/recipe-ingredients"
+RECIPE_INGREDIENTS_URL = "http://localhost:8000/api/recipe-ingredients"
+AISLES_URL = "http://localhost:8000/api/aisles"
 
 
-def extract_recipe_data_pdf(rest_url, user, token):
+def extract_recipe_data_pdf(pdf_api_url, user, token):
     # TODO: get PDF data from server (or via messages)
     # NOTE: for testing, use a temporary hardcoded path...
 
@@ -29,6 +30,11 @@ def extract_recipe_data_pdf(rest_url, user, token):
     raw_texts = PDFUtils.extract_raw_text_hardcopy(pages, verbose=True)
 
     # TODO: Get aisles using the token and then pass it into the chain.
+    headers = {
+        "Authorization": f"Bearer {token}",
+    }
+    aisles = requests.get(f"{AISLES_URL}/{user}", headers=headers)
+    print(aisles)
 
     # LLM?
     chain = setup_llm_chain(mode="pdf", api_key=os.getenv("OPENAI_ECE493_G06_KEY"))
@@ -36,6 +42,8 @@ def extract_recipe_data_pdf(rest_url, user, token):
         concatenated = "\n".join(text)
         recipe_data_str = str(chain.invoke({"input": concatenated}).content)
         recipe_data = json.loads(recipe_data_str)
+
+        print(recipe_data)
 
         # post to server
         # it might be a good idea a post multiple endpoint

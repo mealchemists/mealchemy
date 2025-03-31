@@ -11,8 +11,11 @@ from ..meal_plan.models.meal_plan import MealPlan
 from .models.ingredients import Ingredient, RecipeIngredient
 from .models.recipe import Recipe
 from .producer import publish
-from .serializers import (IngredientSerializer, RecipeIngredientSerializer,
-                          RecipeSerializer)
+from .serializers import (
+    IngredientSerializer,
+    RecipeIngredientSerializer,
+    RecipeSerializer,
+)
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -34,9 +37,9 @@ def save_scraped_data(request):
     if request.method == "POST":
         ingredients = request.data["ingredients"]
 
-        recipe_serialzer = RecipeSerializer(data=request.data["recipe"])
-        recipe_serialzer.is_valid(raise_exception=True)
-        recipe = recipe_serialzer.save(user=user)
+        recipe_serializer = RecipeSerializer(data=request.data["recipe"])
+        recipe_serializer.is_valid(raise_exception=True)
+        recipe = recipe_serializer.save(user=user)
 
         for ingredient_data in ingredients:
             ingredient_serializer = IngredientSerializer(
@@ -52,7 +55,7 @@ def save_scraped_data(request):
                 )
 
         return Response(
-            {"cart": recipe_serialzer.data, "another": ingredient_serializer.data}
+            {"cart": recipe_serializer.data, "another": ingredient_serializer.data}
         )
 
 
@@ -82,7 +85,10 @@ class RecipeIngredientsAPIView(APIView):
     # Apply filter backends for search and filtering
     filter_backends = (filters.SearchFilter, DjangoFilterBackend)
     filterset_fields = ["recipe__name"]  # You can filter by recipe name
-    search_fields = ['recipe__name', 'ingredient__name']  # Allow search on recipe and ingredient name
+    search_fields = [
+        "recipe__name",
+        "ingredient__name",
+    ]  # Allow search on recipe and ingredient name
 
     def get_queryset(self):
         # Default queryset, only recipes related to the current user
@@ -101,10 +107,9 @@ class RecipeIngredientsAPIView(APIView):
         queryset = self.get_queryset()
 
         # Manually apply search filter
-        search = request.query_params.get('search', None)
+        search = request.query_params.get("search", None)
         if search:
             queryset = filters.SearchFilter().filter_queryset(request, queryset, self)
-
 
         if not self.kwargs:
             # If no ID is provided, return all recipes grouped with their ingredients
@@ -117,13 +122,15 @@ class RecipeIngredientsAPIView(APIView):
                         "recipe": RecipeSerializer(ri.recipe).data,
                         "ingredients": [],
                     }
-                
-                recipes[recipe_id]["ingredients"].append({
-                    "quantity": ri.quantity,
-                    "unit": ri.unit,
-                    "display_name": ri.display_name,
-                    "name": ri.ingredient.name 
-                })
+
+                recipes[recipe_id]["ingredients"].append(
+                    {
+                        "quantity": ri.quantity,
+                        "unit": ri.unit,
+                        "display_name": ri.display_name,
+                        "name": ri.ingredient.name,
+                    }
+                )
 
             return Response(list(recipes.values()), status=status.HTTP_200_OK)
 
@@ -147,7 +154,7 @@ class RecipeIngredientsAPIView(APIView):
                 "quantity": ri.quantity,
                 "unit": ri.unit,
                 "display_name": ri.display_name,
-                "name": ri.ingredient.name  # Assuming Ingredient has a `name` field
+                "name": ri.ingredient.name,  # Assuming Ingredient has a `name` field
             }
             for ri in recipe_ingredients
         ]
@@ -170,10 +177,10 @@ class RecipeIngredientsAPIView(APIView):
             recipe = Recipe.objects.create(**serializer.validated_data)  # Create Recipe
 
             for ingredient_data in ingredients_data:
-                ingredient_name = ingredient_data.get('name')
-                quantity = ingredient_data.get('quantity')
-                unit = ingredient_data.get('unit')
-                display_name = ingredient_data.get('display_name')
+                ingredient_name = ingredient_data.get("name")
+                quantity = ingredient_data.get("quantity")
+                unit = ingredient_data.get("unit")
+                display_name = ingredient_data.get("display_name")
 
                 if not display_name:
                     display_name = ingredient_name
@@ -187,26 +194,26 @@ class RecipeIngredientsAPIView(APIView):
 
                 # TODO handle nutrition information
                 # TODO handle Aisle
-                calories_per_100g=random.uniform(50, 500),
-                protein_per_100g=random.uniform(1, 30),
-                carbs_per_100g=random.uniform(1, 50),
-                sugar_per_100g=random.uniform(0, 30),
-                fat_per_100g=random.uniform(0, 20),
-                sodium_per_100mg=random.uniform(0,1500),
-                fiber_per_100g=random.uniform(0, 15),
-                
+                calories_per_100g = (random.uniform(50, 500),)
+                protein_per_100g = (random.uniform(1, 30),)
+                carbs_per_100g = (random.uniform(1, 50),)
+                sugar_per_100g = (random.uniform(0, 30),)
+                fat_per_100g = (random.uniform(0, 20),)
+                sodium_per_100mg = (random.uniform(0, 1500),)
+                fiber_per_100g = (random.uniform(0, 15),)
+
                 try:
                     ingredient, created = Ingredient.objects.get_or_create(
                         name=ingredient_name,
                         defaults={
-                            'calories_per_100g': calories_per_100g,
-                            'protein_per_100g': protein_per_100g,
-                            'carbs_per_100g': carbs_per_100g,
-                            'sugar_per_100g': sugar_per_100g,
-                            'fat_per_100g': fat_per_100g,
-                            'sodium_per_100mg': sodium_per_100mg,
-                            'fiber_per_100g': fiber_per_100g,
-                        }
+                            "calories_per_100g": calories_per_100g,
+                            "protein_per_100g": protein_per_100g,
+                            "carbs_per_100g": carbs_per_100g,
+                            "sugar_per_100g": sugar_per_100g,
+                            "fat_per_100g": fat_per_100g,
+                            "sodium_per_100mg": sodium_per_100mg,
+                            "fiber_per_100g": fiber_per_100g,
+                        },
                     )
                 except IntegrityError:
                     # If an IntegrityError occurs, we simply ignore it and continue
@@ -223,6 +230,7 @@ class RecipeIngredientsAPIView(APIView):
                 RecipeSerializer(recipe).data, status=status.HTTP_201_CREATED
             )
 
+        print("NO")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, *args, **kwargs):
@@ -259,10 +267,10 @@ class RecipeIngredientsAPIView(APIView):
             )  # Extract ingredients
 
             for ingredient_data in ingredients_data:
-                ingredient_name = ingredient_data.get('name')
-                quantity = ingredient_data.get('quantity')
-                unit = ingredient_data.get('unit')
-                display_name = ingredient_data.get('display_name')
+                ingredient_name = ingredient_data.get("name")
+                quantity = ingredient_data.get("quantity")
+                unit = ingredient_data.get("unit")
+                display_name = ingredient_data.get("display_name")
 
                 if not display_name:
                     display_name = ingredient_name
@@ -287,14 +295,14 @@ class RecipeIngredientsAPIView(APIView):
                     ingredient, created = Ingredient.objects.get_or_create(
                         name=ingredient_name,
                         defaults={
-                            'calories_per_100g': calories_per_100g,
-                            'protein_per_100g': protein_per_100g,
-                            'carbs_per_100g': carbs_per_100g,
-                            'sugar_per_100g': sugar_per_100g,
-                            'fat_per_100g': fat_per_100g,
-                            'sodium_per_100mg': sodium_per_100mg,
-                            'fiber_per_100g': fiber_per_100g,
-                        }
+                            "calories_per_100g": calories_per_100g,
+                            "protein_per_100g": protein_per_100g,
+                            "carbs_per_100g": carbs_per_100g,
+                            "sugar_per_100g": sugar_per_100g,
+                            "fat_per_100g": fat_per_100g,
+                            "sodium_per_100mg": sodium_per_100mg,
+                            "fiber_per_100g": fiber_per_100g,
+                        },
                     )
                 except IntegrityError:
                     # If an IntegrityError occurs, we simply ignore it and continue
@@ -312,8 +320,7 @@ class RecipeIngredientsAPIView(APIView):
             return Response(RecipeSerializer(recipe).data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
+
     def delete(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
         print(pk)
@@ -324,8 +331,8 @@ class RecipeIngredientsAPIView(APIView):
             recipe.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response("Failes", status=status.HTTP_400_BAD_REQUEST)
-        
-    
+
+
 class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
@@ -351,12 +358,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
-    
-    def destroy(self, request, pk=None): #/api/Recipes/<stor:id>
+
+    def destroy(self, request, pk=None):  # /api/Recipes/<stor:id>
         recipe = Recipe.objects.get(id=pk)
         recipe.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
+
 class IngredientViewSet(viewsets.ViewSet):
     def list(self, request):  # /api/Recipes
         ingredients = Ingredient.objects.all()
@@ -417,4 +425,3 @@ class RecipeIngredientViewSet(viewsets.ViewSet):
         recipe_ingredient = RecipeIngredient.objects.get(id=pk)
         recipe_ingredient.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    

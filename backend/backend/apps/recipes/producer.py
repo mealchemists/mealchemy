@@ -1,12 +1,18 @@
 import pika
 import json
+import os
 
-params = pika.URLParameters("amqps://njslbjoh:sBepSHwzktvaxnpm9-5kcCAtJR63rzJ0@horse.lmq.cloudamqp.com/njslbjoh")
+from dotenv import load_dotenv
+
+load_dotenv()
+
+params = pika.URLParameters(os.environ["PIKA_URL"])
 
 connection = pika.BlockingConnection(params)
 
 channel = connection.channel()
 
+
 def publish(data):
-    body = json.dumps(data).encode('utf-8')  # Serialize to JSON and convert to bytes
+    body = json.dumps(data).encode("utf-8")  # Serialize to JSON and convert to bytes
     channel.basic_publish(exchange="", routing_key="admin", body=body)

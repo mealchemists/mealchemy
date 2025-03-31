@@ -12,6 +12,8 @@ from web.main import extract_recipe_data_url
 load_dotenv()
 PIKA_URL = os.environ["PIKA_URL"]
 
+threads = []
+
 
 def start_consumer(
     rabbitmq_url: str = PIKA_URL,
@@ -22,6 +24,7 @@ def start_consumer(
     """
 
     params = pika.URLParameters(rabbitmq_url)
+    # connection_params = pika.ConnectionParameters(heartbeat=5)
     connection = pika.BlockingConnection(params)
     channel = connection.channel()
 
@@ -59,7 +62,7 @@ def start_consumer(
             # for PDF extraction, use an additional API call to retrieve the uploaded PDF
             if task_type == "web":
                 callback_function = extract_recipe_data_url
-                url = payload.get("url", None)
+                url = payload.get("url", None).strip()
                 args = (url, user, token)
             elif task_type == "pdf":
                 # TODO: Implement file retrieval, server-side
@@ -71,6 +74,7 @@ def start_consumer(
 
             task_thread = threading.Thread(target=callback_function, args=args)
             task_thread.start()
+            threads.append(task_thread)
 
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
@@ -85,12 +89,18 @@ def start_consumer(
     )
 
     # Start consuming messages
-    print(f"Started consuming on queue: {queue_name}")
-    channel.start_consuming()
+    try:
+        print(f"Started consuming on queue: {queue_name}")
+        channel.start_consuming()
+    except KeyboardInterrupt:
+        print("Stopped consuming!")
+        channel.stop_consuming()
+
+        for thread in threads:
+            thread.join()
 
     return
 
 
 if __name__ == "__main__":
     start_consumer()
-    # extract_recipe_data_pdf(None, None, None)

@@ -19,8 +19,6 @@ def parse_with_openai(dom_chunks):
     parsed_results = []
     response = chain.invoke({"input": dom_chunks})
     parsed_results.append(response.content)
-    print("RAW PARSED RESULTS")
-    print(parsed_results[0])
     data = "\n".join(parsed_results)
     return clean_answer(data)
 
