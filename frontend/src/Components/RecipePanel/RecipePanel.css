@@ -3,7 +3,6 @@
     flex-direction: column;
     position: relative; /* Allows absolute positioning */
     height: inherit;
-    height:100%;
 }
 
 .button-container {
@@ -18,7 +17,7 @@
 
 .recipeListContainer{
     overflow-y:scroll;
-    height: 100%;
+    height: inherit;
     scrollbar-width: thin; /* For Firefox */
     scrollbar-color: #38793b #f0f0f0; /* Thumb and track colors for Firefox */
     padding-right: 15px;
