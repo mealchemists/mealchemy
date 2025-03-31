@@ -1,29 +1,18 @@
 services:
-
-  rabbitmq:
-    image: rabbitmq:management
-    container_name: rabbitmq
-    environment:
-      RABBITMQ_DEFAULT_USER: user123
-      RABBITMQ_DEFAULT_PASS: pass456
-    ports:
-      - 5672:5672   # port for message broker (passing messages between services)
-      - 15672:15672 # port for web monitoring interface
-
   backend:
     container_name: backend_service
     build:
       context: .
       dockerfile: Dockerfile
+    env_file: ../.env
     environment:
       RABBITMQ_URL: amqps://njslbjoh:qSWAVgxBywu6oIRcn5IS4LkCihc8LwHS@horse.lmq.cloudamqp.com/njslbjoh
     volumes:
       - .:/app
     ports:
-      - 8001:8000  # use this port to access the server itself
+      - 8000:8000 # use this port to access the server itself
     depends_on:
       - db
-      - rabbitmq
 
   db:
     image: postgres:latest
@@ -38,23 +27,14 @@ services:
     ports:
       - 5432:5432
 
-  ollama:
-    image: ollama/ollama
-    container_name: ollama_service
-    depends_on:
-      - rabbitmq
-    environment:
-      RABBITMQ_URL: amqps://njslbjoh:qSWAVgxBywu6oIRcn5IS4LkCihc8LwHS@horse.lmq.cloudamqp.com/njslbjoh
-    ports:
-      - 11434:11434  # port for ollama
-
+  # pgadmin for database management
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin_service
     depends_on:
       - db
     ports:
-      - "5050:80"  # port for pgadmin
+      - "5050:80" # port for pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: root

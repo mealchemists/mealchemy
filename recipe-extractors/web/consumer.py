@@ -2,9 +2,11 @@ import os
 import json
 import pika
 from dotenv import load_dotenv
-from main import get_recipe_data
+from main import extract_recipe_data_url
+
 load_dotenv()
 params = pika.URLParameters(os.environ["PIKA_URL"])
+print(params)
 
 connection = pika.BlockingConnection(params)
 
@@ -15,11 +17,11 @@ channel.queue_declare(queue="admin")
 
 def callback(ch, method, properties, body):
     print(f"Received message: {body}")
-    data =  json.loads(body.decode("utf-8"))
+    data = json.loads(body.decode("utf-8"))
     url = data.get("url")
     user = data.get("user")
     token = data.get("token")
-    get_recipe_data(url, user, token)
+    extract_recipe_data_url(url, user, token)
 
     # Acknowledge the message after processing
     ch.basic_ack(delivery_tag=method.delivery_tag)
