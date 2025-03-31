@@ -13,9 +13,22 @@ class MealPlan(TimeStampedModel):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, null=True)
 
     @classmethod
-    def get_week_meals(cls):
+    def get_week_meals(cls, user):
         today = now().date()
-        start_of_week = today - timedelta(days=today.weekday())  # Monday
-        end_of_week = start_of_week + timedelta(days=6)  # Sunday
+        start_of_week = today - timedelta(days=today.weekday())
+        end_of_week = start_of_week + timedelta(days=6)
+        start_of_week = today - timedelta(days=today.weekday())
+        end_of_week = start_of_week + timedelta(days=6)
 
-        return cls.objects.filter(day_planned__range=[start_of_week, end_of_week]).order_by("day_planned")
+        return cls.objects.filter(
+            day_planned__range=[start_of_week, end_of_week],
+            recipe__user=user  # Assuming Recipe is linked to a user
+        ).order_by("day_planned")
+        
+    @classmethod
+    def get_meals_for_range(cls, start_date, end_date, user=None):
+        queryset = cls.objects.filter(day_planned__range=[start_date, end_date]).order_by("day_planned")
+        if user:
+            queryset = queryset.filter(recipe__user=user)
+        return queryset
+    

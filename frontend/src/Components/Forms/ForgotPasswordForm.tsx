@@ -8,11 +8,12 @@ const ForgotPasswordForm = ({ onSubmit, onBack }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        
         setEmailError("");        
         const isEmailValid = validateEmail(email, setEmailError);
 
         if (!isEmailValid ) return;
+
+        await onSubmit({ email });
     };
 
 
@@ -48,6 +49,11 @@ const ForgotPasswordForm = ({ onSubmit, onBack }) => {
             >
                 Send Password Reset Link
             </Button>
+            {!!emailError && (
+                <Typography color="error" variant="body2" sx={{ marginTop: 2 }}>
+                    {emailError}
+                </Typography>
+            )}
             <Button variant="text" onClick={onBack} sx={{ color: '#38793b', borderRadius: '10px' }}>
                 Back to Login
             </Button>

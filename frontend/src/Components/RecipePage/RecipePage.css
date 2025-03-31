@@ -1,8 +1,7 @@
 .mainContainer {
     display: flex;          
-    align-items: stretch; 
     gap: 20px;   
-    height:inherit;           
+    flex-grow:1;        
 }
 
 .sideContainer {
@@ -16,6 +15,7 @@
     width: 70%;         
     transition: opacity 0.2s ease-in-out;    
     min-width: 700px;
+    height:100%;
 }
 
 .separator {
