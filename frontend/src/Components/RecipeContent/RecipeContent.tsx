@@ -35,8 +35,8 @@ interface RecipeContentProps {
     initialEditMode?: boolean;
     exitEditMode: () => void;
     onDeleteRecipe: (recipe: RecipeIngredient) => void; // Adjusted prop type
+    onUpdateRecipe: (recipe: RecipeIngredient) => void; // Adjusted prop type
 }
-
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -55,7 +55,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     recipeIngredient,
     initialEditMode = false,
     exitEditMode,
-    onDeleteRecipe
+    onDeleteRecipe,
+    onUpdateRecipe
 }) => {
     const [recipe, setRecipe] = useState(recipeIngredient.recipe)
     // 3 dot menu, edit and delete options
@@ -96,10 +97,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         }
     };
 
-    const deleteRecipe = async (id) => {
+    const deleteRecipe = () => {
         try {
-            const response = await deleteRecipeIngredients(id);
-            // Notify parent to delete the recipe from the list
             onDeleteRecipe(recipeIngredient);
         } catch (error) {
             setError("Error fetching recipes");
@@ -109,7 +108,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
     const putRecipe = async (data) => {
         try {
+
             const response = await putRecipeIngredients(data);
+            onUpdateRecipe(data)
         } catch (error) {
             setError("Error fetching recipes");
             console.error("Error updating recipe ingredient:", error);
@@ -150,6 +151,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         setTags([mainIngredient, cookTime, prepTime, totalTime]);
     }, [mainIngredient, cookTime, prepTime, totalTime]);
 
+
     const handleOptionsClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };
@@ -168,7 +170,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             setEditMode(true);
             handleOptionsClose();
         } else if (option == "Delete") {
-            deleteRecipe(recipeIngredient.id);
+            deleteRecipe();
         }
     };
 
@@ -188,6 +190,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const handleSave = async () => {
         const body = {
             ...recipeIngredient,
+            ...recipeIngredient,
             recipe: {
                 ...recipeIngredient.recipe,
                 name: title,
@@ -200,6 +203,12 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             },
             ingredients: ingredients
         };
+
+        if(recipeIngredient.id != -1){
+            await putRecipe(body);
+        }else{
+            await createRecipe(body);
+        }
 
         if (recipeIngredient.id != -1) {
             await putRecipe(body);
@@ -559,6 +568,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             </div>
         </div>
     );
+    
 }
 
 export default RecipeContent;
