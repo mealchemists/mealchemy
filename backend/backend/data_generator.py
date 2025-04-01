@@ -58,7 +58,7 @@ def create_ingredients(n=20, aisles=None):
 def create_recipes(n=4, users=None, steps=None):
     recipes = []
     user = random.choice(users) if users else None
-    my_user = User.objects.filter(id=6).first()
+    my_user = User.objects.filter(id=1).first()
     prep_time = random.randint(5, 30)
     cook_time = random.randint(10, 60)
 
@@ -70,21 +70,21 @@ def create_recipes(n=4, users=None, steps=None):
             "step_number": step_number,
             "description": fake.sentence(nb_words=10)
         })
+    for i in range(0,9):
+        # Create the recipe with steps
+        recipe = Recipe.objects.create(
+            user=my_user,
+            name=fake.sentence(nb_words=3),
+            prep_time=prep_time,
+            cook_time=cook_time,
+            total_time=prep_time + cook_time,
+            source_url=fake.url(),
+            image_url=None,  # Can replace with an actual image URL if needed
+            main_ingredient=fake.word(),  # Example main ingredient
+            steps=steps  # Add steps here
+        )
 
-    # Create the recipe with steps
-    recipe = Recipe.objects.create(
-        user=my_user,
-        name=fake.sentence(nb_words=3),
-        prep_time=prep_time,
-        cook_time=cook_time,
-        total_time=prep_time + cook_time,
-        source_url=fake.url(),
-        image_url=None,  # Can replace with an actual image URL if needed
-        main_ingredient=fake.word(),  # Example main ingredient
-        steps=steps  # Add steps here
-    )
-
-    recipes.append(recipe)
+        recipes.append(recipe)
 
     return recipes
 
