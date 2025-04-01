@@ -9,6 +9,41 @@ from time import perf_counter
 EXTRACT_URL = "http://localhost:8000/api/save-scraped-data/"
 
 
+result = {
+    "recipe": {
+        "name": "Roasted New Red Potatoes",
+        "description": "Roasted red potatoes at their best \u2014 plain and simple. Red potatoes are tossed with olive oil, salt, and pepper, then roasted to perfection.",
+        "main_ingredient": "red potatoes",
+        "source_url": "",
+        "cook_time": 20,
+        "prep_time": 5,
+        "total_time": 25,
+    },
+    "ingredients": [
+        {"name": "small red new potatoes", "quantity": 3, "unit": "pounds"},
+        {"name": "olive oil", "quantity": 0.25, "unit": "cup"},
+        {"name": "salt", "quantity": 1, "unit": "teaspoon"},
+        {"name": "freshly ground black pepper", "quantity": 1, "unit": "teaspoon"},
+    ],
+    "steps": [
+        {
+            "step": 1,
+            "description": "Gather all ingredients. Preheat the oven to 400 degrees F (200 degrees C) and adjust the oven rack to the lowest position.",
+        },
+        {
+            "step": 2,
+            "description": "Toss potatoes with oil, salt, and pepper in a bowl. Arrange, cut-side down, on a rimmed cookie sheet or jellyroll pan.",
+        },
+        {
+            "step": 3,
+            "description": "Roast potatoes in the preheated oven until tender and golden brown, 20 to 30 minutes. Transfer to a serving dish.",
+        },
+        {"step": 4, "description": "Serve and enjoy!"},
+    ],
+}
+
+
+# TODO: Error handling
 def extract_recipe_data_url(url, user, token):
     if validators.url(url):
         scraper = Scraper(url)
@@ -17,6 +52,9 @@ def extract_recipe_data_url(url, user, token):
         cleaned_content = scraper.clean_body_content(body_content)
         start_time = perf_counter()
         result = parse_with_openai(cleaned_content)
+
+        if result["recipe"].get("source_url", None) is None:
+            result["recipe"]["source_url"] = url
 
         print(json.dumps(result, indent=4))
 
@@ -32,4 +70,3 @@ def extract_recipe_data_url(url, user, token):
             print("Successfully sent the recipe data.")
         else:
             print(f"Failed to send recipe data. Status Code: {response.status_code}")
-

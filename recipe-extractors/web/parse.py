@@ -31,7 +31,9 @@ def clean_answer(raw_data):
     json_string = raw_data[start_idx:end_idx]
     # json_string = json_string.lower()
 
-    return json.loads(json_string)
+    data = json.loads(json_string)
+
+    return data
 
 
 def join_steps(data):
@@ -61,4 +63,3 @@ def transform_dict_keys(data):
         return [transform_dict_keys(item) for item in data]
     else:
         return data
-
