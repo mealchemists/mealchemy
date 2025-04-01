@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-params = pika.URLParameters(os.environ["PIKA_URL"])
+params = pika.URLParameters(os.environ.get("PIKA_URL", "amqp://localhost:5672/"))
 connection = pika.BlockingConnection(params)
 channel = connection.channel()
 
