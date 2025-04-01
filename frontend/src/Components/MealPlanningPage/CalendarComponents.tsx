@@ -2,7 +2,7 @@ import { IconButton, Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import './MealPlanningPage.css';
 
-export const CustomToolbar = ({ label, onNavigate }) => (
+export const CustomToolbar = ({ label, onNavigate, onAddToShoppingList }) => (
     <div className="rbc-toolbar">
         <div className="rbc-toolbar-label">{label}</div>
         <div className="rbc-btn-group rbc-btn-group-left">
@@ -12,6 +12,7 @@ export const CustomToolbar = ({ label, onNavigate }) => (
         </div>
         <div className="rbc-btn-group rbc-btn-group-right">
             <Button 
+                onClick={onAddToShoppingList}
                 variant = "contained" 
                 sx = {{
                     backgroundColor:'#6bb2f4!important',

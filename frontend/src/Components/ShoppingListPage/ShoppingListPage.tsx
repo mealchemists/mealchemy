@@ -133,9 +133,10 @@ function ShoppingListPage() {
       backgroundColor: 'white',
       height: '500px',
       borderRadius: '10px',
-      marginRight: "20px",
+      marginRight: "50px",
       display: "flex",
-      flexDirection: "column"
+      flexDirection: "column",
+      border: "3px solid #38793b",
     }}>
         {/* Title */}
         <Typography
@@ -145,7 +146,6 @@ function ShoppingListPage() {
           Recipes
         </Typography>
 
-        {/* Scrollable List */}
         <List sx={{
           flexGrow: 1,
           overflowY: "auto",
@@ -168,7 +168,13 @@ function ShoppingListPage() {
                       checked={checked.includes(value.id)}
                       tabIndex={-1}
                       disableRipple
-                      sx={{ transform: "scale(0.8)" }}
+                      size={"small"}
+                      sx={{
+                        color: "#38793b",
+                        "&.Mui-checked": {
+                          color: "#38793b",
+                        },
+                      }}
                     />
                   </ListItemIcon>
                   <ListItemText
