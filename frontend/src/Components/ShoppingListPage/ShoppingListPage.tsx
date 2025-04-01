@@ -2,51 +2,12 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useEffect, useState } from 'react';
 import AisleModal from '../AisleModal/AisleModal';
 import './ShoppingListPage.css';
-import { getShoppingList } from '../../api/shoppingList';
+import { deleteRecipes, getShoppingList } from '../../api/shoppingList';
 import { useAuth } from '../../api/useAuth';
 import { Ingredient, Recipe, RecipeStep } from '../../Models/models';
 
 import { Accordion, AccordionDetails, AccordionSummary, Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, IconButton, Checkbox, Typography, Button } from '@mui/material';
 
-
-
-const ShoppingListData = [
-  {
-    aisle: "Dairy",
-    items: [
-      { ingredient: "Milk", quantity: "1 gallon" },
-      { ingredient: "Cheese", quantity: "200g" }
-    ]
-  },
-  {
-    aisle: "Produce",
-    items: [
-      { ingredient: "Apple", quantity: "6 pcs" },
-      { ingredient: "Banana", quantity: "5 pcs" }
-    ]
-  },
-  {
-    aisle: "Grains",
-    items: [
-      { ingredient: "Bread", quantity: "1 loaf" },
-      { ingredient: "Rice", quantity: "2 lbs" }
-    ]
-  },
-  {
-    aisle: "Proteins",
-    items: [
-      { ingredient: "Chicken Breast", quantity: "4 fillets" },
-      { ingredient: "Eggs", quantity: "12 pcs" }
-    ]
-  },
-  {
-    aisle: "Snacks",
-    items: [
-      { ingredient: "Almonds", quantity: "1 bag" },
-      { ingredient: "Granola Bar", quantity: "5 bars" }
-    ]
-  }
-];
 
 const blankStep: RecipeStep = {
   id: -1,
@@ -74,17 +35,17 @@ function ShoppingListPage() {
   const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
   const [selectedAisle, setSelectedAisle] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
-  const [recipes, setRecipes] = useState([blankRecipe]);
+  const [recipes, setRecipes] = useState([]);
   const [aisleData, setAisleData] = useState([]);
 
   const [checked, setChecked] = useState<number[]>([]);
 
-  const handleToggle = (index: number) => {
-    const currentIndex = checked.indexOf(index);
+  const handleToggle = (recipeId: number) => {
+    const currentIndex = checked.indexOf(recipeId);
     const newChecked = [...checked];
 
     if (currentIndex === -1) {
-      newChecked.push(index);
+      newChecked.push(recipeId);
     } else {
       newChecked.splice(currentIndex, 1);
     }
@@ -98,8 +59,11 @@ function ShoppingListPage() {
   useEffect(() => {
     const getShoppingData = async () => {
       if (!user_id) return;
-      const data = await getShoppingList(user_id);
+      const data = await getShoppingList(user_id, "aisleIngredients");
       setShoppingListData(data);
+
+      const recipes = await getShoppingList(user_id, "recipes");
+      setRecipes(recipes);
     }
 
     getShoppingData();
@@ -140,8 +104,7 @@ function ShoppingListPage() {
     setAisleData(updatedAisleData); // Update the state with new checked values
   };
 
-  const handleEditAisleIngredient = (test) => {
-    console.log(test);
+  const handleEditAisleIngredient = () => {
     setRefreshTrigger(prev => !prev); // Toggle the value to trigger the effect
   };
 
@@ -151,6 +114,12 @@ function ShoppingListPage() {
     setRecipes(updatedRecipes); // Assuming you are using state for recipes
   };
 
+  const removeRecipes = async () => {
+    const resp = await deleteRecipes(checked, user_id);
+    console.log(resp);
+    setRefreshTrigger(prev => !prev);
+  }
+
   return (
     <Box
       sx={{
@@ -158,57 +127,78 @@ function ShoppingListPage() {
         justifyContent: "center",
         width: "100%",
       }}
-    >
-      {/* Left Side - Recipe List */}
-
-      <List sx={{
-        width: '200px', maxWidth: 360,
-        marginRight: "20px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
-      }}>
+    ><Box sx={{
+      width: '250px',
+      maxWidth: 360,
+      backgroundColor: 'white',
+      height: '500px',
+      borderRadius: '10px',
+      marginRight: "20px",
+      display: "flex",
+      flexDirection: "column"
+    }}>
         {/* Title */}
-        <Typography variant="h6" sx={{ marginBottom: "10px", fontWeight: "bold", width:'200px',textAlign:"center" }}>
+        <Typography
+          variant="h6"
+          sx={{ marginTop: '10px', fontWeight: "bold", width: '100%', textAlign: "center" }}
+        >
           Recipes
         </Typography>
 
+        {/* Scrollable List */}
+        <List sx={{
+          flexGrow: 1,
+          overflowY: "auto",
+          paddingLeft: '5px',
+          paddingRight: '5px',
+        }}>
+          {recipes.map((value, index) => {
+            const labelId = `checkbox-list-label-${value.id}`;
+
+            return (
+              <ListItem key={value.id} disablePadding
+                sx={{
+                  borderBottom: "1px solid #ccc",
+                }}
+              >
+                <ListItemButton role={undefined} onClick={() => handleToggle(value.id)} dense>
+                  <ListItemIcon>
+                    <Checkbox
+                      edge="start"
+                      checked={checked.includes(value.id)}
+                      tabIndex={-1}
+                      disableRipple
+                      sx={{ transform: "scale(0.8)" }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    id={labelId}
+                    primary={
+                      <Typography sx = {{fontSize:"18px"}}>{value.name}</Typography>  // Increase text size
+                    }
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </List>
+
+        {/* Button stays at the bottom */}
         {isAnyChecked && (
-          <Button 
+          <Button
             variant="contained"
-            sx={{ 
-              alignSelf: 'flex-end', 
-              marginBottom: '10px', 
-              backgroundColor: '#38793b',
+            sx={{
+              width: '100%',
+              marginTop: 'auto',
+              backgroundColor: 'red',
               color: 'white'
             }}
+            onClick={removeRecipes}
           >
-            Do Action
+            Remove
           </Button>
         )}
-        {recipes.map((value, index) => {
-          const labelId = `checkbox-list-label-${value}`;
-
-          return (
-            <ListItem
-              key={index}
-              disablePadding
-            >
-              <ListItemButton role={undefined} onClick={() => handleToggle(index)} dense>
-                <ListItemIcon>
-                  <Checkbox
-                    edge="start"
-                    checked={checked.includes(index)}
-                    tabIndex={-1}
-                    disableRipple
-                  />
-                </ListItemIcon>
-                <ListItemText id={labelId} primary={`Line item ${index + 1}`} />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
-      </List>
+      </Box>
 
       {/* Right Side - Accordion */}
       <Box

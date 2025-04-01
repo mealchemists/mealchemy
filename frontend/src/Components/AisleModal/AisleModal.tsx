@@ -37,7 +37,7 @@ function AisleModal({ open, onClose, onEditAisle, ingredient, aisle_name }) {
             updateIngredientAisle(ingredientBody);
         }
     
-        onEditAisle("BACK");
+        onEditAisle();
         onClose();
     }
 
