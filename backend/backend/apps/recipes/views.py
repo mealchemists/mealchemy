@@ -77,11 +77,15 @@ def save_scraped_data(request):
                 # If an IntegrityError occurs, we simply ignore it and continue
                 ingredient = Ingredient.objects.get(name=ingredient_data["name"])
 
+            # Handle units that are given as count quantities
+            quantity = ingredient_data["quantity"]
+            unit = ingredient_data["unit"]
+
             RecipeIngredient.objects.create(
                 recipe=recipe,
                 ingredient=ingredient,
-                quantity=ingredient_data["quantity"],
-                unit=ingredient_data["unit"],
+                quantity="" if quantity is None else quantity,
+                unit="" if unit is None else unit,
                 display_name=ingredient_data["name"],
             )  # Create relationship
         return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
