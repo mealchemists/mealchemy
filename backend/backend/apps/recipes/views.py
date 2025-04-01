@@ -161,14 +161,15 @@ class RecipeIngredientsAPIView(APIView):
                         "display_name": ri.display_name,
                         "name": ri.ingredient.name,
                         "id": ri.ingredient.id,
+                        "aisle": ri.ingredient.aisle.name if ri.ingredient.aisle else None
                     }
                 )
 
                 # Add aisle only if it exists
-                if ri.ingredient and getattr(ri.ingredient, "aisle", None):
-                    ingredient_data["aisle"] = getattr(
-                        ri.ingredient.aisle, "name", None
-                    )
+                # if ri.ingredient and getattr(ri.ingredient, "aisle", None):
+                #      recipes[recipe_id]["ingredients"]["aisle"] = getattr(
+                #         ri.ingredient.aisle, "id", None
+                #     )
 
             return Response(list(recipes.values()), status=status.HTTP_200_OK)
 
@@ -347,8 +348,7 @@ class RecipeIngredientsAPIView(APIView):
                     aisle_data = {"user": data["recipe"]["user"], "name": aisle}
                     aisle_serializer = AisleSerializer(data=aisle_data)
                     if aisle_serializer.is_valid():
-                        aisle_serializer = aisle_serializer.save()
-                        aisle_obj = aisle_serializer.save().id
+                        aisle_obj = aisle_serializer.save()
                     else:
                         aisle_obj = None
 
