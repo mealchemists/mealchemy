@@ -23,7 +23,7 @@ const allTags = [
     { title: 'Pork' },
 ]
 
-function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, open, onClose}) {
+function EditTagModal({mainIngredient='', cookTime='0', prepTime='0', onApplyTagChanges, open, onClose}) {
  // Temporary variables for edit tag modal
     const [tempMainIngredient, setTempMainIngredient] = useState(mainIngredient);
     const [tempCookTime, setTempCookTime] = useState(cookTime);
