@@ -89,30 +89,6 @@ def save_scraped_data(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    # if request.method == "POST":
-    #     ingredients = request.data["ingredients"]
-    #
-    #     recipe_serializer = RecipeSerializer(data=request.data["recipe"])
-    #     recipe_serializer.is_valid(raise_exception=True)
-    #     recipe = recipe_serializer.save(user=user)
-    #
-    #     for ingredient_data in ingredients:
-    #         ingredient_serializer = IngredientSerializer(
-    #             data={"name": ingredient_data["name"]}
-    #         )
-    #         if ingredient_serializer.is_valid():
-    #             ingredient = ingredient_serializer.save()
-    #             RecipeIngredient.objects.create(
-    #                 recipe=recipe,
-    #                 ingredient=ingredient,
-    #                 quantity=ingredient_data["quantity"],
-    #                 unit=ingredient_data["unit"],
-    #             )
-    #
-    #     return Response(
-    #         {"cart": recipe_serializer.data, "another": ingredient_serializer.data}
-    #     )
-
 
 @api_view(["POST"])
 def recipe_url(request):
