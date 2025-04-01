@@ -7,6 +7,8 @@ import { getRecipeIngredients } from '../../api/recipeIngredientApi';
 import { handleFilterApply } from '../../utils/filter';
 import Button from '@mui/material/Button';
 import { deleteRecipe } from '../../api/recipes';
+import {addToShoppingList} from '../../api/shoppingList';
+import { useAuth } from '../../api/useAuth';
 
 interface RecipePanelProps {
     recipeIngredient: RecipeIngredient[];
@@ -145,8 +147,14 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
         }
     };
 
-    const handleAddShoppingList = () => {
+    const {isAuthenticated, username, user_id} = useAuth();
+
+    const handleAddShoppingList = async() => {
         setButtonVisibility(false);
+
+        console.log(selectedRecipes);
+        addToShoppingList(selectedRecipes, user_id);
+
     };
 
     useEffect(() => {

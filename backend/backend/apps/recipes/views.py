@@ -162,15 +162,16 @@ class RecipeIngredientsAPIView(APIView):
                         "display_name": ri.display_name,
                         "name": ri.ingredient.name,
                         "id": ri.ingredient.id,
-                    "need_review": ri.needs_review,
+                        "aisle": ri.ingredient.aisle.name if ri.ingredient.aisle else None,
+                        "need_review": ri.needs_review,
                     }
                 )
 
                 # Add aisle only if it exists
-                if ri.ingredient and getattr(ri.ingredient, "aisle", None):
-                    ingredient_data["aisle"] = getattr(
-                        ri.ingredient.aisle, "name", None
-                    )
+                # if ri.ingredient and getattr(ri.ingredient, "aisle", None):
+                #      recipes[recipe_id]["ingredients"]["aisle"] = getattr(
+                #         ri.ingredient.aisle, "id", None
+                #     )
 
             return Response(list(recipes.values()), status=status.HTTP_200_OK)
 
@@ -236,14 +237,14 @@ class RecipeIngredientsAPIView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-                aisle_obj = Aisle.objects.filter(
-                    user_id=data["recipe"]["user"], name=aisle
-                )
+                aisle_obj = Aisle.objects.filter(user_id=data["recipe"]["user"], name=aisle).first()
                 if not aisle_obj:
                     aisle_data = {"user": data["recipe"]["user"], "name": aisle}
                     aisle_serializer = AisleSerializer(data=aisle_data)
                     if aisle_serializer.is_valid():
                         aisle_obj = aisle_serializer.save()
+                    else:
+                        print(aisle_serializer.errors)
 
                 # TODO: handle nutrition information
                 # TODO: handle fuzzy Ingredient retrieval in a different function
@@ -345,15 +346,12 @@ class RecipeIngredientsAPIView(APIView):
                 fiber_per_100g = random.uniform(0, 15)
 
                 # Check if aisle exists
-                aisle_obj = Aisle.objects.filter(
-                    user_id=data["recipe"]["user"], name=aisle
-                )
+                aisle_obj = Aisle.objects.filter(user_id=data["recipe"]["user"], name=aisle).first()
                 if not aisle_obj:
                     aisle_data = {"user": data["recipe"]["user"], "name": aisle}
                     aisle_serializer = AisleSerializer(data=aisle_data)
                     if aisle_serializer.is_valid():
-                        aisle_serializer = aisle_serializer.save()
-                        aisle_obj = aisle_serializer.save().id
+                        aisle_obj = aisle_serializer.save()
                     else:
                         aisle_obj = None
 
@@ -543,8 +541,7 @@ class AisleAPIView(APIView):
 
     def post(self, request, user_id, *args, **kwargs):
         data = request.data
-        data["user"] = user_id
-        name = data.get("name")
+        name = data.get('name')
         if Aisle.objects.filter(user_id=user_id, name=name).exists():
             return Response(
                 {
