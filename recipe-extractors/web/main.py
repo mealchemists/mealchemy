@@ -6,8 +6,7 @@ import requests
 import validators
 from time import perf_counter
 
-django_url = "http://localhost:8000/api/recipe-ingredients/"
-DJANGO_URL = "http://localhost:8000/api/save-scraped-data/"
+DJANGO_URL = "http://localhost:8000/api/recipe-ingredients/"
 
 
 def extract_recipe_data_url(url, user, token):
