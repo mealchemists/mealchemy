@@ -57,6 +57,8 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const [error, setError] = useState<string | null>(null);
     const recipeSearchRef = useRef<any>(null);
 
+
+
     const fetchRecipes = async () => {
         try {
             const response = await getRecipeIngredients();
@@ -90,6 +92,7 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const filterApply = (filterObj: FilterObject) => {
         handleFilterApply(filterObj, setRecipeIngredients);
     }
+    
 
     // TODO convert this to recipe ingredients instead
     const handleAddManualRecipe = () => {

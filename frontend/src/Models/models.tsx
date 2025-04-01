@@ -46,3 +46,12 @@ export interface FilterObject {
     range?: number[];
     mainIngredient?: string;
 }
+
+
+export interface FilterObject {
+    searchQuery?: string;
+    filters?: string[];
+    sortBy?: string;
+    range?: number[];
+    mainIngredient?: string;
+}

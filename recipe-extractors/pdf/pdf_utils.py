@@ -4,6 +4,7 @@ import numpy as np
 import argparse
 import warnings
 import multiprocessing as mp
+import os
 
 from time import perf_counter
 from cv2 import dnn_superres  # type: ignore
@@ -62,9 +63,17 @@ class PDFUtils:
                 break
 
     @classmethod
-    def load_pdf_pages(cls, path, dpi=DPI):
-        n_threads = mp.cpu_count()
+    def load_pdf_pages_path(cls, path, dpi=DPI):
+        n_threads = mp.cpu_count() - 1
         images = pdf2image.convert_from_path(path, dpi=dpi, thread_count=n_threads)
+        return [cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR) for img in images]
+
+    @classmethod
+    def load_pdf_pages(cls, pdf_bytes, dpi=DPI):
+        n_threads = mp.cpu_count() - 1
+        images = pdf2image.convert_from_bytes(
+            pdf_bytes, dpi=dpi, thread_count=n_threads
+        )
         return [cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR) for img in images]
 
     @classmethod
@@ -259,7 +268,10 @@ class PDFUtils:
             return binary
 
         sr = dnn_superres.DnnSuperResImpl_create()  # type: ignore
-        sr.readModel(MODEL_PATH)
+
+        module_path = os.path.dirname(os.path.abspath(__file__))
+        model_path = os.path.join(module_path, MODEL_PATH)
+        sr.readModel(model_path)
         sr.setModel("lapsrn", 2)
 
         # sharpen the image a little bit
@@ -402,7 +414,7 @@ class PDFUtils:
         return regions
 
     @classmethod
-    def load_extract_text_hardcopy(cls, path, dpi=DPI, verbose=False):
+    def extract_raw_text_hardcopy(cls, pages, verbose=False):
         """
         Pipeline to load a PDF from a path and extract raw text in a (possibly) unordered fashion.
         """
@@ -412,20 +424,16 @@ class PDFUtils:
         # TODO: Look into debug logging, warnings, etc.
         # Also look into potential performance improvements.
 
-        if verbose:
-            start_time = perf_counter()
-        pages = cls.load_pdf_pages(path, dpi)
-        if verbose:
-            print(f"loaded {len(pages)} in {perf_counter() - start_time:.2f} s")
-
         for i, page in enumerate(pages):
             # 1. rotate the page.
             if verbose:
                 start_time = perf_counter()
             rotated, angle = cls.deskew_image(page)  # type: ignore
             if verbose:
+                # blank pad string for fancy debug info
+                pageno = str(i + 1).rjust(len(str(len(pages))))
                 print(
-                    f"deskewed page by {angle:.2f} degrees in {perf_counter() - start_time} s"
+                    f"deskewed page {pageno}/{len(pages)} by {angle:.2f} degrees in {perf_counter() - start_time:.2f}s"
                 )
             if rotated is None:
                 warnings.warn(
@@ -440,7 +448,7 @@ class PDFUtils:
             regions = cls.identify_text_regions(rotated)
             if verbose:
                 print(
-                    f"identfied {len(regions)} in {perf_counter() - start_time:.2f} s"
+                    f"identified {len(regions)} regions in {perf_counter() - start_time:.2f}s"
                 )
             if len(regions) <= 1:
                 warnings.warn(f"Unable to extract page {i + 1}")
@@ -451,7 +459,7 @@ class PDFUtils:
                 start_time = perf_counter()
             raw_text_sections = cls.extract_text(rotated, regions)
             if verbose:
-                print(f"extracted text in {(perf_counter() - start_time):.2f} s")
+                print(f"extracted text in {(perf_counter() - start_time):.2f}s")
 
             extracted_raw_texts.append(raw_text_sections)
 
@@ -468,7 +476,7 @@ def main():
     ELECTRONIC_SINGLE_PATH = "./source_material/electronic_printouts/single/Slow Cooker Pineapple Pork Chops.pdf"
 
     print("Loading pages")
-    pages = PDFUtils.load_pdf_pages(HARDCOPY_MULTI_PATH_2, dpi=DPI)
+    pages = PDFUtils.load_pdf_pages_path(HARDCOPY_MULTI_PATH_2, dpi=DPI)
     print("Pages loaded")
 
     for i, page in enumerate(pages):
@@ -524,3 +532,4 @@ def parse_args():
 if __name__ == "__main__":
     parse_args()
     main()
+
