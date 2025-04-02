@@ -56,19 +56,17 @@ class Consumer:
             elif task_type == "pdf":
                 # TODO: Get PDF data retrieval from the server working
                 callback_function = extract_recipe_data_pdf
-                pdf_api_path = payload.get("api_path", None)
-                args = (pdf_api_path, user, token)
+                temp_file_path = payload.get("temp_path", None)
+                args = (temp_file_path, user, token)
             else:
-                self.channel.queue_purge(self.queue_name)  # type: ignore
                 raise ValueError("Invalid task type!")
 
-            worker = threading.Thread(
-                target=callback_function, args=args, daemon=True
-            ).start()
+            worker = threading.Thread(target=callback_function, args=args).start()
             threads.append(worker)
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
         except Exception:
+            self.channel.queue_purge(f"{self.queue_name}")  # type: ignore
             traceback.print_exc()
 
     def run(self):

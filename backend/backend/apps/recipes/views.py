@@ -28,6 +28,16 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters
 
+import tempfile
+import os
+
+
+def get_jwt_token(user_id):
+    # Generate JWT token for the user
+    user = User.objects.get(id=user_id)
+    refresh = RefreshToken.for_user(user)
+    return str(refresh.access_token)
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -95,21 +105,52 @@ def recipe_url(request):
     if request.method == "POST":
         data = request.data
         user_id = request.user.id
-        data["user"] = user_id
 
-        # Generate JWT token for the user
-        user = User.objects.get(id=user_id)
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-
-        # Add the token to the data to send via message queue
-        data["token"] = access_token
+        access_token = get_jwt_token(user_id)
         print(f"Generated token for user {user_id}: {access_token}")
 
-        # Publish to message queue
-        publish(data)
+        # Add the token to the data to send via message queue
+
+        # construct message for consumer
+        message = dict()
+        message["user"] = user_id
+        message["token"] = access_token
+        message["task_type"] = "web"
+        message["payload"] = {"url": data["url"]}
+
+        publish(message)
 
         return Response(data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+def recipe_pdf(request):
+    if request.method == "POST":
+        file = request.FILES.get("temp_file")
+        user_id = request.user.id
+
+        # store PDF file in tempdir
+        temp_dir = tempfile.mkdtemp(prefix="mealchemy_pdf_upload")
+        temp_path = os.path.join(temp_dir, file.name)
+
+        with open(temp_path, "wb+") as dst:
+            for chunk in file.chunks():
+                dst.write(chunk)
+
+        access_token = get_jwt_token(user_id)
+        print(f"Generated token for user {user_id}: {access_token}")
+
+        # construct message for consumer
+        message = dict()
+        message["user"] = user_id
+        message["token"] = access_token
+        message["task_type"] = "pdf"
+        message["payload"] = {"temp_path": temp_path}
+        print(message)
+
+        publish(message)
+
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class RecipeIngredientsAPIView(APIView):
@@ -161,7 +202,9 @@ class RecipeIngredientsAPIView(APIView):
                         "display_name": ri.display_name,
                         "name": ri.ingredient.name,
                         "id": ri.ingredient.id,
-                        "aisle": ri.ingredient.aisle.name if ri.ingredient.aisle else None
+                        "aisle": ri.ingredient.aisle.name
+                        if ri.ingredient.aisle
+                        else None,
                     }
                 )
 
@@ -234,7 +277,9 @@ class RecipeIngredientsAPIView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-                aisle_obj = Aisle.objects.filter(user_id=data["recipe"]["user"], name=aisle).first()
+                aisle_obj = Aisle.objects.filter(
+                    user_id=data["recipe"]["user"], name=aisle
+                ).first()
                 if not aisle_obj:
                     aisle_data = {"user": data["recipe"]["user"], "name": aisle}
                     aisle_serializer = AisleSerializer(data=aisle_data)
@@ -343,7 +388,9 @@ class RecipeIngredientsAPIView(APIView):
                 fiber_per_100g = random.uniform(0, 15)
 
                 # Check if aisle exists
-                aisle_obj = Aisle.objects.filter(user_id=data["recipe"]["user"], name=aisle).first()
+                aisle_obj = Aisle.objects.filter(
+                    user_id=data["recipe"]["user"], name=aisle
+                ).first()
                 if not aisle_obj:
                     aisle_data = {"user": data["recipe"]["user"], "name": aisle}
                     aisle_serializer = AisleSerializer(data=aisle_data)
@@ -538,7 +585,7 @@ class AisleAPIView(APIView):
 
     def post(self, request, user_id, *args, **kwargs):
         data = request.data
-        name = data.get('name')
+        name = data.get("name")
         if Aisle.objects.filter(user_id=user_id, name=name).exists():
             return Response(
                 {

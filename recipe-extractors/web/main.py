@@ -19,6 +19,7 @@ def extract_recipe_data_url(url, user, token):
         start_time = perf_counter()
         result = parse_with_openai(cleaned_content)
 
+        assert result is not None
         if result["recipe"].get("source_url", None) is None:
             result["recipe"]["source_url"] = url
 
