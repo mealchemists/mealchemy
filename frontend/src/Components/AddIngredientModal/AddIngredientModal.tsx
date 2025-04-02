@@ -37,27 +37,25 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
     const [newIngredient, setNewIngredient] = useState<Ingredient>(blankRecipe1);
     const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
     const [allAisles, setAllAisles] = useState([]);
-    const {isAuthenticated, username, user_id} = useAuth();
-    const [isAisleDisabled, setIsAisleDisabled] = useState(false);  
+    const { isAuthenticated, username, user_id } = useAuth();
+    const [isAisleDisabled, setIsAisleDisabled] = useState(false);
 
     const handleInputChange = (field: string, value: string) => {
-        console.log(value);
-        
         if (field === "name") {
             // Check if the name exists in allIngredients
             const ingredient = allIngredients.find(ingredient => ingredient.name.toLowerCase() === value.toLowerCase());
-    
+
             if (ingredient) {
                 // If ingredient exists, set the whole object to newIngredient
                 setNewIngredient((prev) => ({
                     ...prev,
-                    ...ingredient, 
+                    ...ingredient,
                 }));
-                
+
                 setIsAisleDisabled(true);
             } else {
                 setIsAisleDisabled(false);
-                
+
                 // Update only the "name" field if it's a new ingredient
                 setNewIngredient((prev) => ({
                     ...prev,
@@ -72,7 +70,7 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
             }));
         }
     };
-    
+
 
     const sendIngredientToParent = () => {
         console.log(newIngredient);
@@ -82,18 +80,18 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
 
     useEffect(() => {
         const getIngredientsAisles = async () => {
-            if (!user_id){
+            if (!user_id) {
                 return
             }
             const ingredientData = await getAllIngredients();
             const aisleData = await getAisles(user_id);
-            const aisleNames = aisleData.map((aisle)=> aisle.name);
+            const aisleNames = aisleData.map((aisle) => aisle.name);
             setAllAisles(aisleNames);
             setAllIngredients(ingredientData);
         };
 
         getIngredientsAisles();
-    },[user_id])
+    }, [user_id])
 
 
 
@@ -106,7 +104,7 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
         >
             <Box sx={style}>
                 <div>
-                    <h3>
+                    <h3 className='AddIngredientTitle'>
                         Add Ingredient
                     </h3>
 
@@ -179,36 +177,37 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
                             />
                         </div>
 
-                        <div className='addIngredientRow'>
-                            <label>Grocery Aisle</label>
-                            <Autocomplete
-                                id="tags-outlined"
-                                options={allAisles.map((option) => option)}
-                                onInputChange={(event, newValue) => handleInputChange("aisle", newValue)}
-                                freeSolo
-                                renderTags={() => null}
-                                disabled={isAisleDisabled}
-                                renderInput={(params) => (
-                                    <TextField
-                                        sx={{
-                                            "& .MuiOutlinedInput-root": {
-                                                height: "40px",
-                                                width: "150px",
-                                                border: "2px solid #b0dbb2",
-                                                borderRadius: "10px",
-                                                "& fieldset": { border: "none" },
-                                                "&:hover fieldset": { border: "none" },
-                                                "&.Mui-focused fieldset": { border: "none" },
-                                                padding: "5px",
-                                            },
-                                        }}
-                                        {...params}
-                                    />
-                                )}
-                            />
-                        </div>
-
+                        {!isAisleDisabled && (
+                            <div className='addIngredientRow'>
+                                <label>Grocery Aisle</label>
+                                <Autocomplete
+                                    id="tags-outlined"
+                                    options={allAisles.map((option) => option)}
+                                    onInputChange={(event, newValue) => handleInputChange("aisle", newValue)}
+                                    freeSolo
+                                    renderTags={() => null}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            sx={{
+                                                "& .MuiOutlinedInput-root": {
+                                                    height: "40px",
+                                                    width: "150px",
+                                                    border: "2px solid #b0dbb2",
+                                                    borderRadius: "10px",
+                                                    "& fieldset": { border: "none" },
+                                                    "&:hover fieldset": { border: "none" },
+                                                    "&.Mui-focused fieldset": { border: "none" },
+                                                    padding: "5px",
+                                                },
+                                            }}
+                                            {...params}
+                                        />
+                                    )}
+                                />
+                            </div>
+                        )}
                     </div>
+
 
 
 

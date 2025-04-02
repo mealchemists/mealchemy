@@ -13,6 +13,7 @@ import SoupKitchenIcon from '@mui/icons-material/SoupKitchen';
 import FlatwareIcon from '@mui/icons-material/Flatware';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import DinnerDiningIcon from '@mui/icons-material/DinnerDining';
+import { toast } from 'react-toastify';
 
 import { deleteRecipeIngredients, putRecipeIngredients, createRecipeIngredients } from '../../api/recipeIngredientApi';
 import AddIngredientModal from '../AddIngredientModal/AddIngredientModal';
@@ -83,6 +84,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const [error, setError] = useState("");
 
     const [imageBase64, setImageBase64] = useState<string>(recipe.image_url);
+
+    const ingredientRefs = useRef<(HTMLInputElement | null)[]>([]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -189,8 +192,26 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     };
 
     const handleSave = async () => {
+        const updatedIngredients = ingredients.map((ingredient, index) => ({
+            ...ingredient,
+            quantity: Number(ingredientRefs.current[index]?.value || null),
+            unit: ingredientRefs.current[index + ingredients.length]?.value || "",
+            display_name:ingredientRefs.current[index + ingredients.length * 2]?.value || "",
+            name: ingredientRefs.current[index + ingredients.length * 2]?.value || "",
+        }));
+
+        const filteredIngredients = updatedIngredients.filter(ingredient => ingredient.name.trim() !== "" && ingredient.quantity !== null);
+        const filteredInstructions = instructions.filter(instruction => instruction.description.trim() !== "");
+        
+        setIngredients(filteredIngredients);
+        setInstructions(filteredInstructions);
+        
+        if (title == ""){
+            toast.error("Please enter a title");
+            return;
+        }
+
         const body = {
-            ...recipeIngredient,
             ...recipeIngredient,
             recipe: {
                 ...recipeIngredient.recipe,
@@ -202,7 +223,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 image_url: imageBase64,
                 steps: instructions,
             },
-            ingredients: ingredients
+            ingredients: filteredIngredients
         };
 
         if(recipeIngredient.id != -1){
@@ -210,30 +231,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         }else{
             await createRecipe(body);
         }
-
-        if (recipeIngredient.id != -1) {
-            await putRecipe(body);
-        } else {
-            await createRecipe(body);
-        }
-        // TODO: filter out blank ingredients and instructions
-        // const filteredIngredients = newIngredients.filter(ingredient => ingredient.trim() !== "");
-        // const filteredInstructions = newInstructions.filter(instruction => instruction.trim() !== "");
-
-        // setTitle(newTitle);
-        // setIngredients(filteredIngredients);
-        // setInstructions(filteredInstructions);
+       
         setEditMode(false);
         exitEditMode();
-        // TODO: Save to database
-    };
-
-    const handleIngredientChange = (index: number, field: keyof Ingredient, value: string) => {
-        setIngredients((prevIngredients) =>
-            prevIngredients.map((ingredient, i) =>
-                i === index ? { ...ingredient, [field]: value } : ingredient
-            )
-        );
     };
 
     const handleAddIngredient = (ingredient) => {
@@ -247,7 +247,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const handleInstructionChange = (index, value) => {
         const newInstructions = [...instructions];
         newInstructions[index] = { ...newInstructions[index], description: value };
-        console.log(newInstructions);
 
         setInstructions(newInstructions);
     };
@@ -460,9 +459,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                 {ingredients.map((ingredient, index) => (
                                     <li key={ingredient.name}> {/* Use id as the key */}
                                         <TextField
-                                            value={ingredient.quantity}
-                                            onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
+                                            defaultValue={ingredient.quantity}
                                             variant="outlined"
+                                            inputRef={(el) => (ingredientRefs.current[index] = el)}
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
                                                     fontSize: "14px"
@@ -471,9 +470,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                             }}
                                         />
                                         <TextField
-                                            value={ingredient.unit}
-                                            onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
+                                            defaultValue={ingredient.unit}
                                             variant="outlined"
+                                            inputRef={(el) => (ingredientRefs.current[index + ingredients.length] = el)}
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
                                                     fontSize: "14px",
@@ -483,8 +482,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                             }}
                                         />
                                         <TextField
-                                            value={ingredient.name}
-                                            onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
+                                            defaultValue={ingredient.name}
+                                            inputRef={(el) => (ingredientRefs.current[index + ingredients.length * 2] = el)}
                                             variant="outlined"
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {

@@ -31,3 +31,10 @@ class AisleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Aisle
         fields = '__all__'
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=Aisle.objects.all(),
+                fields=['name', 'user'],
+                message="An aisle with this name already exists for this user."
+            )
+        ]

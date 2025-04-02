@@ -18,15 +18,25 @@ const style = {
 };
 
 
-function AisleModal({ open, onClose, onEditAisle, ingredient, aisle_name }) {
+function AisleModal({ open, onClose, ingredient}) {
     const [newAisle, setNewAisle] = useState<string>("");
     const {isAuthenticated, username, user_id} = useAuth();
     const [allAisles, setAllAisles] = useState<string[]>([]);
     const [completeAisles, setCompleteAisles] = useState([]);
-    const sendAisleToParent = () => {
+    const sendAisleToParent = async() => {
         // create new aisle
+        if (!user_id){
+            return 
+        }
         if (!allAisles.includes(newAisle)) {
-            addAisle(newAisle, user_id);
+            const aisleData = await addAisle(newAisle, user_id);
+            console.log("AisleData", aisleData);
+            const ingredientBody = {
+                ...ingredient,
+                aisle:aisleData.id
+            }
+            await updateIngredientAisle(ingredientBody);
+
         } else {
             const foundItem = completeAisles.find(item => item.name === newAisle);
             // update ingredient
@@ -34,28 +44,25 @@ function AisleModal({ open, onClose, onEditAisle, ingredient, aisle_name }) {
                     ...ingredient,
                     aisle: foundItem.id
             }
-            updateIngredientAisle(ingredientBody);
+            await updateIngredientAisle(ingredientBody);
         }
     
-        onEditAisle();
         onClose();
     }
 
     useEffect(() => {
-        console.log(ingredient);
-            const getIngredientsAisles = async () => {
-                if (!user_id){
-                    return
-                }
-                const aisleData = await getAisles(user_id);
-                setCompleteAisles(aisleData);
-                console.log(aisleData);
-                const aisleNames = aisleData.map((aisle)=> aisle.name);
-                setAllAisles(aisleNames);
-            };
-    
-            getIngredientsAisles();
-        },[user_id])
+        const getIngredientsAisles = async () => {
+            if (!user_id){
+                return
+            }
+            const aisleData = await getAisles(user_id);
+            setCompleteAisles(aisleData);
+            const aisleNames = aisleData.map((aisle)=> aisle.name);
+            setAllAisles(aisleNames);
+        };
+
+        getIngredientsAisles();
+    },[user_id])
 
     return (
         <Modal
@@ -68,7 +75,7 @@ function AisleModal({ open, onClose, onEditAisle, ingredient, aisle_name }) {
             <Box sx={style}>
                 <div>
                     <h3>
-                        Edit {aisle_name} Aisle
+                        Edit {ingredient.name} Aisle
                     </h3>
                     <Autocomplete
                         id="tags-outlined"
