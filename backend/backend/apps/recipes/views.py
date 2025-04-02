@@ -597,8 +597,13 @@ class AisleAPIView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        
+        aisleData = {
+            "name":name,
+            "user":user_id
+        }
 
-        serializer = AisleSerializer(data=data)
+        serializer = AisleSerializer(data=aisleData)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
