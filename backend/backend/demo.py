@@ -73,13 +73,15 @@ def create_users():
     
 def create_aisles():
     aisle_names = ["Produce", "Dairy", "Deli", "Meat & Poultry","Pasta", "Snacks", "Canned Goods"]
+    user =User.objects.filter(id=1).first()
     aisles = []
     for aisle_name in aisle_names:
         if not Aisle.objects.filter(name=aisle_name).exists():
             aisle, _ = Aisle.objects.get_or_create(
                 name=aisle_name,
                 llm_generated=random.choice([True, False]),
-                updated_by_user=random.choice([True, False])
+                updated_by_user=random.choice([True, False]),
+                user=user      
             )
             aisles.append(aisle)
     return aisles
