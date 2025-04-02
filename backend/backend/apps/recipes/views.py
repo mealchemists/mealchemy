@@ -313,7 +313,7 @@ class RecipeIngredientsAPIView(APIView):
                             "fat_per_100g": fat_per_100g,
                             "sodium_per_100mg": sodium_per_100mg,
                             "fiber_per_100g": fiber_per_100g,
-                            "aisle": aisle_obj.id,
+                            "aisle": aisle_obj,
                         },
                     )
                 except IntegrityError:
