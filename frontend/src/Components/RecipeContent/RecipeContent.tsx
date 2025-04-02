@@ -230,12 +230,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         }else{
             await createRecipe(body);
         }
-
-        if (recipeIngredient.id != -1) {
-            await putRecipe(body);
-        } else {
-            await createRecipe(body);
-        }
        
         setEditMode(false);
         exitEditMode();

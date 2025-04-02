@@ -597,11 +597,10 @@ class AisleAPIView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        user = User.objects.filter(user_id = user_id)
         
         aisleData = {
             "name":name,
-            "user":user
+            "user":user_id
         }
 
         serializer = AisleSerializer(data=aisleData)
