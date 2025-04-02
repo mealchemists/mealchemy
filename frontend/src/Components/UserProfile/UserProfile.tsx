@@ -9,7 +9,7 @@ import { validateEmail, validatePassword } from '../../utils/formValidation';
 
 
 function UserProfile() {
-  const { isAuthenticated, username } = useAuth();
+  const { isAuthenticated, username, user_id } = useAuth();
   const [email, setEmail] = useState(username);
   const [showPasswordInput, setShowPasswordInput] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

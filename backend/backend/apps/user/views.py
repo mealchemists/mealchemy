@@ -181,6 +181,6 @@ class CheckAuth(APIView):
     def get(self, request):
         if request.user.is_authenticated:
             return JsonResponse(
-                {"authenticated": True, "username": request.user.username}
+                {"authenticated": True, "username": request.user.username, "user_id": request.user.id}
             )
         return JsonResponse({"authenticated": False})

@@ -27,8 +27,6 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 
-    
-
 class AisleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Aisle

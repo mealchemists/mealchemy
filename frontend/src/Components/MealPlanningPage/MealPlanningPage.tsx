@@ -31,6 +31,8 @@ import {
   putMealPlan,
   deleteMealPlan,
 } from "../../api/mealPlanApi";
+import { useAuth } from "../../api/useAuth";
+import { addToShoppingList } from "../../api/shoppingList";
 
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar);
@@ -58,6 +60,8 @@ function MealPlanningPage() {
   >([]);
   const [currentDate, setCurrentDate] = useState(new Date()); // Track the current date
   const recipeSearchRef = useRef<any>(null);
+  const { isAuthenticated, username, user_id } = useAuth();
+
   const getStartAndEndOfWeek = (date) => {
     const start = new Date(date);
     const end = new Date(date);
@@ -146,6 +150,14 @@ function MealPlanningPage() {
       console.error("Error fetching meal plans:", error);
     }
   };
+
+  const handleAddToShoppingList = async() => {
+    if(!user_id){
+      return 
+    }
+    const recipeIds = myEventsList.map(event => event.recipe?.id);
+    await addToShoppingList(recipeIds, user_id);
+  }
 
   const updateMealPlan = async () => {
     try {
@@ -386,7 +398,6 @@ function MealPlanningPage() {
     const mealCount = myEventsList.filter(
       (meal) => meal.placeholder === false
     ).length;
-
     if (mealCount != expectedMealCount) {
       return false;
     }
@@ -426,6 +437,7 @@ function MealPlanningPage() {
                 {...props}
                 label={currentDate.toLocaleDateString()}
                 onNavigate={handleNavigate}
+                onAddToShoppingList={handleAddToShoppingList}
               />
             ),
             week: {
