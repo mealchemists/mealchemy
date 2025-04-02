@@ -1,0 +1,8 @@
+.addRecipeUrl, .addRecipePDF{
+    display:flex;
+    align-items: center;
+}
+
+.addRecipeTitle {
+    text-align: center;
+}
