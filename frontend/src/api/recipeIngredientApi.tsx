@@ -83,7 +83,7 @@ export const getAllIngredients = async () => {
 
 export const updateIngredientAisle = async(ingredientData)=>{
     const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];
-    let ingredient_id = ingredientData.id
+    let ingredient_id = ingredientData.id;
     const response = await apiClient.put(
         `ingredient/${ingredient_id}`,
         ingredientData,

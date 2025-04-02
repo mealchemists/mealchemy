@@ -40,9 +40,7 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
     const {isAuthenticated, username, user_id} = useAuth();
     const [isAisleDisabled, setIsAisleDisabled] = useState(false);  
 
-    const handleInputChange = (field: string, value: string) => {
-        console.log(value);
-        
+    const handleInputChange = (field: string, value: string) => {        
         if (field === "name") {
             // Check if the name exists in allIngredients
             const ingredient = allIngredients.find(ingredient => ingredient.name.toLowerCase() === value.toLowerCase());

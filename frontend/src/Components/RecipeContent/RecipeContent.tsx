@@ -252,7 +252,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const handleInstructionChange = (index, value) => {
         const newInstructions = [...instructions];
         newInstructions[index] = { ...newInstructions[index], description: value };
-        console.log(newInstructions);
 
         setInstructions(newInstructions);
     };

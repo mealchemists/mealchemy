@@ -55,19 +55,19 @@ function ShoppingListPage() {
 
   const isAnyChecked = checked.length > 0;
 
+  const getShoppingData = async () => {
+    console.log("user_id:", user_id);
+    if (!user_id) return;
+    const data = await getShoppingList(user_id, "aisleIngredients");
+    setShoppingListData(data);
+    console.log(data);
+    const recipes = await getShoppingList(user_id, "recipes");
+    setRecipes(recipes);
+  }
 
   useEffect(() => {
-    const getShoppingData = async () => {
-      if (!user_id) return;
-      const data = await getShoppingList(user_id, "aisleIngredients");
-      setShoppingListData(data);
-
-      const recipes = await getShoppingList(user_id, "recipes");
-      setRecipes(recipes);
-    }
-
     getShoppingData();
-  }, [user_id, refreshTrigger])
+  }, [user_id])
 
 
   const handleOpenAisleModal = (ingredient: Ingredient, aisle_name: string) => {
@@ -77,6 +77,8 @@ function ShoppingListPage() {
   };
 
   const handleCloseAisleModal = () => {
+    console.log("close modal");
+    setRefreshTrigger(prev => !prev);
     setOpenAisleModal(false);
     setSelectedAisle(null);
     setSelectedIngredient(null);
@@ -96,22 +98,17 @@ function ShoppingListPage() {
     }
   }, [shoppingListData]);
 
+  useEffect(() => {
+    console.log("useEffect triggered: refreshTrigger =", refreshTrigger);
+    getShoppingData();
+  }, [refreshTrigger]);
+
   // const [aisleData, setAisleData] = useState(updatedShoppingListData);
   const handleCheckChange = (aisleIndex: number, itemIndex: number) => {
     const updatedAisleData = [...aisleData];
     updatedAisleData[aisleIndex].items[itemIndex].checked =
       !updatedAisleData[aisleIndex].items[itemIndex].checked;
     setAisleData(updatedAisleData); // Update the state with new checked values
-  };
-
-  const handleEditAisleIngredient = () => {
-    setRefreshTrigger(prev => !prev); // Toggle the value to trigger the effect
-  };
-
-  const handleDeleteRecipe = (recipeId: number) => {
-    // Filter out the recipe by id
-    const updatedRecipes = recipes.filter(recipe => recipe.id !== recipeId);
-    setRecipes(updatedRecipes); // Assuming you are using state for recipes
   };
 
   const removeRecipes = async () => {
@@ -322,11 +319,9 @@ function ShoppingListPage() {
 
       {selectedIngredient && (
         <AisleModal
-          onEditAisle={handleEditAisleIngredient}
           open={openAisleModal}
           onClose={handleCloseAisleModal}
           ingredient={selectedIngredient}
-          aisle_name={selectedAisle}
         />
       )}
     </Box>

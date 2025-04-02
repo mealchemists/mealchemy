@@ -7,7 +7,7 @@ export const getAisles = async(user_id) => {
 
 export const addAisle = async(aisle_name, user_id) => {
     const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];  // Get CSRF token from the cookie
-
+    console.log("AISLE USER_ID", user_id);
     try {
         const response = await apiClient.post(
             `/aisles/${user_id}`, 
@@ -21,8 +21,9 @@ export const addAisle = async(aisle_name, user_id) => {
                 withCredentials: true,  // Ensure cookies are sent with the request
               }
         );
-        console.log("Response:", response.data);
+        return response.data;
     } catch (error) {
         console.error("Error sending recipe IDs:", error);
+        return null;
     }
 }
