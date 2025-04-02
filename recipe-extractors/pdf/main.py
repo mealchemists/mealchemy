@@ -19,8 +19,6 @@ EXTRACT_URL = "http://localhost:8000/api/save-scraped-data/"
 
 
 def extract_recipe_data_pdf(temp_path, user, token):
-    start_time = perf_counter()
-
     # load and extract
     pages = PDFUtils.load_pdf_pages_path(temp_path)
 
@@ -29,7 +27,7 @@ def extract_recipe_data_pdf(temp_path, user, token):
         shutil.rmtree(os.path.dirname(temp_path))
         print(f"REMOVED TEMP PATH: {temp_path}")
 
-    raw_texts = PDFUtils.extract_raw_text_hardcopy(pages, verbose=False)
+    raw_texts = PDFUtils.extract_raw_text_hardcopy(pages, verbose=True)
 
     # # TODO: Get aisles using the token and then pass it into the chain.
     # headers = {
@@ -43,8 +41,6 @@ def extract_recipe_data_pdf(temp_path, user, token):
         concatenated = "\n".join(text)
         recipe_data_str = str(chain.invoke({"input": concatenated}).content)
         result = json.loads(recipe_data_str)
-
-        print(f"Extracted text in {perf_counter() - start_time:.2f}s")
 
         assert result is not None
         if result["recipe"].get("source_url", None) is None:

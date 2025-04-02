@@ -100,7 +100,7 @@ from langchain.prompts import (
 # """
 
 # Nutrition information removed
-WEB_PROMPT = """
+WEB_SYSTEM_PROMPT = """
 You are a JSON data generation assistant. Your task is to generate strictly formatted JSON data based on the following requirements. The generated JSON must:
 
 1. Follow proper JSON syntax: All keys and values must be enclosed in double quotes (e.g., "key": "value").
@@ -266,7 +266,7 @@ def setup_llm_chain(mode=None, api_key=None):
     input_message = HumanMessagePromptTemplate.from_template("Input: {input}")
     # aisles_message = HumanMessagePromptTemplate.from_template("Aisles: {aisles}")
     system_message = SystemMessagePromptTemplate.from_template(
-        PDF_SYSTEM_PROMPT if mode == "pdf" else WEB_PROMPT
+        PDF_SYSTEM_PROMPT if mode == "pdf" else WEB_SYSTEM_PROMPT
     )
     chat_prompt = ChatPromptTemplate.from_messages([system_message, input_message])
 

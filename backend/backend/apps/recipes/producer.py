@@ -60,7 +60,6 @@ class Producer:
         )  # Serialize to JSON and convert to bytes
 
         assert self.connection is not None
-        assert self.channel is not None
 
         try:
             if self.channel is None or self.connection.is_closed:
@@ -69,6 +68,7 @@ class Producer:
                 )
                 self.connect()
 
+            assert self.channel is not None
             self.channel.basic_publish(exchange="", routing_key="admin", body=body)
 
         except (AMQPConnectionError, StreamLostError) as e:
