@@ -41,12 +41,32 @@ function RecipePage() {
         });
     };
 
+    // const handleUpdateRecipe = (updatedRecipe: RecipeIngredient) => {
+    //     setRecipeIngredients(prevRecipeIngredients => {
+    //         const updatedRecipeIngredients = prevRecipeIngredients.map(recipeIngredient => 
+    //             recipeIngredient.id === updatedRecipe.id ? updatedRecipe : recipeIngredient
+    //         );
+    //         return updatedRecipeIngredients;
+    //     });
+    // };
+
     const handleUpdateRecipe = (updatedRecipe: RecipeIngredient) => {
         setRecipeIngredients(prevRecipeIngredients => {
-            const updatedRecipeIngredients = prevRecipeIngredients.map(recipeIngredient => 
-                recipeIngredient.id === updatedRecipe.id ? updatedRecipe : recipeIngredient
-            );
-            return updatedRecipeIngredients;
+            // Check if the updatedRecipe already exists by id
+            const existingRecipeIndex = prevRecipeIngredients.findIndex(recipeIngredient => recipeIngredient.id === updatedRecipe.id);
+    
+            if (existingRecipeIndex !== -1) {
+                // If found, update the existing recipe ingredient
+                const updatedRecipeIngredients = [...prevRecipeIngredients];
+                updatedRecipeIngredients[existingRecipeIndex] = updatedRecipe;
+                console.log("Updated recipe:", updatedRecipeIngredients);
+                return updatedRecipeIngredients;
+            } else {
+                // If not found, add the new recipe ingredient
+                const updatedRecipeIngredients = [...prevRecipeIngredients, updatedRecipe];
+                console.log("Added new recipe:", updatedRecipeIngredients);
+                return updatedRecipeIngredients;
+            }
         });
     };
 

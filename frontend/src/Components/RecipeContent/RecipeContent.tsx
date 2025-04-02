@@ -113,7 +113,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         try {
 
             const response = await putRecipeIngredients(data);
-            onUpdateRecipe(data)
+            onUpdateRecipe(data);
         } catch (error) {
             setError("Error fetching recipes");
             console.error("Error updating recipe ingredient:", error);
@@ -124,6 +124,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const createRecipe = async (data) => {
         try {
             const response = await createRecipeIngredients(data);
+            onUpdateRecipe(data);
         } catch (error) {
             console.error("Error creating recipe Ingredient");
             return;
