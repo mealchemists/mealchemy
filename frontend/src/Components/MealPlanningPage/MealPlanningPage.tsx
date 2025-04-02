@@ -157,6 +157,8 @@ function MealPlanningPage() {
     }
     const recipeIds = myEventsList.map(event => event.recipe?.id);
     await addToShoppingList(recipeIds, user_id);
+    toast.success('Added to Shopping List!');
+    
   }
 
   const updateMealPlan = async () => {

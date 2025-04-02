@@ -3,7 +3,7 @@ import { Autocomplete, Box, Button, InputAdornment, MenuItem, Modal, Select, Tex
 import { useAuth } from '../../api/useAuth';
 import { getAisles, addAisle } from '../../api/aisles';
 import { updateIngredientAisle } from '../../api/recipeIngredientApi';
-
+import './AisleModal.css'
 const style = {
     position: 'absolute',
     top: '50%',
@@ -74,9 +74,12 @@ function AisleModal({ open, onClose, ingredient}) {
         >
             <Box sx={style}>
                 <div>
-                    <h3>
+                    <h3 className = 'aisleTitle'>
                         Edit {ingredient.name} Aisle
                     </h3>
+
+                    <div className='aisleInput'>
+                    <label>New Aisle: </label>
                     <Autocomplete
                         id="tags-outlined"
                         options={allAisles.map((option) => option)}
@@ -113,6 +116,7 @@ function AisleModal({ open, onClose, ingredient}) {
                             />
                         )}
                     />
+                    </div>
                 </div>
                 <Button variant="contained" 
                 sx={{
