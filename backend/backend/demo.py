@@ -138,7 +138,8 @@ def create_recipe_ingredients():
             total_time=prep_time + cook_time,
             source_url="www.recipes.com",
             image_url=None,
-            main_ingredient=recipe_['main_ingredient']
+            main_ingredient=recipe_['main_ingredient'],
+            steps=recipe_['steps']
         )
         
         # Iterate through the ingredients of the recipe
