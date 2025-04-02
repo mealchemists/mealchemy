@@ -5,6 +5,8 @@ import os
 import shutil
 import sys
 import json
+import glob
+import tempfile
 from pathlib import Path
 from time import perf_counter
 
@@ -22,10 +24,14 @@ def extract_recipe_data_pdf(temp_path, user, token):
     # load and extract
     pages = PDFUtils.load_pdf_pages_path(temp_path)
 
-    # purge the temporary directory
-    if os.path.exists(temp_path):
-        shutil.rmtree(os.path.dirname(temp_path))
-        print(f"REMOVED TEMP PATH: {temp_path}")
+    # purge all temporary files
+    temp_dir = tempfile.gettempdir()
+    pattern = os.path.join(temp_dir, "mealchemy_pdf_upload*")
+
+    for item in glob.glob(pattern):
+        shutil.rmtree(item)
+
+    print("Purged temporary directory!")
 
     raw_texts = PDFUtils.extract_raw_text_hardcopy(pages, verbose=True)
 
