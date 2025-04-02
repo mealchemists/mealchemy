@@ -308,6 +308,8 @@ class PDFUtils:
         orientation of the text (organized by columns or rows).
         """
 
+        display_image = original_image.copy()
+
         denoised = cv2.fastNlMeansDenoisingColored(
             original_image,
             None,
@@ -393,9 +395,9 @@ class PDFUtils:
 
             # draw rectangles and number them
             for x0, y0, x1, y1 in regions:
-                cv2.rectangle(original_image, (x0, y0), (x1, y1), (0, 255, 0), 2)
+                cv2.rectangle(display_image, (x0, y0), (x1, y1), (0, 255, 0), 2)
                 cv2.putText(
-                    original_image,
+                    display_image,
                     f"{region_no}",
                     (x0, y0 + 30),
                     cv2.FONT_HERSHEY_SIMPLEX,
@@ -408,7 +410,7 @@ class PDFUtils:
                 region_no += 1
 
             PDFUtils.debug_show_image(
-                [original_image, cv2.cvtColor(masked_regions, cv2.COLOR_GRAY2BGR)]
+                [display_image, cv2.cvtColor(masked_regions, cv2.COLOR_GRAY2BGR)]
             )
 
         return regions
@@ -532,4 +534,3 @@ def parse_args():
 if __name__ == "__main__":
     parse_args()
     main()
-
