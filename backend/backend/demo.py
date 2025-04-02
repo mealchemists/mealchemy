@@ -130,7 +130,7 @@ def create_aisles():
         "Snacks",
         "Canned Goods",
     ]
-    user = User.objects.filter(id=1).first()
+    user = User.objects.first()
     aisles = []
     for aisle_name in aisle_names:
         if not Aisle.objects.filter(name=aisle_name).exists():
