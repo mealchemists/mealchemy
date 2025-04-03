@@ -200,7 +200,9 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
                         sx={{
                             backgroundColor: '#6bb2f4',
                             color: 'white',
-                            borderRadius: '10px'
+                            borderRadius: '10px',
+                            marginRight:'3px'
+
                         }}
                         onClick={handleAddShoppingList}>Add to Shopping List</Button>
                 </div>

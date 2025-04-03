@@ -27,4 +27,8 @@
     border-radius: 50px;
 }
 
-
+@media screen and (max-width:800px){
+    .sideContainer{
+        width:100%;
+    }
+}

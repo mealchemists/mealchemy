@@ -4,12 +4,21 @@ import RecipeContent from '../RecipeContent/RecipeContent';
 import { Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipePage.css';
 import { deleteRecipe } from '../../api/recipes';
-
+import { Drawer, IconButton } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 function RecipePage() {
     const [selectedRecipeIngredient, setSelectedRecipeIngredient] = useState<RecipeIngredient | null>(null);
     const [editMode, setEditMode] = useState(false);
     const [recipeIngredient, setRecipeIngredients] = useState<RecipeIngredient[]>([]);
+
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const isMobile = useMediaQuery("(max-width:800px)");
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen(!isSidebarOpen);
+    };
 
     const handleSelectedRecipe = (recipe: RecipeIngredient) => {
         setSelectedRecipeIngredient(null); // Reset first
@@ -41,15 +50,6 @@ function RecipePage() {
         });
     };
 
-    // const handleUpdateRecipe = (updatedRecipe: RecipeIngredient) => {
-    //     setRecipeIngredients(prevRecipeIngredients => {
-    //         const updatedRecipeIngredients = prevRecipeIngredients.map(recipeIngredient => 
-    //             recipeIngredient.id === updatedRecipe.id ? updatedRecipe : recipeIngredient
-    //         );
-    //         return updatedRecipeIngredients;
-    //     });
-    // };
-
     const handleUpdateRecipe = (updatedRecipe: RecipeIngredient) => {
         setRecipeIngredients(prevRecipeIngredients => {
             // Check if the updatedRecipe already exists by id
@@ -73,16 +73,44 @@ function RecipePage() {
 
     return (
         <div className="mainContainer">
-            <div className="sideContainer">
-                <RecipePanel
-                    recipeIngredient={recipeIngredient}
-                    setRecipeIngredients={setRecipeIngredients}
-                    onRecipeSelect={handleSelectedRecipe}
-                    setRecipeEditMode={handleChangeRecipeMode}
+            {isMobile && (
+                <IconButton onClick={toggleSidebar} className="menuButton">
+                    <MenuIcon fontSize="large" />
+                </IconButton>
+            )}
 
-                />
-            </div>
-            <div className="separator"></div>
+            {/* Sidebar for Desktop */}
+            {!isMobile ? (
+                <div className="sideContainer">
+                    <RecipePanel
+                        recipeIngredient={recipeIngredient}
+                        setRecipeIngredients={setRecipeIngredients}
+                        onRecipeSelect={handleSelectedRecipe}
+                        setRecipeEditMode={handleChangeRecipeMode}
+                    />
+                </div>
+                
+            ) : (
+                <Drawer anchor="left" open={isSidebarOpen} onClose={toggleSidebar}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            backgroundColor: '#f8f8f8' // Ensure it's a valid hex color
+                        }
+                    }
+                }}
+                >
+                    <div className="sideContainer">
+                        <RecipePanel
+                            recipeIngredient={recipeIngredient}
+                            setRecipeIngredients={setRecipeIngredients}
+                            onRecipeSelect={handleSelectedRecipe}
+                            setRecipeEditMode={handleChangeRecipeMode}
+                        />
+                    </div>
+                </Drawer>
+            )}
+                <div className="separator"></div>
             <div className="recipeContentContainer">
                 {selectedRecipeIngredient && (
                     <RecipeContent
@@ -94,7 +122,6 @@ function RecipePage() {
                     />
                 )}
             </div>
-
         </div>
     );
 }

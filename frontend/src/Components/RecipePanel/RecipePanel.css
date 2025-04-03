@@ -46,3 +46,8 @@
     background-color: #2f5d2b; /* Darker shade on hover */
 }
 
+@media screen and (max-width: 800px){
+    .recipeListContainer{
+        width:max-content;
+    }
+}
