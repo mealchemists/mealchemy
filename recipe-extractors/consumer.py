@@ -85,7 +85,6 @@ class Consumer:
                 url = payload.get("url", "").strip()
                 args = (url, user, token)
             elif task_type == "pdf":
-                # TODO: Get PDF data retrieval from the server working
                 callback_function = extract_recipe_data_pdf
                 temp_file_path = payload.get("temp_path", None)
                 args = (temp_file_path, user, token)

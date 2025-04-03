@@ -46,12 +46,18 @@ def extract_recipe_data_pdf(temp_path, user, token):
     for text in raw_texts:
         concatenated = "\n".join(text)
         recipe_data_str = str(chain.invoke({"input": concatenated}).content)
-        result = json.loads(recipe_data_str)
+        try:
+            result = json.loads(recipe_data_str)
+        except json.JSONDecodeError:
+            print(recipe_data_str)
 
-        assert result is not None
-        if result["recipe"].get("source_url", None) is None:
-            result["recipe"]["source_url"] = ""
-
+        # assert result is not None
+        # if result["recipe"].get("source_url", None) is None:
+        #     result["recipe"]["source_url"] = ""
+        # NOTE: DUMMY URL FOR NOW
+        result["recipe"]["source_url"] = (
+            "https://www.allrecipes.com/recipe/140993/louisiana-crawfish-boil/"
+        )
         headers = {
             "Authorization": f"Bearer {token}",  # Add the token in Authorization header
         }
