@@ -3,7 +3,7 @@ import { Recipe } from '../../Models/models';
 import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, Typography } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import { postRecipePDF, postRecipeUrl } from '../../api/recipes';
+import { pollRecipeIngredients, postRecipePDF, postRecipeUrl } from '../../api/recipes';
 import { toast } from 'react-toastify';
 import './AddRecipeModal.css'
 
@@ -43,9 +43,20 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
         }
     };
 
+    // Usage example
+    const startProcess = async (url) => {
+        try {
+            await postRecipeUrl(url);  // Step 1: Post recipe URL
+            pollRecipeIngredients()
+        } catch (error) {
+            console.error('Process failed:', error);
+        }
+    };
+
     const addByUrl = async () => {
         try {
-            const response = await postRecipeUrl(recipeUrl);
+            // const response = await postRecipeUrl(recipeUrl);
+            startProcess(recipeUrl)
             toast.info('Sent recipe URL');
         } catch (error) {
             console.error(error);
