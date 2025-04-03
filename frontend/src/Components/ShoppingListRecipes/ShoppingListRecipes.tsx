@@ -3,10 +3,30 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, List, ListItem, Lis
 import { useAuth } from '../../api/useAuth';
 import { getAisles, addAisle } from '../../api/aisles';
 import { updateIngredientAisle } from '../../api/recipeIngredientApi';
+import { deleteRecipes, getShoppingList } from '../../api/shoppingList';
 
-function ShoppingListRecipes({ recipes, removeRecipes }) {
+function ShoppingListRecipes({ removeRecipes }) {
     const [checked, setChecked] = useState<number[]>([]);
-    const isAnyChecked = checked.length > 0;
+    const [isAnyChecked, setIsAnyChecked] = useState(false);
+    const { isAuthenticated, username, user_id } = useAuth();
+    const [recipes, setRecipes] = useState([]);
+    const [refreshTrigger, setRefreshTrigger] = useState(false);
+
+    const getShoppingListRecipes = async() => {
+        const recipes = await getShoppingList(user_id, "recipes");
+        setRecipes(recipes);
+    }
+    useEffect(()=>{
+        console.log(checked.length);
+        setIsAnyChecked(checked.length>0);
+    },[checked])
+
+    useEffect(()=>{
+        if (!user_id){
+            return
+        }
+        getShoppingListRecipes();
+    }, [user_id, refreshTrigger])
 
     const handleToggle = (recipeId: number) => {
         const currentIndex = checked.indexOf(recipeId);
@@ -21,8 +41,14 @@ function ShoppingListRecipes({ recipes, removeRecipes }) {
         setChecked(newChecked);
     };
 
-    const handleRemove= ()=> {
-        removeRecipes(checked);
+    const handleRemove= async ()=> {
+        if (!user_id){
+            return
+        }
+        const resp = await deleteRecipes(checked, user_id);
+        setRefreshTrigger(prev => !prev);
+        setChecked([]);
+        removeRecipes();
     }
     return (
         <Box sx={{

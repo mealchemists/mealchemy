@@ -37,7 +37,6 @@ function ShoppingListPage() {
   const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
   const [selectedAisle, setSelectedAisle] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
-  const [recipes, setRecipes] = useState([]);
   const [aisleData, setAisleData] = useState([]);
 
   // const [checked, setChecked] = useState<number[]>([]);
@@ -50,23 +49,16 @@ function ShoppingListPage() {
 
 
   const getShoppingData = async () => {
-    console.log('Get');
     if (!user_id) return;
     const data = await getShoppingList(user_id, "aisleIngredients");
+    console.log(data);
     setShoppingListData(data);
-    const recipes = await getShoppingList(user_id, "recipes");
-    setRecipes(recipes);
   }
 
   useEffect(() => {
     getShoppingData();
-  }, [user_id])
+  }, [user_id, refreshTrigger])
 
-
-  useEffect(() => {
-    console.log("useEffect triggered: refreshTrigger =", refreshTrigger);
-    getShoppingData();
-  }, [refreshTrigger]);
 
   useEffect(() => {
     // Update aisleData whenever shoppingListData changes
@@ -79,6 +71,8 @@ function ShoppingListPage() {
         })),
       }));
       setAisleData(updatedShoppingListData);
+    }else{
+      setAisleData([]);
     }
   }, [shoppingListData]);
 
@@ -103,9 +97,7 @@ function ShoppingListPage() {
     setAisleData(updatedAisleData); // Update the state with new checked values
   };
 
-  const removeRecipes = async (checked) => {
-    const resp = await deleteRecipes(checked, user_id);
-    console.log(resp);
+  const removeRecipes = async () => {
     setRefreshTrigger(prev => !prev);
   }
 
@@ -124,7 +116,7 @@ function ShoppingListPage() {
       )}
 
       {!isMobile ? (
-        <ShoppingListRecipes recipes={recipes} removeRecipes={removeRecipes}></ShoppingListRecipes>
+        <ShoppingListRecipes removeRecipes={removeRecipes}></ShoppingListRecipes>
       ) : (
         <Drawer anchor="left" open={isSidebarOpen} onClose={toggleSidebar}
           slotProps={{
