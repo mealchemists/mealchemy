@@ -9,7 +9,7 @@ import Button from '@mui/material/Button';
 import { deleteRecipe } from '../../api/recipes';
 import {addToShoppingList} from '../../api/shoppingList';
 import { useAuth } from '../../api/useAuth';
-
+import {toast} from 'react-toastify';
 interface RecipePanelProps {
     recipeIngredient: RecipeIngredient[];
     setRecipeIngredients: React.Dispatch<React.SetStateAction<RecipeIngredient[]>>; // Set recipe list from parent
@@ -150,11 +150,10 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const {isAuthenticated, username, user_id} = useAuth();
 
     const handleAddShoppingList = async() => {
-        setButtonVisibility(false);
-
-        console.log(selectedRecipes);
         addToShoppingList(selectedRecipes, user_id);
-
+        setMultiSelect(false);
+        setButtonVisibility(false);
+        toast.success('Added to Shopping List!');
     };
 
     useEffect(() => {

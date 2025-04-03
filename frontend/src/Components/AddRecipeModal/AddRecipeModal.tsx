@@ -5,7 +5,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
 import { postRecipePDF, postRecipeUrl } from '../../api/recipes';
 import { toast } from 'react-toastify';
-
+import './AddRecipeModal.css'
 
 const style = {
     position: 'absolute',
@@ -17,6 +17,7 @@ const style = {
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
+    borderRadius:'10px'
 };
 
 const VisuallyHiddenInput = styled('input')({
@@ -80,7 +81,7 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
         >
             <Box sx={style}>
                 <div>
-                    <h3>
+                    <h3 className = 'addRecipeTitle'>
                         Add Recipe
                     </h3>
 
@@ -88,13 +89,25 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                         <div className="addRecipeUrl">
                             <label>Recipe Url:</label>
                             <TextField
-                                sx={{
-                                    width: "15ch",
-                                    "& .MuiOutlinedInput-root": {
-                                        height: "40px",
-                                        "& input": { height: "100%", padding: "10px" },
-                                    },
-                                }}
+                            sx={{
+                                "& .MuiOutlinedInput-root": {
+                                    height: "40px",
+                                    width: "200px",
+                                    border: "2px solid #b0dbb2",
+                                    borderRadius: "10px",
+                                    "& fieldset": { border: "none" },
+                                    "&:hover fieldset": { border: "none" },
+                                    "&.Mui-focused fieldset": { border: "none" },
+                                    padding: "5px",
+                                },
+                            }}
+                                // sx={{
+                                //     width: "15ch",
+                                //     "& .MuiOutlinedInput-root": {
+                                //         height: "40px",
+                                //         "& input": { height: "100%", padding: "10px" },
+                                //     },
+                                // }}
                                 value={(recipeUrl)}
                                 onChange={(e) => setRecipeUrl(e.target.value)}
                             />
@@ -119,6 +132,12 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                                 variant="contained"
                                 tabIndex={-1}
                                 startIcon={<CloudUploadIcon />}
+                                sx={{
+                                    width: "fit-content",
+                                    backgroundColor: '#b0dbb2',
+                                    color: 'black',
+                                    borderRadius: '10px'
+                                }}
                             >
                                 Upload files
                                 <VisuallyHiddenInput

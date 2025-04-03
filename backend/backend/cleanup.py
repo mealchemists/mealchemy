@@ -1,6 +1,7 @@
+from requests import delete
+from django.contrib.auth.models import User
 from backend.apps.meal_plan.models.meal_plan import MealPlan
-from backend.apps.recipes.models.ingredients import (Aisle, Ingredient,
-                                                     RecipeIngredient)
+from backend.apps.recipes.models.ingredients import Aisle, Ingredient, RecipeIngredient
 
 from backend.apps.recipes.models.recipe import Recipe
 
@@ -11,5 +12,7 @@ Ingredient.objects.all().delete()
 Recipe.objects.all().delete()
 MealPlan.objects.all().delete()
 Aisle.objects.all().delete()
+User.objects.all().delete()
 
 print("Cleanup completed: All records removed.")
+

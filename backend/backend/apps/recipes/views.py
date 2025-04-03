@@ -11,7 +11,7 @@ from django.http import Http404
 from ..meal_plan.models.meal_plan import MealPlan
 from .models.ingredients import Ingredient, RecipeIngredient, Aisle
 from .models.recipe import Recipe, Step
-from .producer import publish
+from .producer import Producer, publish
 from .serializers import (
     IngredientSerializer,
     RecipeIngredientSerializer,
@@ -30,6 +30,9 @@ from rest_framework import filters
 
 import tempfile
 import os
+
+# The server will be the producer that will send messages to the queue.
+producer = Producer()
 
 
 def get_jwt_token(user_id):
@@ -122,7 +125,7 @@ def recipe_url(request):
         message["task_type"] = "web"
         message["payload"] = {"url": data["url"]}
 
-        publish(message)
+        producer.publish(message)
 
         return Response(data, status=status.HTTP_201_CREATED)
 
@@ -152,7 +155,7 @@ def recipe_pdf(request):
         message["payload"] = {"temp_path": temp_path}
         print(message)
 
-        publish(message)
+        producer.publish(message)
 
         return Response(status=status.HTTP_201_CREATED)
 
@@ -600,11 +603,8 @@ class AisleAPIView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
-        aisleData = {
-            "name":name,
-            "user":user_id
-        }
+
+        aisleData = {"name": name, "user": user_id}
 
         serializer = AisleSerializer(data=aisleData)
         if serializer.is_valid():
