@@ -24,6 +24,8 @@ import {
   CustomDayHeader,
 } from "./CalendarComponents";
 import NutritionalAccordion from "../NutritionAccordion/NutritionAccordion";
+import useMediaQuery from "@mui/material/useMediaQuery";
+
 
 import { getRecipeIngredients } from "../../api/recipeIngredientApi";
 import {
@@ -50,10 +52,11 @@ function MealPlanningPage() {
   // const [selectedMeals, setSelectedMeals] = useState({});
   const [draggedRecipe, setDraggedRecipe] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const recipesPerPage = 8;
+  const isMobile = useMediaQuery("(max-width:800px)");
+  const recipesPerPage = isMobile ? 4 : 8;
   const [view, setView] = useState("recipes");
   const [totalPages, setTotalPages] = useState(0);
-  const [searchRecipes, setSearchRecipes] = useState<RecipeIngredient[]>([]); //TODO: pass the recipes from database
+  const [searchRecipes, setSearchRecipes] = useState<RecipeIngredient[]>([]); 
   const [visibleRecipes, setVisibleRecipes] = useState<RecipeIngredient[]>([]);
   const [recipeIngredients, setRecipeIngredients] = useState<
     RecipeIngredient[]
@@ -151,14 +154,14 @@ function MealPlanningPage() {
     }
   };
 
-  const handleAddToShoppingList = async() => {
-    if(!user_id){
-      return 
+  const handleAddToShoppingList = async () => {
+    if (!user_id) {
+      return
     }
     const recipeIds = myEventsList.map(event => event.recipe?.id);
     await addToShoppingList(recipeIds, user_id);
     toast.success('Added to Shopping List!');
-    
+
   }
 
   const updateMealPlan = async () => {
@@ -329,26 +332,26 @@ function MealPlanningPage() {
         difference > 0
           ? mealPlan // mealPlan is passed in as a single object
             ? [
-                {
-                  id: `${day}-${mealPlan.recipe.id}`, // Unique ID for the meal plan
-                  mealPlan_id: mealPlan.id,
-                  start: moment(mealPlan.day_planned).startOf("day").toDate(),
-                  end: moment(mealPlan.day_planned).startOf("day").toDate(),
-                  day_planned: mealPlan.day_planned,
-                  allDay: true,
-                  title: mealPlan.recipe.name, // Using the title from the single meal plan
-                  placeholder: false, // This is an actual meal plan
-                  recipe: mealPlan.recipe,
-                },
-              ]
-            : Array.from({ length: difference }, (_, i) => ({
-                id: `${day}-slot-${totalExistingEvents + i}`,
-                start: moment(day).startOf("day").toDate(),
-                end: moment(day).startOf("day").toDate(),
+              {
+                id: `${day}-${mealPlan.recipe.id}`, // Unique ID for the meal plan
+                mealPlan_id: mealPlan.id,
+                start: moment(mealPlan.day_planned).startOf("day").toDate(),
+                end: moment(mealPlan.day_planned).startOf("day").toDate(),
+                day_planned: mealPlan.day_planned,
                 allDay: true,
-                title: "Drag meal here", // Placeholder title
-                placeholder: true, // This is a placeholder event
-              }))
+                title: mealPlan.recipe.name, // Using the title from the single meal plan
+                placeholder: false, // This is an actual meal plan
+                recipe: mealPlan.recipe,
+              },
+            ]
+            : Array.from({ length: difference }, (_, i) => ({
+              id: `${day}-slot-${totalExistingEvents + i}`,
+              start: moment(day).startOf("day").toDate(),
+              end: moment(day).startOf("day").toDate(),
+              allDay: true,
+              title: "Drag meal here", // Placeholder title
+              placeholder: true, // This is a placeholder event
+            }))
           : [];
 
       // Remove excess placeholders if the difference is negative
@@ -418,108 +421,110 @@ function MealPlanningPage() {
   };
 
   return (
-    <div>
-      <div className="calendarContainer">
-        <DragAndDropCalendar
-          localizer={localizer}
-          events={myEventsList}
-          defaultView="week"
-          views={{ week: true }}
-          date={currentDate} // Pass the currentDate to update the calendar view
-          onNavigate={handleNavigate} // Attach the navigation handler
-          components={{
-            event: (props) => (
-              <CustomEvent
-                {...props}
-                resetEventToPlaceholder={resetEventToPlaceholder}
-              />
-            ),
-            toolbar: (props) => (
-              <CustomToolbar
-                {...props}
-                label={currentDate.toLocaleDateString()}
-                onNavigate={handleNavigate}
-                onAddToShoppingList={handleAddToShoppingList}
-              />
-            ),
-            week: {
-              header: CustomDayHeader,
-            },
-          }}
-          onEventDrop={moveEvent}
-          onDropFromOutside={({ start, end }) => {
-            if (!start || !end) {
-              console.warn("Dropped outside valid area. Ignoring.");
-              return;
-            }
-            // Find the placeholder event at the dropped position
-            const targetEvent = myEventsList.find(
-              (event) =>
-                event.placeholder && moment(event.start).isSame(start, "day")
-            );
-            if (targetEvent) {
-              onDropFromOutside({ event: targetEvent, start, end });
-            }
-          }}
-          dragFromOutsideItem={dragFromOutsideItem}
-          selectable
-          resizable
-          style={{ height: "350px", width: "1000px" }}
-        />
-      </div>
-
-      <Stack
-        direction="row"
-        spacing={2}
-        justifyContent="space-between"
-        style={{ width: "1004px", margin: "0 auto", marginTop: "10px" }}
-      >
-        {getWeekDays(currentDate).map((day) => (
-          <FormControl
-            key={day.format("YYYY-MM-DD")}
-            style={{
-              width: "calc(100% / 7 - 1px)",
+    <div className='mealPlanningContent'>
+      {/* <div className = 'calendarAndSlots'> */}
+        <div className="calendarContainer">
+          <DragAndDropCalendar
+            localizer={localizer}
+            events={myEventsList}
+            defaultView="week"
+            views={{ week: true }}
+            date={currentDate} // Pass the currentDate to update the calendar view
+            onNavigate={handleNavigate} // Attach the navigation handler
+            components={{
+              event: (props) => (
+                <CustomEvent
+                  {...props}
+                  resetEventToPlaceholder={resetEventToPlaceholder}
+                />
+              ),
+              toolbar: (props) => (
+                <CustomToolbar
+                  {...props}
+                  label={currentDate.toLocaleDateString()}
+                  onNavigate={handleNavigate}
+                  onAddToShoppingList={handleAddToShoppingList}
+                />
+              ),
+              week: {
+                header: CustomDayHeader,
+              },
             }}
-          >
-            <Select
-              value={eventCountPerday(day)}
-              onChange={(e) =>
-                handleMealChange(
-                  day.format("YYYY-MM-DD"),
-                  Number(e.target.value)
-                )
+            onEventDrop={moveEvent}
+            onDropFromOutside={({ start, end }) => {
+              if (!start || !end) {
+                console.warn("Dropped outside valid area. Ignoring.");
+                return;
               }
-              displayEmpty
-              sx={{
-                height: "40px",
-                ".MuiOutlinedInput-notchedOutline": {
-                  borderRadius: "10px",
-                  border: "2px solid #38793b",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#38793b!important",
-                },
-                "&:Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#38793b!important",
-                },
-                ".MuiSvgIcon-root ": {
-                  fill: "#38793b !important",
-                },
+              // Find the placeholder event at the dropped position
+              const targetEvent = myEventsList.find(
+                (event) =>
+                  event.placeholder && moment(event.start).isSame(start, "day")
+              );
+              if (targetEvent) {
+                onDropFromOutside({ event: targetEvent, start, end });
+              }
+            }}
+            dragFromOutsideItem={dragFromOutsideItem}
+            selectable
+            resizable
+            style={{ height: "350px", width: "100%" }}
+          />
+        </div>
+
+        <Stack
+          direction="row"
+          spacing={2}
+          justifyContent="space-between"
+          style={{ width: '100%', margin: "0 auto", marginTop: "10px" }}
+        >
+          {getWeekDays(currentDate).map((day) => (
+            <FormControl
+              key={day.format("YYYY-MM-DD")}
+              style={{
+                width: "calc(100% / 7 - 1px)",
               }}
             >
-              <MenuItem value={0}>None</MenuItem>
-              {[1, 2, 3, 4, 5].map((number) => (
-                <MenuItem key={number} value={number}>
-                  {number}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        ))}
-      </Stack>
+              <Select
+                value={eventCountPerday(day)}
+                onChange={(e) =>
+                  handleMealChange(
+                    day.format("YYYY-MM-DD"),
+                    Number(e.target.value)
+                  )
+                }
+                displayEmpty
+                sx={{
+                  height: "40px",
+                  ".MuiOutlinedInput-notchedOutline": {
+                    borderRadius: "10px",
+                    border: "2px solid #38793b",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#38793b!important",
+                  },
+                  "&:Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#38793b!important",
+                  },
+                  ".MuiSvgIcon-root ": {
+                    fill: "#38793b !important",
+                  },
+                }}
+              >
+                <MenuItem value={0}>None</MenuItem>
+                {[1, 2, 3, 4, 5].map((number) => (
+                  <MenuItem key={number} value={number}>
+                    {number}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ))}
+        </Stack>
+      {/* </div> */}
       <Box
         sx={{
-          width: "1000px",
+          width: "100%",
           margin: "0 auto",
           marginTop: "10px",
           display: "flex",
@@ -593,7 +598,6 @@ function MealPlanningPage() {
 
       {view === "recipes" ? (
         <div className="recipeGrid">
-          <h3>Recipes</h3>
           <RecipeSearch
             applyFiltering={filterApply}
             mainIngredientList={recipeIngredients
@@ -613,6 +617,8 @@ function MealPlanningPage() {
                   className="grid-item"
                   draggable
                   onDragStart={() => handleDragStart(recipe)}
+
+                  style={{ cursor: 'move' }}
                 >
                   <GridItem recipe={recipe.recipe} />
                 </div>
