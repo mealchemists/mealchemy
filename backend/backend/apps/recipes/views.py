@@ -51,11 +51,13 @@ def save_scraped_data(request):
     # Authenticate using the token
     user, _ = jwt_auth.authenticate(request)  # type: ignore
 
+    needs_review_flag = True
     recipe_data = request.data["recipe"].copy()
     recipe_data["steps"] = request.data.get("steps", [])
 
     recipe_serializer = RecipeSerializer(data=recipe_data)
     if not recipe_serializer.is_valid():
+        # Recipe Serializer may be missing fields
         return Response(recipe_serializer.errors, status=400)
 
     try:
@@ -167,7 +169,12 @@ class RecipeIngredientsAPIView(APIView):
         DjangoFilterBackend,
         filters.OrderingFilter,
     )
-    filterset_fields = ["recipe__cook_time", "recipe__main_ingredient"]
+    filterset_fields = ["recipe__cook_time", 
+                        "recipe__main_ingredient", 
+                        "needs_review", 
+                        "ingredients__needs_review", 
+                        "recipe__needs_review"
+                    ]
     search_fields = ["recipe__name", "ingredient__name", "recipe__main_ingredient"]
     ordering_fields = ["recipe__cook_time"]
     ordering = "recipe__created_at"
@@ -457,6 +464,14 @@ class RecipeIngredientsAPIView(APIView):
 
         if not query_params:
             return queryset
+        
+        needs_review = request.query_params.get("needs_review", None)
+        if needs_review.lower() == 'true':
+            queryset = queryset.filter(
+                Q(recipe__needs_review=True) |
+                Q(ingredient__needs_review=True) |
+                Q(needs_review=True)
+            )
 
         search = request.query_params.get("search", None)
         if search:
