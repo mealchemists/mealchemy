@@ -51,6 +51,8 @@ def extract_recipe_data_pdf(temp_path, user, token):
         assert result is not None
         if result["recipe"].get("source_url", None) is None:
             result["recipe"]["source_url"] = ""
+            
+        result["added_by_extractor"] = True
 
         headers = {
             "Authorization": f"Bearer {token}",  # Add the token in Authorization header

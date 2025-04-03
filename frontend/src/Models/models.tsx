@@ -33,6 +33,7 @@ export interface RecipeIngredient {
     needs_review?: Boolean|null,
     recipe: Recipe,
     ingredients: Ingredient[]
+    added_by_extractor: Boolean
 }
 
 export interface RecipeStep {

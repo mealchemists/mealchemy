@@ -30,6 +30,7 @@ from rest_framework import filters
 
 import tempfile
 import os
+import json
 
 # The server will be the producer that will send messages to the queue.
 producer = Producer()
@@ -45,6 +46,8 @@ def get_jwt_token(user_id):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def save_scraped_data(request):
+    with open("out.json", "w") as f:
+        json.dump(request.data, f)
     permission_classes = [AllowAny]
     # Authenticate the user using the token passed in the request
     jwt_auth = JWTAuthentication()
@@ -102,6 +105,7 @@ def save_scraped_data(request):
                 quantity="" if quantity is None else quantity,
                 unit="" if unit is None else unit,
                 display_name=ingredient_data["name"],
+                added_by_extractor = request.data["added_by_extractor"]
             )  # Create relationship
         return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -206,6 +210,7 @@ class RecipeIngredientsAPIView(APIView):
                     recipes[recipe_id] = {
                         "id": ri.id,
                         "needs_review": ri.needs_review,
+                        "added_by_extractor": ri.added_by_extractor,
                         "recipe": RecipeSerializer(ri.recipe).data,
                         "ingredients": [],
                     }
@@ -466,7 +471,7 @@ class RecipeIngredientsAPIView(APIView):
             return queryset
         
         needs_review = request.query_params.get("needs_review", None)
-        if needs_review.lower() == 'true':
+        if needs_review and needs_review.lower() == 'true':
             queryset = queryset.filter(
                 Q(recipe__needs_review=True) |
                 Q(ingredient__needs_review=True) |

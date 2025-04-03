@@ -86,6 +86,7 @@ class RecipeIngredient(TimeStampedModel):
         max_length=255, null=True, blank=False, default=ingredient.name
     )
     needs_review = models.BooleanField(default=True)
+    added_by_extractor = models.BooleanField(default=False)
 
     class Meta(TimeStampedModel.Meta):
         """
