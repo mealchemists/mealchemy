@@ -127,7 +127,7 @@ function ShoppingListPage() {
             }
           }}
         >
-
+          <ShoppingListRecipes removeRecipes={removeRecipes}></ShoppingListRecipes>
         </Drawer>
       )}
       {/* Right Side - Accordion */}
