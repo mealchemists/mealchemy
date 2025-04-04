@@ -17,7 +17,6 @@ from django.shortcuts import get_object_or_404
 from ..recipes.models.units import Quantity, Unit
 
 
-# Create your views here.
 class ShoppingListView(APIView):
     def get(self, request, user_id):
         if request.GET.get("type") == "aisleIngredients":
@@ -39,7 +38,6 @@ class ShoppingListView(APIView):
                     unit_enum = Unit.COUNT
 
                 try:
-                    # Use float() to handle decimal quantities
                     ingredient_quantity = float(item.ingredient.quantity)
                 except ValueError:
                     ingredient_quantity = 0
@@ -49,26 +47,33 @@ class ShoppingListView(APIView):
                 # Check if the ingredient already exists in the aisle
                 ingredient_exists = False
                 for ingredient in aisle_dict[aisle_name]:
-                    # TODO: Fuzzy matching?
+                    # TODO: If there is time, then implement fuzzy matching to try and match closely named ingredients.
                     if ingredient["name"] == ingredient_name:
-                        # If the ingredient exists, add the quantity to the existing one
-                        ingredient["quantity"] += quantity.to_si()
+                        # collect quantities of identically named ingredients for an aisle
+                        # if we are collecting existing ingredients, then we convert it to the preexisting ingredient's unit
+                        try:
+                            # Add and display in terms of the existing ingredient's unit
+                            ingredient["quantity"] += quantity.convert_to(
+                                Unit.from_label(ingredient["unit"])
+                            ).amount
+                            ingredient["quantity"] = round(ingredient["quantity"], 2)
+                        except ValueError:
+                            # If the same ingredient is given in more than one measurement type from different recipes,
+                            # then list them separately.
+                            ingredient_exists = False
+                            break
+
                         ingredient_exists = True
                         break
 
-                # If the ingredient doesn't exist, add a new entry
+                # If the ingredient doesn't exist in the same aisle, or the same ingredient is given as two different
+                # measurement types, add a new entry and do not collect any quantities.
                 if not ingredient_exists:
-                    # aisle_dict[aisle_name].append({
-                    #     "name": ingredient_name,
-                    #     "quantity": ingredient_quantity,
-                    #     "unit": unit
-                    # })
                     aisle_dict[aisle_name].append(
                         {
                             **model_to_dict(item.ingredient.ingredient),
-                            "quantity": ingredient_quantity,
-                            # TODO: Get SI unit of the ingredient quantity
-                            "unit": unit_label,
+                            "quantity": quantity.amount,
+                            "unit": quantity.unit.label,
                         }
                     )
 
@@ -85,7 +90,7 @@ class ShoppingListView(APIView):
                 user_id=user_id
             ).values_list("ingredient_id", flat=True)
 
-            print(shopping_list_ingredient_ids.first())
+            # print(shopping_list_ingredient_ids.first())
 
             # Get recipes where the ingredients exist in the shopping list
             recipes = (
@@ -140,6 +145,6 @@ class ShoppingListView(APIView):
         shopping_list.filter(ingredient__recipe_id__in=recipe_ids).delete()
 
         return Response(
-            {"message": f"Deleted items from the shopping list"},
+            {"message": "Deleted items from the shopping list"},
             status=status.HTTP_200_OK,
         )
