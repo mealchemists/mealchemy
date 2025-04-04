@@ -51,13 +51,8 @@ def extract_recipe_data_pdf(temp_path, user, token):
         except json.JSONDecodeError:
             print(recipe_data_str)
 
-        # assert result is not None
-        # if result["recipe"].get("source_url", None) is None:
-        #     result["recipe"]["source_url"] = ""
-        # NOTE: DUMMY URL FOR NOW
-        result["recipe"]["source_url"] = (
-            "https://www.allrecipes.com/recipe/140993/louisiana-crawfish-boil/"
-        )
+        result["added_by_extractor"] = True
+
         headers = {
             "Authorization": f"Bearer {token}",  # Add the token in Authorization header
         }

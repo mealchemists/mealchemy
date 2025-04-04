@@ -38,7 +38,8 @@ class Ingredient(models.Model):
     sodium_per_100mg = models.FloatField(help_text="mg of sodium per 100g")
 
     aisle = models.ForeignKey(Aisle, on_delete=models.SET_NULL, null=True, blank=True)
-
+    needs_review = models.BooleanField(default=True)
+    
     @classmethod
     def find_best_match(cls, name, threshold=0.6):
         """
@@ -55,10 +56,17 @@ class Ingredient(models.Model):
             raise ValueError("Not found!")
         return match
 
-    # def save(*args, **kwargs):
-    #     # TODO: Query the FoodData Central API and process the contents.
-    #     # If the API fails, prompt the user to manually enter the nutrition information.
-    #     super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        # TODO: Query the FoodData Central API and process the contents.
+        # If the API fails, prompt the user to manually enter the nutrition information.
+        
+        # Determine if the recipe needs review
+        
+        #TODO nutriotion info?
+        self.needs_review = not (self.name)
+
+        
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name}"
@@ -78,6 +86,8 @@ class RecipeIngredient(TimeStampedModel):
     display_name = models.CharField(
         max_length=255, null=True, blank=False, default=ingredient.name
     )
+    needs_review = models.BooleanField(default=True)
+    added_by_extractor = models.BooleanField(default=False)
 
     class Meta(TimeStampedModel.Meta):
         """
@@ -91,53 +101,54 @@ class RecipeIngredient(TimeStampedModel):
 
         unique_together = ("recipe", "ingredient")
 
-    #
-    # def save(self, *args, **kwargs):
-    #     """
-    #     If an Enum is passed as a unit, then make sure that its
-    #     label is stored in the database.
-    #     """
-    #     if isinstance(self.unit, BaseUnit):
-    #         self.unit = self.unit.label
-    #     super().save(*args, **kwargs)
-    #
-    # def _get_unit_enum(self):
-    #     """
-    #     Retrieves the corresponding Unit (enum) instance based
-    #     on the given instance's unit in string format.
-    #     """
-    #     for unit_enum in (VolumeUnit, MassUnit, CountUnit):
-    #         for unit in unit_enum:
-    #             if unit.label == self.unit:
-    #                 return unit
-    #         raise LookupError("Unit not found!")
-    #
-    # def _to_base_unit(self):
-    #     """
-    #     Converts the stored quantity to g or mL if applicable.
-    #     This will likely be used when it comes to calculating
-    #     the total nutrition for a selection of RecipeIngredients.
-    #     """
-    #     unit_enum = self._get_unit_enum()
-    #     if isinstance(unit_enum, CountUnit):
-    #         return self.quantity
-    #     if unit_enum:
-    #         return unit_enum.to_base_unit(self.quantity)
-    #
-    # def __str__(self):
-    #     # TODO: properly handle pluralization (tomato -> tomatoes, pineapple -> pineapples)
-    #     # For now, I am going to use single form.
-    #     unit_enum = self._get_unit_enum()
-    #     if isinstance(unit_enum, CountUnit):
-    #         return f"{self.quantity}x {self.display_name}"
-    #
-    #     # Attempt to format the quantity to fraction up to a 16th.
-    #     fraction = fractions.Fraction(self.quantity).limit_denominator(16)
-    #     if fraction.denominator == 1:
-    #         formatted_quantity = fraction.numerator
-    #     else:
-    #         formatted_quantity = f"{fraction.numerator}/{fraction.denominator}"
-    #
-    #     unit = self.unit if self.quantity <= 1 else f"{self.unit}s"
-    #
-    #     return f"{formatted_quantity} {unit} of {self.display_name}"
+    def save(self, *args, **kwargs):
+        """
+        If an Enum is passed as a unit, then make sure that its
+        label is stored in the database.
+        """
+        if isinstance(self.unit, Unit):
+            self.unit = self.unit.label
+            
+        self.needs_review = not (self.quantity and self.unit)
+        super().save(*args, **kwargs)
+
+    def _get_unit_enum(self):
+        """
+        Retrieves the corresponding Unit (enum) instance based
+        on the given instance's unit in string format.
+        """
+        for unit_enum in (VolumeUnit, MassUnit, CountUnit):
+            for unit in unit_enum:
+                if unit.label == self.unit:
+                    return unit
+            raise LookupError("Unit not found!")
+
+    def _to_base_unit(self):
+        """
+        Converts the stored quantity to g or mL if applicable.
+        This will likely be used when it comes to calculating
+        the total nutrition for a selection of RecipeIngredients.
+        """
+        unit_enum = self._get_unit_enum()
+        if isinstance(unit_enum, CountUnit):
+            return self.quantity
+        if unit_enum:
+            return unit_enum.to_base_unit(self.quantity)
+
+    def __str__(self):
+        # TODO: properly handle pluralization (tomato -> tomatoes, pineapple -> pineapples)
+        # For now, I am going to use single form.
+        unit_enum = self._get_unit_enum()
+        if isinstance(unit_enum, CountUnit):
+            return f"{self.quantity}x {self.display_name}"
+
+        # Attempt to format the quantity to fraction up to a 16th.
+        fraction = fractions.Fraction(self.quantity).limit_denominator(16)
+        if fraction.denominator == 1:
+            formatted_quantity = fraction.numerator
+        else:
+            formatted_quantity = f"{fraction.numerator}/{fraction.denominator}"
+
+        unit = self.unit if self.quantity <= 1 else f"{self.unit}s"
+
+        return f"{formatted_quantity} {unit} of {self.display_name}"

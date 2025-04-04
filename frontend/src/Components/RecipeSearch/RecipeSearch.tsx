@@ -6,7 +6,7 @@ import { Chip, Icon } from '@mui/material';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import FilterPopup from '../FilterPopup/FilterPopup';
-import { Recipe } from '../../Models/models'
+import { Recipe, RecipeIngredient } from '../../Models/models'
 
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
@@ -26,7 +26,9 @@ const ITEM_HEIGHT = 48;
 interface RecipeSearchProps {
     onSelect?: (value: string) => void;
     applyFiltering: (filterObj: object) => void;
+    recipeIngredientsList: RecipeIngredient[];
     mainIngredientList: string[];
+    recipeExtractor: (recipe: RecipeIngredient[]) => void
 }
 
 export interface RecipeSearchRef {
@@ -34,7 +36,7 @@ export interface RecipeSearchRef {
   }
   
 
-const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, applyFiltering, mainIngredientList}, ref) => {
+const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, applyFiltering, mainIngredientList, recipeIngredientsList, recipeExtractor}, ref) => {
     const [isFilterPopupOpen, setIsFilterPopupOpen] = useState<boolean>(false);
     const [filterChips, setFilterChips] = useState([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -246,6 +248,8 @@ const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, 
                 open = {openAddRecipeModal}
                 onClose = {handleCloseAddRecipeModal}
                 onAddRecipe={handleAddRecipe}
+                recipeExtractor={recipeExtractor}
+                recipeIngredients={recipeIngredientsList}
             />
         </div>
     );
