@@ -15,6 +15,7 @@ interface RecipePanelProps {
     setRecipeIngredients: React.Dispatch<React.SetStateAction<RecipeIngredient[]>>; // Set recipe list from parent
     onRecipeSelect: (recipe: RecipeIngredient) => void;
     setRecipeEditMode: (editMode: boolean) => void;
+    recipeExtractor: (recipe: RecipeIngredient[]) => void
 }
 
 const blankStep: RecipeStep= {
@@ -40,13 +41,16 @@ const blankRecipeIngredient:RecipeIngredient = {
     id:-1,
     recipe: blankRecipe,
     ingredients: [] as Ingredient[], 
+    added_by_extractor: false
 };
+
 
 const RecipePanel: React.FC<RecipePanelProps> = ({
     recipeIngredient,
     setRecipeIngredients,
     onRecipeSelect,
-    setRecipeEditMode
+    setRecipeEditMode,
+    recipeExtractor
 }) => {
     const [searchRecipes, setSearchRecipes] = useState<RecipeIngredient[]>(recipeIngredient);
     const [allRecipeIngredients, setAllRecipeIngredients] = useState<RecipeIngredient[]>([]);
@@ -166,8 +170,10 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     return (
         <div className="recipe-container">
             <RecipeSearch 
-                onSelect={handleSelectOption} 
+                onSelect={handleSelectOption}
+                recipeExtractor={recipeExtractor} 
                 applyFiltering={ filterApply }
+                recipeIngredientsList={recipeIngredient}
                 mainIngredientList={allRecipeIngredients
                     .filter(recipeIngredient => recipeIngredient.recipe.main_ingredient)  // Filter based on `main_ingredient`
                     .map(recipeIngredient => recipeIngredient.recipe.main_ingredient)}

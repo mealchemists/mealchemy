@@ -32,6 +32,8 @@ def extract_recipe_data_url(url, user, token):
         if result["recipe"].get("source_url", None) is None:
             result["recipe"]["source_url"] = url
 
+        result["added_by_extractor"] = True
+
         print(f"Extracted text in {perf_counter() - start_time:.2f}s")
 
         headers = {

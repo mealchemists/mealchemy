@@ -37,7 +37,8 @@ class Ingredient(models.Model):
     sodium_per_100mg = models.FloatField(help_text="mg of sodium per 100g")
 
     aisle = models.ForeignKey(Aisle, on_delete=models.SET_NULL, null=True, blank=True)
-
+    needs_review = models.BooleanField(default=True)
+    
     @classmethod
     def find_best_match(cls, name, threshold=0.6):
         """
@@ -54,10 +55,17 @@ class Ingredient(models.Model):
             raise ValueError("Not found!")
         return match
 
-    # def save(*args, **kwargs):
-    #     # TODO: Query the FoodData Central API and process the contents.
-    #     # If the API fails, prompt the user to manually enter the nutrition information.
-    #     super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        # TODO: Query the FoodData Central API and process the contents.
+        # If the API fails, prompt the user to manually enter the nutrition information.
+        
+        # Determine if the recipe needs review
+        
+        #TODO nutriotion info?
+        self.needs_review = not (self.name)
+
+        
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name}"
@@ -77,6 +85,8 @@ class RecipeIngredient(TimeStampedModel):
     display_name = models.CharField(
         max_length=255, null=True, blank=False, default=ingredient.name
     )
+    needs_review = models.BooleanField(default=True)
+    added_by_extractor = models.BooleanField(default=False)
 
     class Meta(TimeStampedModel.Meta):
         """
@@ -97,6 +107,8 @@ class RecipeIngredient(TimeStampedModel):
         """
         if isinstance(self.unit, Unit):
             self.unit = self.unit.label
+            
+        self.needs_review = not (self.quantity and self.unit)
         super().save(*args, **kwargs)
 
     def _get_unit_enum(self):

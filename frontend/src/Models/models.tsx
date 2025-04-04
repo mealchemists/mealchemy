@@ -8,7 +8,8 @@ export interface Recipe{
     ingredients: Array<string>;
     image_url: string | null; //Change later
     sourceUrl?: string | null
-    steps: Array<RecipeStep>
+    steps: Array<RecipeStep>,
+    needs_review?: Boolean|null
 }
 
 export interface Ingredient {
@@ -23,13 +24,16 @@ export interface Ingredient {
     fat_per_100g: Number,
     fiber_per_100g: Number,
     sodium_per_100mg: Number,
+    needs_review?: Boolean| null,
     aisle: String
 }
 
 export interface RecipeIngredient {
     id: Number,
+    needs_review?: Boolean|null,
     recipe: Recipe,
     ingredients: Ingredient[]
+    added_by_extractor: Boolean
 }
 
 export interface RecipeStep {

@@ -4,6 +4,7 @@ import RecipeContent from '../RecipeContent/RecipeContent';
 import { Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipePage.css';
 import { deleteRecipe } from '../../api/recipes';
+import { getRecipeIngredients } from '../../api/recipeIngredientApi';
 
 
 function RecipePage() {
@@ -41,15 +42,6 @@ function RecipePage() {
         });
     };
 
-    // const handleUpdateRecipe = (updatedRecipe: RecipeIngredient) => {
-    //     setRecipeIngredients(prevRecipeIngredients => {
-    //         const updatedRecipeIngredients = prevRecipeIngredients.map(recipeIngredient => 
-    //             recipeIngredient.id === updatedRecipe.id ? updatedRecipe : recipeIngredient
-    //         );
-    //         return updatedRecipeIngredients;
-    //     });
-    // };
-
     const handleUpdateRecipe = (updatedRecipe: RecipeIngredient) => {
         setRecipeIngredients(prevRecipeIngredients => {
             // Check if the updatedRecipe already exists by id
@@ -70,12 +62,22 @@ function RecipePage() {
         });
     };
 
+    const handleExtractor = async (recipeIngredients: RecipeIngredient[]) => {
+        try {
+                const response = await getRecipeIngredients();
+                setRecipeIngredients(response);
+            } catch (error) {
+                console.error("Error fetching recipes:", error);
+        };
+    }
+
 
     return (
         <div className="mainContainer">
             <div className="sideContainer">
                 <RecipePanel
                     recipeIngredient={recipeIngredient}
+                    recipeExtractor={handleExtractor}
                     setRecipeIngredients={setRecipeIngredients}
                     onRecipeSelect={handleSelectedRecipe}
                     setRecipeEditMode={handleChangeRecipeMode}
