@@ -13,9 +13,6 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 # Copy all project files into the container
 COPY . /app
 
-# Run migrations before starting the server
-RUN python manage.py migrate --noinput
-
 # Expose the port that the app will run on
 EXPOSE 8080
 
