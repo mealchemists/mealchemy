@@ -20,11 +20,11 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onClick }) => {
                         {!isMobile && "Recipe"}
                         {isMobile && <MenuBookIcon fontSize = "large" />}
                     </li>
-                    <li onClick={() => onClick("MealPlanning")}>
-                        {!isMobile && "MealPlanning"}
+                    <li onClick={() => onClick("Meal Planning")}>
+                        {!isMobile && "Meal Planning"}
                         {isMobile && <CalendarMonthIcon fontSize = "large" />}
                     </li>
-                    <li onClick={() => onClick("ShoppingList")}>
+                    <li onClick={() => onClick("Shopping List")}>
                         {!isMobile && "Shopping List"}
                         {isMobile && <ChecklistIcon fontSize = "large" />}
                     </li>
