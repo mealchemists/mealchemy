@@ -5,8 +5,10 @@ import './ShoppingListPage.css';
 import { deleteRecipes, getShoppingList } from '../../api/shoppingList';
 import { useAuth } from '../../api/useAuth';
 import { Ingredient, Recipe, RecipeStep } from '../../Models/models';
-
-import { Accordion, AccordionDetails, AccordionSummary, Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, IconButton, Checkbox, Typography, Button } from '@mui/material';
+import { Drawer } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import ShoppingListRecipes from '../ShoppingListRecipes/ShoppingListRecipes';
+import { Accordion, AccordionDetails, AccordionSummary, Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, IconButton, Checkbox, Typography, Button, useMediaQuery } from '@mui/material';
 
 
 const blankStep: RecipeStep = {
@@ -35,54 +37,27 @@ function ShoppingListPage() {
   const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
   const [selectedAisle, setSelectedAisle] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
-  const [recipes, setRecipes] = useState([]);
   const [aisleData, setAisleData] = useState([]);
 
-  const [checked, setChecked] = useState<number[]>([]);
+  // const [checked, setChecked] = useState<number[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width:800px)");
 
-  const handleToggle = (recipeId: number) => {
-    const currentIndex = checked.indexOf(recipeId);
-    const newChecked = [...checked];
-
-    if (currentIndex === -1) {
-      newChecked.push(recipeId);
-    } else {
-      newChecked.splice(currentIndex, 1);
-    }
-
-    setChecked(newChecked);
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const isAnyChecked = checked.length > 0;
 
   const getShoppingData = async () => {
-    console.log("user_id:", user_id);
     if (!user_id) return;
     const data = await getShoppingList(user_id, "aisleIngredients");
     setShoppingListData(data);
-    console.log(data);
-    const recipes = await getShoppingList(user_id, "recipes");
-    setRecipes(recipes);
   }
 
   useEffect(() => {
     getShoppingData();
-  }, [user_id])
+  }, [user_id, refreshTrigger])
 
-
-  const handleOpenAisleModal = (ingredient: Ingredient, aisle_name: string) => {
-    setSelectedIngredient(ingredient);
-    setSelectedAisle(aisle_name);
-    setOpenAisleModal(true);
-  };
-
-  const handleCloseAisleModal = () => {
-    console.log("close modal");
-    setRefreshTrigger(prev => !prev);
-    setOpenAisleModal(false);
-    setSelectedAisle(null);
-    setSelectedIngredient(null);
-  };
 
   useEffect(() => {
     // Update aisleData whenever shoppingListData changes
@@ -95,15 +70,25 @@ function ShoppingListPage() {
         })),
       }));
       setAisleData(updatedShoppingListData);
+    }else{
+      setAisleData([]);
     }
   }, [shoppingListData]);
 
-  useEffect(() => {
-    console.log("useEffect triggered: refreshTrigger =", refreshTrigger);
-    getShoppingData();
-  }, [refreshTrigger]);
+  const handleOpenAisleModal = (ingredient: Ingredient, aisle_name: string) => {
+    setSelectedIngredient(ingredient);
+    setSelectedAisle(aisle_name);
+    setOpenAisleModal(true);
+  };
 
-  // const [aisleData, setAisleData] = useState(updatedShoppingListData);
+  const handleCloseAisleModal = () => {
+    setRefreshTrigger(prev => !prev);
+    setOpenAisleModal(false);
+    setSelectedAisle(null);
+    setSelectedIngredient(null);
+  };
+
+
   const handleCheckChange = (aisleIndex: number, itemIndex: number) => {
     const updatedAisleData = [...aisleData];
     updatedAisleData[aisleIndex].items[itemIndex].checked =
@@ -112,97 +97,40 @@ function ShoppingListPage() {
   };
 
   const removeRecipes = async () => {
-    const resp = await deleteRecipes(checked, user_id);
-    console.log(resp);
     setRefreshTrigger(prev => !prev);
   }
 
   return (
+    <div style={{ display: "flex", alignItems: "stretch", height:"100%"}}>
+    {isMobile && (
+      <IconButton onClick={toggleSidebar} className="menuButton" sx = {{height:"100%"}}>
+        <MenuIcon fontSize="large" />
+      </IconButton>
+    )}
     <Box
       sx={{
         display: "flex",
         justifyContent: "center",
-        width: "100%",
+        width: isMobile? "90%":"100%",
       }}
-    ><Box sx={{
-      width: '250px',
-      maxWidth: 360,
-      backgroundColor: 'white',
-      height: '500px',
-      borderRadius: '10px',
-      marginRight: "50px",
-      display: "flex",
-      flexDirection: "column",
-      border: "3px solid #38793b",
-    }}>
-        {/* Title */}
-        <Typography
-          variant="h6"
-          sx={{ marginTop: '10px', fontWeight: "bold", width: '100%', textAlign: "center" }}
+    >
+
+
+      {!isMobile ? (
+        <ShoppingListRecipes removeRecipes={removeRecipes}></ShoppingListRecipes>
+      ) : (
+        <Drawer anchor="left" open={isSidebarOpen} onClose={toggleSidebar}
+          slotProps={{
+            paper: {
+              sx: {
+                backgroundColor: '#f8f8f8' // Ensure it's a valid hex color
+              }
+            }
+          }}
         >
-          Recipes
-        </Typography>
-
-        <List sx={{
-          flexGrow: 1,
-          overflowY: "auto",
-          paddingLeft: '5px',
-          paddingRight: '5px',
-        }}>
-          {recipes.map((value, index) => {
-            const labelId = `checkbox-list-label-${value.id}`;
-
-            return (
-              <ListItem key={value.id} disablePadding
-                sx={{
-                  borderBottom: "1px solid #ccc",
-                }}
-              >
-                <ListItemButton role={undefined} onClick={() => handleToggle(value.id)} dense>
-                  <ListItemIcon>
-                    <Checkbox
-                      edge="start"
-                      checked={checked.includes(value.id)}
-                      tabIndex={-1}
-                      disableRipple
-                      size={"small"}
-                      sx={{
-                        color: "#38793b",
-                        "&.Mui-checked": {
-                          color: "#38793b",
-                        },
-                      }}
-                    />
-                  </ListItemIcon>
-                  <ListItemText
-                    id={labelId}
-                    primary={
-                      <Typography sx = {{fontSize:"18px"}}>{value.name}</Typography>  // Increase text size
-                    }
-                  />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
-        </List>
-
-        {/* Button stays at the bottom */}
-        {isAnyChecked && (
-          <Button
-            variant="contained"
-            sx={{
-              width: '100%',
-              marginTop: 'auto',
-              backgroundColor: 'red',
-              color: 'white'
-            }}
-            onClick={removeRecipes}
-          >
-            Remove
-          </Button>
-        )}
-      </Box>
-
+          <ShoppingListRecipes removeRecipes={removeRecipes}></ShoppingListRecipes>
+        </Drawer>
+      )}
       {/* Right Side - Accordion */}
       <Box
         sx={{
@@ -238,14 +166,14 @@ function ShoppingListPage() {
                   index === 0 // First Accordion
                     ? "10px 10px 0 0"
                     : index === aisleData.length - 1
-                      ? "0 0 10px 10px" // Last Accordion (rounded bottom)
-                      : "0px", // Middle Accordions (no border radius)
+                      ? "0 0 10px 10px"
+                      : "0px",
                 "&.Mui-expanded": {
                   borderRadius:
                     index === 0
-                      ? "10px 10px 0 0" // First Accordion (expanded state, rounded top)
+                      ? "10px 10px 0 0"
                       : index === aisleData.length - 1
-                        ? "0 0 10px 10px" // Last Accordion (expanded state, rounded bottom)
+                        ? "0 0 10px 10px"
                         : "10px",
                 },
               }}
@@ -325,7 +253,7 @@ function ShoppingListPage() {
         />
       )}
     </Box>
-
+    </div>
 
   );
 }

@@ -37,9 +37,6 @@ const ListItem: React.FC<ListItemProps> = ({
     };
 
     const checkNeedsReview = () => {
-        console.log(recipeIngredient.needs_review)
-        console.log(recipe.needs_review)
-        console.log(ingredients)
         if (recipeIngredient.needs_review || recipe.needs_review || ingredients.some(item => item.needs_review)) {
             return true
         }

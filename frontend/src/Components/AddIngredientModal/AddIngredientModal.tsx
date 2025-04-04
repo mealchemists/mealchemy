@@ -1,23 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, Typography, MenuItem } from '@mui/material';
+import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, useMediaQuery, MenuItem } from '@mui/material';
 import { Ingredient, Unit } from '../../Models/models';
 import { getAllIngredients } from '../../api/recipeIngredientApi';
 import './AddIngredientModal.css';
 import { getAisles } from '../../api/aisles';
 import { useAuth } from '../../api/useAuth';
 
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-    borderRadius:'10px',
-};
+
 
 const blankRecipe1 = {
     id: -1,
@@ -40,7 +29,20 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
     const [allAisles, setAllAisles] = useState([]);
     const { isAuthenticated, username, user_id } = useAuth();
     const [isAisleDisabled, setIsAisleDisabled] = useState(false);
+    const isMobile = useMediaQuery("(max-width:800px)");
 
+    const style = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: isMobile ? 300 : 400,
+        bgcolor: 'background.paper',
+        border: '2px solid #000',
+        boxShadow: 24,
+        p: 4,
+        borderRadius: '10px',
+    };
     const handleInputChange = (field: string, value: string) => {
         if (field === "name") {
             // Check if the name exists in allIngredients
@@ -105,7 +107,7 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
         >
             <Box sx={style}>
                 <div>
-                    <h3 className='AddIngredientTitle'>
+                    <h3 className='addIngredientTitle'>
                         Add Ingredient
                     </h3>
 
@@ -225,13 +227,20 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
 
 
                 </div>
-                <Button variant="contained"
-                    sx={{
-                        backgroundColor: '#6bb2f4',
-                        color: 'white',
-                        borderRadius: '10px'
-                    }}
-                    onClick={sendIngredientToParent}>Done</Button>
+
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
+                    <Button
+                        variant="contained"
+                        sx={{
+                            backgroundColor: '#6bb2f4',
+                            color: 'white',
+                            borderRadius: '10px'
+                        }}
+                        onClick={sendIngredientToParent}
+                    >
+                        Done
+                    </Button>
+                </Box>
             </Box>
         </Modal>
     );

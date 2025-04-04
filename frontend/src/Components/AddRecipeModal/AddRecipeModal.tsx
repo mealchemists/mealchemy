@@ -1,37 +1,18 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import { Recipe, RecipeIngredient } from "../../Models/models";
-import {
-  Autocomplete,
-  Box,
-  Button,
-  InputAdornment,
-  Modal,
-  TextField,
-  Typography,
-} from "@mui/material";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { styled } from "@mui/material/styles";
+import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, Typography, useMediaQuery } from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { styled } from '@mui/material/styles';
 import {
   pollRecipeIngredients,
   postRecipePDF,
   postRecipeUrl,
 } from "../../api/recipes";
-import { toast } from "react-toastify";
-import "./AddRecipeModal.css";
+import { toast } from 'react-toastify';
+import './AddRecipeModal.css'
 import RecipeContent from "../RecipeContent/RecipeContent";
 
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-  borderRadius: "10px",
-};
+
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -56,6 +37,21 @@ function AddRecipeModal({
   const [newRecipe, setNewRecipe] = useState<Recipe>(null);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [recipeUrl, setRecipeUrl] = useState("");
+  const isMobile = useMediaQuery("(max-width:800px)");
+
+  const style = {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: isMobile ? 300 : 400,
+      bgcolor: 'background.paper',
+      border: '2px solid #000',
+      boxShadow: 24,
+      p: 4,
+      borderRadius: '10px'
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       setSelectedFile(event.target.files[0]);
@@ -189,26 +185,26 @@ function AddRecipeModal({
                     )}
                 </div>
 
-        <Button
-          variant="contained"
-          disabled={
-            ((addRecipeFormat === 0 && recipeUrl.trim() === "")) ||
-            ((addRecipeFormat === 1 && !selectedFile))
-          }
-          sx={{
-            backgroundColor: "#6bb2f4",
-            color: "white",
-            borderRadius: "10px",
-            padding: "10px",
-          }}
-          onClick={sendRecipeToParent}
-        >
-          Done
-                
-        </Button>
-      </Box>
-    </Modal>
-  );
+
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
+
+                <Button
+                    variant="contained"
+                    disabled={
+                        addRecipeFormat === 0 && recipeUrl.trim() === '' ||
+                        addRecipeFormat === 1 && !selectedFile
+                    }
+                    sx={{
+                        backgroundColor: '#6bb2f4',
+                        color: 'white',
+                        borderRadius: '10px',
+                        padding: '10px'
+                    }}
+                    onClick={sendRecipeToParent}>Done</Button>
+                </Box>
+            </Box>
+        </Modal>
+    );
 }
 
 export default AddRecipeModal;
