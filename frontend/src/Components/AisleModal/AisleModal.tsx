@@ -126,14 +126,12 @@ function AisleModal({ open, onClose, ingredient}) {
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
                 <Button variant="contained" 
                 disabled={!newAisle.trim()}
-
                 sx={{
                     backgroundColor: '#6bb2f4',
                     color: 'white',
                     borderRadius:'10px'
                 }}
-                onClick={sendAisleToParent}
-                disabled={newAisle.trim() === ''}>Done</Button>
+                onClick={sendAisleToParent}>Done</Button>
                  </Box>
             </Box>
 
