@@ -7,6 +7,8 @@ import { deleteRecipe } from '../../api/recipes';
 import { Drawer, IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import { getRecipeIngredients } from '../../api/recipeIngredientApi';
+
 
 function RecipePage() {
     const [selectedRecipeIngredient, setSelectedRecipeIngredient] = useState<RecipeIngredient | null>(null);
@@ -70,9 +72,29 @@ function RecipePage() {
         });
     };
 
+    const handleExtractor = async (recipeIngredients: RecipeIngredient[]) => {
+        try {
+                const response = await getRecipeIngredients();
+                setRecipeIngredients(response);
+            } catch (error) {
+                console.error("Error fetching recipes:", error);
+        };
+    }
+
 
     return (
         <div className="mainContainer">
+            <div className="sideContainer">
+                <RecipePanel
+                    recipeIngredient={recipeIngredient}
+                    recipeExtractor={handleExtractor}
+                    setRecipeIngredients={setRecipeIngredients}
+                    onRecipeSelect={handleSelectedRecipe}
+                    setRecipeEditMode={handleChangeRecipeMode}
+
+                />
+            </div>
+            <div className="separator"></div>
             {isMobile && (
                 <IconButton onClick={toggleSidebar} className="menuButton">
                     <MenuIcon fontSize="large" />
@@ -84,6 +106,7 @@ function RecipePage() {
                 <div className="sideContainer">
                     <RecipePanel
                         recipeIngredient={recipeIngredient}
+                        recipeExtractor={handleExtractor}
                         setRecipeIngredients={setRecipeIngredients}
                         onRecipeSelect={handleSelectedRecipe}
                         setRecipeEditMode={handleChangeRecipeMode}

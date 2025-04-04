@@ -600,6 +600,8 @@ function MealPlanningPage() {
         <div className="recipeGrid">
           <RecipeSearch
             applyFiltering={filterApply}
+            recipeExtractor={() => {}}
+            recipeIngredientsList={recipeIngredients}
             mainIngredientList={recipeIngredients
               .filter(
                 (recipeIngredient) => recipeIngredient.recipe.main_ingredient
