@@ -1,7 +1,7 @@
 import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import './RecipeSearch.css';
 import AddRecipeModal from '../AddRecipeModal/AddRecipeModal';
-import { Chip, Icon } from '@mui/material';
+import { Chip, Popper} from '@mui/material';
 
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
@@ -50,6 +50,7 @@ const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, 
     const [addRecipeFormat, setAddRecipeFormat] = useState<number>(null);
     const openOptions = Boolean(anchorEl);
 
+    const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
 
     // SortBY
     const [sortBy, setSortBy] = useState<string>("");
@@ -95,11 +96,10 @@ const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, 
         });
     };
 
-    const handleFilterClick = () => {
-        setIsFilterPopupOpen((prev) => !prev);
+    const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
+        setFilterAnchorEl(filterAnchorEl ? null : event.currentTarget);
     };
-
-
+    
     const handleOptionsSelect = (option: string) => {
         if (option === "Select") {
             // make buttons visible
@@ -202,8 +202,8 @@ const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, 
                     <input className="recipeInput" onChange = {onSearchRecipe}></input>
                 </div>
 
-                <div className="searchRight" onClick={() => handleFilterClick()}>
-                    <IconButton>
+                <div className="searchRight" >
+                    <IconButton onClick={handleFilterClick}>
                         <FilterAltOutlinedIcon
                             fontSize='large'
                             sx={{
@@ -211,15 +211,15 @@ const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, 
                             }}
                         ></FilterAltOutlinedIcon>
                     </IconButton>
-                    {isFilterPopupOpen && (
+                    <Popper open={Boolean(filterAnchorEl)} anchorEl={filterAnchorEl} placement="bottom-end" sx={{ zIndex: 2000 }}>
                         <FilterPopup
-                            onClose={() => setIsFilterPopupOpen(false)}
+                            onClose={() =>  setFilterAnchorEl(null)}
                             onFilterChange={handleFilterChange}
                             sortBy={sortBy}
                             sliderRange={sliderRange}
                             mainIngredientList={mainIngredientList}
                         />
-                    )}
+                   </Popper>
                 </div>
 
             </div>

@@ -61,8 +61,6 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const [error, setError] = useState<string | null>(null);
     const recipeSearchRef = useRef<any>(null);
 
-
-
     const fetchRecipes = async () => {
         try {
             const response = await getRecipeIngredients();
@@ -206,7 +204,9 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
                         sx={{
                             backgroundColor: '#6bb2f4',
                             color: 'white',
-                            borderRadius: '10px'
+                            borderRadius: '10px',
+                            marginRight:'3px'
+
                         }}
                         onClick={handleAddShoppingList}>Add to Shopping List</Button>
                 </div>

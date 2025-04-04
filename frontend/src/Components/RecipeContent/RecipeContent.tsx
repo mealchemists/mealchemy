@@ -5,9 +5,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
-import { Avatar, Button, Chip, styled, TextField, Tooltip } from '@mui/material';
+import { Avatar, Button, Chip, styled, TextField, Tooltip, useMediaQuery } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import SoupKitchenIcon from '@mui/icons-material/SoupKitchen';
 import FlatwareIcon from '@mui/icons-material/Flatware';
@@ -15,28 +14,24 @@ import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import DinnerDiningIcon from '@mui/icons-material/DinnerDining';
 import { toast } from 'react-toastify';
 
-import { deleteRecipeIngredients, putRecipeIngredients, createRecipeIngredients } from '../../api/recipeIngredientApi';
+import { putRecipeIngredients, createRecipeIngredients } from '../../api/recipeIngredientApi';
 import AddIngredientModal from '../AddIngredientModal/AddIngredientModal';
 import EditTagModal from '../EditTagModal/EditTagModal';
 import './RecipeContent.css';
-
-
 
 const options = [
     'Edit',
     'Delete'
 ];
 
-
 const ITEM_HEIGHT = 48;
-
 
 interface RecipeContentProps {
     recipeIngredient: RecipeIngredient;
     initialEditMode?: boolean;
     exitEditMode: () => void;
-    onDeleteRecipe: (recipe: RecipeIngredient) => void; // Adjusted prop type
-    onUpdateRecipe: (recipe: RecipeIngredient) => void; // Adjusted prop type
+    onDeleteRecipe: (recipe: RecipeIngredient) => void; 
+    onUpdateRecipe: (recipe: RecipeIngredient) => void; 
 }
 
 const VisuallyHiddenInput = styled('input')({
@@ -84,6 +79,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const [error, setError] = useState("");
 
     const [imageBase64, setImageBase64] = useState<string>(recipe.image_url);
+
+    const isMobile = useMediaQuery("(max-width:800px)");
 
     const ingredientRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -145,7 +142,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const [title, setTitle] = useState(recipe.name);
     const [ingredients, setIngredients] = useState<Ingredient[]>(recipeIngredient.ingredients);
     const [instructions, setInstructions] = useState<RecipeStep[]>(recipe.steps);
-    console.log(recipe)
     const sortedInstructions = instructions.sort((a, b) => Number(a.step_number) - Number(b.step_number)); 
 
 
@@ -290,9 +286,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
                 <Menu
                     id="long-menu"
-                    MenuListProps={{
-                        'aria-labelledby': 'long-button',
-                    }}
                     anchorEl={anchorEl}
                     open={openOptions}
                     onClose={handleOptionsClose}
@@ -409,14 +402,14 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                         alt={recipe.name}
                         variant="square"
                         sx={{
-                            width: "300px",
-                            height: "300px",
+                            width: isMobile ? "200px":"300px",
+                            height: isMobile ? "200px":"300px",
                             objectFit: "cover",
                             borderRadius: "10px",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            fontSize: "20rem",
+                            fontSize: isMobile ? "12rem" :"20rem",
                             backgroundColor: "#f0f0f0"
                         }}
                     >
