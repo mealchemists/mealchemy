@@ -137,16 +137,18 @@ if os.getenv("USE_SQLITE3", "False").lower() == "true":
             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
     }
+    print(os.getenv("USE_SQLITE3", "False"))
 else:
     # Use Cloud SQL or another database if not in development
     DATABASES = {
         "default": env.db()  # Parse database connection string from environment
     }
+    print(DATABASES)
 
     # Optionally, use Cloud SQL Auth Proxy if the flag is set
     if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
         DATABASES["default"]["HOST"] = "127.0.0.1"
-        DATABASES["default"]["PORT"] = 5432
+        DATABASES["default"]["PORT"] = 3306
     
 
 # Password validation
