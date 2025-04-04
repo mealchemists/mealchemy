@@ -1,12 +1,20 @@
-from .scraper import Scraper
-from .parse import parse_with_openai
-import sys
 import json
+import os
+import sys
+from time import perf_counter, time
+
 import requests
 import validators
-from time import perf_counter
+from dotenv import load_dotenv
 
-EXTRACT_URL = "http://localhost:8000/api/save-scraped-data/"
+from .parse import parse_with_openai
+from .scraper import Scraper
+
+load_dotenv()
+
+EXTRACT_URL = os.environ.get(
+    "EXTRACT_URL", "http://localhost:8000/api/save-scraped-data/"
+)
 
 
 # TODO: Error handling
@@ -22,6 +30,8 @@ def extract_recipe_data_url(url, user, token):
         assert result is not None
         if result["recipe"].get("source_url", None) is None:
             result["recipe"]["source_url"] = url
+
+        result["added_by_extractor"] = True
 
         print(f"Extracted text in {perf_counter() - start_time:.2f}s")
 
