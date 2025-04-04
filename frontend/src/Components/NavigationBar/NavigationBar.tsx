@@ -17,16 +17,16 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onClick }) => {
             <div className="middleNav">
                 <ul>
                     <li onClick={() => onClick("Recipes")}>
-                        {!isMobile && "Recipe"}
-                        {isMobile && <MenuBookIcon fontSize = "large" />}
+                        {!isMobile && "Recipes"}
+                        {isMobile && <MenuBookIcon fontSize="large" />}
                     </li>
-                    <li onClick={() => onClick("Meal Planning")}>
+                    <li onClick={() => onClick("MealPlanning")}>
                         {!isMobile && "Meal Planning"}
-                        {isMobile && <CalendarMonthIcon fontSize = "large" />}
+                        {isMobile && <CalendarMonthIcon fontSize="large" />}
                     </li>
-                    <li onClick={() => onClick("Shopping List")}>
+                    <li onClick={() => onClick("ShoppingList")}>
                         {!isMobile && "Shopping List"}
-                        {isMobile && <ChecklistIcon fontSize = "large" />}
+                        {isMobile && <ChecklistIcon fontSize="large" />}
                     </li>
                 </ul>
             </div>
