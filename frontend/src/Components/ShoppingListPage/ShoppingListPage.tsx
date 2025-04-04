@@ -51,7 +51,6 @@ function ShoppingListPage() {
   const getShoppingData = async () => {
     if (!user_id) return;
     const data = await getShoppingList(user_id, "aisleIngredients");
-    console.log(data);
     setShoppingListData(data);
   }
 

@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { Recipe, RecipeIngredient } from "../../Models/models";
-import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, Typography, useMediaQuery } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import { postRecipePDF, postRecipeUrl } from '../../api/recipes';
+import {
+  pollRecipeIngredients,
+  postRecipePDF,
+  postRecipeUrl,
+} from "../../api/recipes";
 import { toast } from 'react-toastify';
 import './AddRecipeModal.css'
 import RecipeContent from "../RecipeContent/RecipeContent";
