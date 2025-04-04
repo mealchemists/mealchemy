@@ -22,6 +22,7 @@ class Scraper:
 
         # Set up Chrome options if needed
         options = webdriver.ChromeOptions()
+        options.add_argument("--headless")  # Run in headless mode (no GUI)
 
         # Launch the Chrome browser with the automatically downloaded ChromeDriver
         driver = webdriver.Chrome(service=Service(chrome_driver_path), options=options)
