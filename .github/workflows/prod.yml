@@ -89,6 +89,8 @@ jobs:
   #           --command migrate \
   #           --execute-now
 
+
+
   deploy-consumer:
     runs-on: ubuntu-latest
     steps:
@@ -113,6 +115,11 @@ jobs:
       #     docker build -t us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest ./recipe-extractors
       #     docker push us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest
 
+      # Authenticate Docker with Artifact Registry
+      - name: Authenticate Docker to Google Artifact Registry
+        run: |
+          gcloud auth configure-docker us-west1-docker.pkg.dev
+
       - name: Deploy Consumer to Google Compute Engine (VM)
         run: |
           # SSH into the Google Compute Engine instance and install Docker if not installed
@@ -129,7 +136,7 @@ jobs:
               echo 'Docker is already installed';
             fi
           "
-          
+
           # Now that Docker is installed, pull the image and run the container
           gcloud compute ssh mealchemy-ce --zone us-west1-a --command "
             sudo docker pull us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest && \
@@ -143,7 +150,7 @@ jobs:
               us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest
           "
 
-  
+    
 
 
 
