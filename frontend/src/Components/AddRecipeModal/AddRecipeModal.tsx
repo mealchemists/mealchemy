@@ -1,24 +1,12 @@
 import React, { useState } from 'react';
 import { Recipe } from '../../Models/models';
-import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, Typography } from '@mui/material';
+import { Box, Button, Modal, TextField, Typography, useMediaQuery } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
 import { postRecipePDF, postRecipeUrl } from '../../api/recipes';
 import { toast } from 'react-toastify';
 import './AddRecipeModal.css'
 
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-    borderRadius:'10px'
-};
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -37,6 +25,22 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
     const [newRecipe, setNewRecipe] = useState<Recipe>(null);
     const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
     const [recipeUrl, setRecipeUrl] = useState("");
+
+    const isMobile = useMediaQuery("(max-width:800px)");
+
+    const style = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: isMobile ? 300 : 400,
+        bgcolor: 'background.paper',
+        border: '2px solid #000',
+        boxShadow: 24,
+        p: 4,
+        borderRadius: '10px'
+    };
+
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             setSelectedFile(event.target.files[0]);
@@ -81,7 +85,7 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
         >
             <Box sx={style}>
                 <div>
-                    <h3 className = 'addRecipeTitle'>
+                    <h3 className='addRecipeTitle'>
                         Add Recipe
                     </h3>
 
@@ -89,18 +93,18 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                         <div className="addRecipeUrl">
                             <label>Recipe Url:</label>
                             <TextField
-                            sx={{
-                                "& .MuiOutlinedInput-root": {
-                                    height: "40px",
-                                    width: "200px",
-                                    border: "2px solid #b0dbb2",
-                                    borderRadius: "10px",
-                                    "& fieldset": { border: "none" },
-                                    "&:hover fieldset": { border: "none" },
-                                    "&.Mui-focused fieldset": { border: "none" },
-                                    padding: "5px",
-                                },
-                            }}
+                                sx={{
+                                    "& .MuiOutlinedInput-root": {
+                                        height: "40px",
+                                        width: "200px",
+                                        border: "2px solid #b0dbb2",
+                                        borderRadius: "10px",
+                                        "& fieldset": { border: "none" },
+                                        "&:hover fieldset": { border: "none" },
+                                        "&.Mui-focused fieldset": { border: "none" },
+                                        padding: "5px",
+                                    },
+                                }}
                                 // sx={{
                                 //     width: "15ch",
                                 //     "& .MuiOutlinedInput-root": {
@@ -151,6 +155,8 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                 </div>
 
 
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
+
                 <Button
                     variant="contained"
                     disabled={
@@ -164,6 +170,7 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                         padding: '10px'
                     }}
                     onClick={sendRecipeToParent}>Done</Button>
+                </Box>
             </Box>
         </Modal>
     );

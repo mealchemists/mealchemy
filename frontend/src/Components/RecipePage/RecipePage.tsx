@@ -54,7 +54,7 @@ function RecipePage() {
         setRecipeIngredients(prevRecipeIngredients => {
             // Check if the updatedRecipe already exists by id
             const existingRecipeIndex = prevRecipeIngredients.findIndex(recipeIngredient => recipeIngredient.id === updatedRecipe.id);
-    
+
             if (existingRecipeIndex !== -1) {
                 // If found, update the existing recipe ingredient
                 const updatedRecipeIngredients = [...prevRecipeIngredients];
@@ -89,16 +89,16 @@ function RecipePage() {
                         setRecipeEditMode={handleChangeRecipeMode}
                     />
                 </div>
-                
+
             ) : (
                 <Drawer anchor="left" open={isSidebarOpen} onClose={toggleSidebar}
-                slotProps={{
-                    paper: {
-                        sx: {
-                            backgroundColor: '#f8f8f8' // Ensure it's a valid hex color
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                backgroundColor: '#f8f8f8' // Ensure it's a valid hex color
+                            }
                         }
-                    }
-                }}
+                    }}
                 >
                     <div className="sideContainer">
                         <RecipePanel
@@ -110,9 +110,12 @@ function RecipePage() {
                     </div>
                 </Drawer>
             )}
+            {!isMobile && (
                 <div className="separator"></div>
+            )}
+
             <div className="recipeContentContainer">
-                {selectedRecipeIngredient && (
+                {selectedRecipeIngredient ? (
                     <RecipeContent
                         recipeIngredient={selectedRecipeIngredient}
                         initialEditMode={editMode}
@@ -120,6 +123,10 @@ function RecipePage() {
                         onDeleteRecipe={handleDeleteRecipe}
                         onUpdateRecipe={handleUpdateRecipe}
                     />
+                ) : (
+                    <div style={{ textAlign: "center", marginTop: "20px", fontSize: "1.2rem" }}>
+                        Create a recipe or select a recipe to start!
+                    </div>
                 )}
             </div>
         </div>

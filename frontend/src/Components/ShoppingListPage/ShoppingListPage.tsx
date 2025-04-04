@@ -102,18 +102,20 @@ function ShoppingListPage() {
   }
 
   return (
+    <div style={{ display: "flex", alignItems: "stretch", height:"100%"}}>
+    {isMobile && (
+      <IconButton onClick={toggleSidebar} className="menuButton" sx = {{height:"100%"}}>
+        <MenuIcon fontSize="large" />
+      </IconButton>
+    )}
     <Box
       sx={{
         display: "flex",
         justifyContent: "center",
-        width: "100%",
+        width: isMobile? "90%":"100%",
       }}
     >
-      {isMobile && (
-        <IconButton onClick={toggleSidebar} className="menuButton">
-          <MenuIcon fontSize="large" />
-        </IconButton>
-      )}
+
 
       {!isMobile ? (
         <ShoppingListRecipes removeRecipes={removeRecipes}></ShoppingListRecipes>
@@ -252,7 +254,7 @@ function ShoppingListPage() {
         />
       )}
     </Box>
-
+    </div>
 
   );
 }

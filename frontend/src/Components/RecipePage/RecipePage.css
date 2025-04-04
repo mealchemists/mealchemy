@@ -17,6 +17,7 @@
     transition: opacity 0.2s ease-in-out;    
     min-width: 700px;
     height:100%;
+    overflow-y:auto;
 }
 
 .separator {
@@ -30,5 +31,20 @@
 @media screen and (max-width:800px){
     .sideContainer{
         width:100%;
+    }
+    .recipeContentContainer{
+        width:500px;
+    }
+}
+
+@media screen and (max-width:500px){
+    .sideContainer{
+        width:100%;
+    }
+    .recipeContentContainer{
+        min-width:300px;
+    }
+    .mainContainer{
+        gap: 0px;
     }
 }

@@ -1,45 +1,40 @@
-import { Autocomplete, Box, Button, InputAdornment, Modal, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, useMediaQuery } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { getAllIngredients } from '../../api/recipeIngredientApi';
 
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-    borderRadius:'10px'
-};
 
-// TODO: Get from database
-const allTags = [
-    { title: 'Chicken' },
-    { title: 'Lettuce' },
-    { title: 'Corn' },
-    { title: 'Beef' },
-    { title: 'Pork' },
-]
-
-function EditTagModal({mainIngredient='', cookTime='0', prepTime='0', onApplyTagChanges, open, onClose}) {
- // Temporary variables for edit tag modal
+function EditTagModal({ mainIngredient = '', cookTime = '0', prepTime = '0', onApplyTagChanges, open, onClose }) {
+    // Temporary variables for edit tag modal
     const [tempMainIngredient, setTempMainIngredient] = useState(mainIngredient);
     const [tempCookTime, setTempCookTime] = useState(cookTime);
     const [tempPrepTime, setTempPrepTime] = useState(prepTime);
     const [tempTotalTime, setTempTotalTime] = useState(parseInt(cookTime, 10) + parseInt(prepTime, 10));
     const [allIngredients, setAllIngredients] = useState([]);
+
+    const isMobile = useMediaQuery("(max-width:800px)");
+
+    const style = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: isMobile ? 300 : 400,
+        bgcolor: 'background.paper',
+        border: '2px solid #000',
+        boxShadow: 24,
+        p: 4,
+        borderRadius: '10px'
+    };
+
     useEffect(() => {
         setTempTotalTime(parseInt(tempCookTime, 10) + parseInt(tempPrepTime, 10))
-    }, [tempCookTime,tempPrepTime]);
+    }, [tempCookTime, tempPrepTime]);
 
-    const sendTagsToParent = ()=>{
+    const sendTagsToParent = () => {
         // TODO: check if tempMainIngredient exists in database, if not, add to database
         onApplyTagChanges(tempMainIngredient, tempCookTime, tempPrepTime, tempTotalTime);
     }
-   useEffect(() => {
+    useEffect(() => {
         const getIngredients = async () => {
             const response = await getAllIngredients();
             const ingredientNames = response.map((ingredient) => ingredient.name);
@@ -47,7 +42,7 @@ function EditTagModal({mainIngredient='', cookTime='0', prepTime='0', onApplyTag
         };
 
         getIngredients();
-    },[])
+    }, [])
 
 
 
@@ -103,14 +98,7 @@ function EditTagModal({mainIngredient='', cookTime='0', prepTime='0', onApplyTag
                                     />
                                 )}
                             />
-                            {/* <Button 
-                            variant = "contained"
-                            sx = {{
-                            backgroundColor:'#b0dbb2',
-                            color:'white',
-                            borderRadius:'10px'
-                            }}
-                            style={{ height: "40px" }}>Add</Button> */}
+                           
                         </div>
 
                         {/* Cook Time */}
@@ -179,14 +167,17 @@ function EditTagModal({mainIngredient='', cookTime='0', prepTime='0', onApplyTag
                     </div>
                 </div>
 
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
+                <Button variant="contained"
+                    sx={{
+                        backgroundColor: '#6bb2f4',
+                        color: 'white',
+                        borderRadius: '10px'
 
-                <Button variant="contained" 
-                sx={{
-                    backgroundColor: '#6bb2f4',
-                    color: 'white',
-                    borderRadius:'10px'
-
-                }} onClick={sendTagsToParent}>Done</Button>
+                    }} onClick={sendTagsToParent}>
+                        Done
+                </Button>
+                </Box>
             </Box>
         </Modal>
     )
