@@ -107,3 +107,4 @@ dj_database_url
 gunicorn
 google-cloud-secret-manager==2.21.1
 django-environ==0.11.2
+pypdfium2
