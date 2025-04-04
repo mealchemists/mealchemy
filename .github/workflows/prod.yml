@@ -113,11 +113,26 @@ jobs:
       #     docker build -t us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest ./recipe-extractors
       #     docker push us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest
 
-#  Step 6: Deploy Consumer to Google Compute Engine (VM)
       - name: Deploy Consumer to Google Compute Engine (VM)
         run: |
-          # SSH into the Google Compute Engine instance and deploy the container
-          gcloud compute ssh mealchemy-ce --zone us-west1-a --command "sudo docker pull us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest && \
+          # SSH into the Google Compute Engine instance and install Docker if not installed
+          gcloud compute ssh mealchemy-ce --zone us-west1-a --command "
+            if ! command -v docker &> /dev/null; then
+              echo 'Docker not found, installing...';
+              sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common;
+              curl -fsSL https://get.docker.com -o get-docker.sh;
+              sudo sh get-docker.sh;
+              sudo usermod -aG docker $USER; 
+              sudo systemctl enable docker;
+              sudo systemctl start docker;
+            else
+              echo 'Docker is already installed';
+            fi
+          "
+          
+          # Now that Docker is installed, pull the image and run the container
+          gcloud compute ssh mealchemy-ce --zone us-west1-a --command "
+            sudo docker pull us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest && \
             sudo docker stop consumer || true && \
             sudo docker rm consumer || true && \
             sudo docker run -d --name consumer \
@@ -125,7 +140,8 @@ jobs:
               -e EXTRACT_URL=https://backend-service-102081122635.us-west1.run.app \
               -e DJANGO_URL=${{ secrets.DJANGO_URL }} \
               --memory 1G \
-              us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest"
+              us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest
+          "
 
   
 
