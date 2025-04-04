@@ -1,14 +1,16 @@
-from llm import setup_llm_chain
-from .pdf_utils import PDFUtils
-import requests
+import glob
+import json
 import os
 import shutil
 import sys
-import json
-import glob
 import tempfile
 from pathlib import Path
 from time import perf_counter
+
+import requests
+from llm import setup_llm_chain
+
+from .pdf_utils import PDFUtils
 
 # allow relative import
 sys.path.append(str(Path(__file__).parent.parent))
@@ -17,7 +19,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-EXTRACT_URL = "http://localhost:8000/api/save-scraped-data/"
+import os
+
+load_dotenv()
+
+EXTRACT_URL = os.getenv("EXTRACT_URL", "http://localhost:8000")
+EXTRACTOR_ENDPOINT = "/api/save-scraped-data/"
+
+URL = EXTRACT_URL + EXTRACTOR_ENDPOINT
 
 
 def extract_recipe_data_pdf(temp_path, user, token):
@@ -55,7 +64,7 @@ def extract_recipe_data_pdf(temp_path, user, token):
         headers = {
             "Authorization": f"Bearer {token}",  # Add the token in Authorization header
         }
-        response = requests.post(url=EXTRACT_URL, json=result, headers=headers)
+        response = requests.post(url=URL, json=result, headers=headers)
 
         # Check if the request was successful
         if response.status_code == 201:

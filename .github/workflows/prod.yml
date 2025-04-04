@@ -6,40 +6,40 @@ on:
       - prod-deploy
 
 jobs:
-  # deploy-frontend:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Authenticate with GCP
-  #       uses: google-github-actions/auth@v2
-  #       with:
-  #         credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-  #     - name: Set up Google Cloud SDK
-  #       uses: google-github-actions/setup-gcloud@v2
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
 
-  #     - name: Set GCP project
-  #       run: |
-  #         gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+      - name: Set GCP project
+        run: |
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
-  #     - name: Build & Push Docker Image
-  #       run: |
-  #         gcloud auth configure-docker us-west1-docker.pkg.dev
-  #           docker build -t us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest ./frontend
-  #           docker push us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest
+      - name: Build & Push Docker Image
+        run: |
+          gcloud auth configure-docker us-west1-docker.pkg.dev
+            docker build -t us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest ./frontend
+            docker push us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest
 
-  #     # Step 6: Deploy the React App to Cloud Run
-  #     - name: Deploy React App to Cloud Run
-  #       run: |
-  #         gcloud run deploy react-service \
-  #           --region us-west1 \
-  #           --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest \
-  #           --allow-unauthenticated \
-  #           --platform managed \
-  #           --port 80 \
-  #           --memory 2G
+      # Step 6: Deploy the React App to Cloud Run
+      - name: Deploy React App to Cloud Run
+        run: |
+          gcloud run deploy react-service \
+            --region us-west1 \
+            --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest \
+            --allow-unauthenticated \
+            --platform managed \
+            --port 80 \
+            --memory 2G
   deploy-backend:
     runs-on: ubuntu-latest
     steps:
@@ -63,7 +63,7 @@ jobs:
           gcloud auth configure-docker us-west1-docker.pkg.dev
           docker build -t us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest ./backend
           docker push us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest
-# Step 5: Deploy the backend to Cloud Run
+      # Step 5: Deploy the backend to Cloud Run
       - name: Deploy backend to Cloud Run
         run: |
           gcloud run deploy backend-service \
@@ -72,6 +72,9 @@ jobs:
             --add-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} \
             --allow-unauthenticated \
             --set-env-vars ALLOWED_HOSTS=backend-service-102081122635.us-west1.run.app \
+            --set-env-vars "EMAIL_USER=${{secrets.EMAIL_USER}}" \
+            --set-env-vars "EMAIL_PASSWORD=${{secrets.EMAIL_PASSWORD}}" \
+            --set-env-vars "DEFAULT_EMAIL=${{secrets.DEFAULT_EMAIL}}" \
             --platform managed \
             --port 8080
 
@@ -86,16 +89,42 @@ jobs:
             --command migrate \
             --execute-now
 
-      # Step 7: Create Django Superuser via Cloud Run Job
-      # - name: Create Django Superuser via Cloud Run Job
-      #   run: |
-      #     gcloud run jobs create superuser-job \
-      #       --region us-west1 \
-      #       --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/backend:latest \
-      #       --set-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} \
-      #       --set-env-vars SETTINGS_NAME=${{ secrets.DJANGO_SETTINGS_SECRET_NAME }} \
-      #       --set-env-vars DJANGO_SUPERUSER_EMAIL=${{ secrets.DJANGO_SUPERUSER_EMAIL }} \
-      #       --set-secrets DJANGO_SUPERUSER_PASSWORD=${{ secrets.DJANGO_SUPERUSER_PASSWORD_SECRET }}:latest \
-      #       --command createsuperuser \
-      #       --execute-now
+  deploy-consumer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set GCP project
+        run: |
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Build & Push Docker Image for Consumer
+        run: |
+          gcloud auth configure-docker us-west1-docker.pkg.dev
+          docker build -t us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest ./consumer
+          docker push us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest
+
+      - name: Deploy Consumer to Cloud Run
+        run: |
+          gcloud run deploy consumer-service \
+            --region us-west1 \
+            --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest \
+            --allow-unauthenticated \
+            --platform managed \
+            --set-env-vars "EXTRACT_URL=https://backend-service-102081122635.us-west1.run.app" \ 
+            --set-env-vars "PIKA_URL=${{secrets.PIKA_URL}}" \
+            --memory 1G
+
+  
+
+
 
