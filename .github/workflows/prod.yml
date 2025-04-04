@@ -120,7 +120,7 @@ jobs:
             --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest \
             --allow-unauthenticated \
             --platform managed \
-            --set-env-vars "EXTRACT_URL=https://backend-service-102081122635.us-west1.run.app" \ 
+            --set-env-vars "EXTRACT_URL=https://backend-service-102081122635.us-west1.run.app" \
             --set-env-vars "PIKA_URL=${{secrets.PIKA_URL}}" \
             --memory 1G
 
