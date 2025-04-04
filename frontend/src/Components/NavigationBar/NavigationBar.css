@@ -4,7 +4,7 @@
     justify-content: space-between; 
     background-color: #b0dbb2; 
     height: inherit;
-    border-radius: 10px; 
+    /*border-radius: 10px; */
 }
 
 .navContainer ul {
@@ -14,7 +14,7 @@
     margin: 0;
     gap: 20px; 
     justify-content: space-between;
-    width: -webkit-fill-available;
+    width: stretch;
 }
 
 /* Style the list items */

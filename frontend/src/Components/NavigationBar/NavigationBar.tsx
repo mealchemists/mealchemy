@@ -11,8 +11,8 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onClick }) => {
         <nav className="navContainer">
             <div className="middleNav">
                 <ul>
-                    <li onClick={() => onClick("Recipes")}>Recipe</li>
-                    <li onClick={() => onClick("MealPlanning")}>MealPlanning</li>
+                    <li onClick={() => onClick("Recipes")}>Recipes</li>
+                    <li onClick={() => onClick("MealPlanning")}>Meal Planning</li>
                     <li onClick={() => onClick("ShoppingList")}>Shopping List</li>
                 </ul>
             </div>

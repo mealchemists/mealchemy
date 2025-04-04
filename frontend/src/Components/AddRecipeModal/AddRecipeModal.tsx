@@ -85,9 +85,13 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                         Add Recipe
                     </h3>
 
+                    {addRecipeFormat === 1 && (
+                        <p className = 'addRecipeSubTitle'>Works best with uniformly lit scans of recipe printouts.</p>
+                    )}
+
                     {addRecipeFormat === 0 && (
                         <div className="addRecipeUrl">
-                            <label>Recipe Url:</label>
+                            <label>Recipe URL:</label>
                             <TextField
                             sx={{
                                 "& .MuiOutlinedInput-root": {
@@ -150,12 +154,11 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                     )}
                 </div>
 
-
                 <Button
                     variant="contained"
                     disabled={
-                        addRecipeFormat === 0 && recipeUrl.trim() === '' ||
-                        addRecipeFormat === 1 && !selectedFile
+                        (addRecipeFormat === 0 && recipeUrl.trim() === '') ||
+                        (addRecipeFormat === 1 && !selectedFile)
                     }
                     sx={{
                         backgroundColor: '#6bb2f4',
@@ -163,7 +166,8 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                         borderRadius: '10px',
                         padding: '10px'
                     }}
-                    onClick={sendRecipeToParent}>Done</Button>
+                    onClick={sendRecipeToParent}>Done
+                </Button>
             </Box>
         </Modal>
     );

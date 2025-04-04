@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, Typography } from '@mui/material';
-import { Ingredient } from '../../Models/models';
+import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, Typography, MenuItem } from '@mui/material';
+import { Ingredient, Unit } from '../../Models/models';
 import { getAllIngredients } from '../../api/recipeIngredientApi';
 import './AddIngredientModal.css';
 import { getAisles } from '../../api/aisles';
@@ -23,7 +23,7 @@ const blankRecipe1 = {
     id: -1,
     name: "",
     quantity: 0,
-    unit: "g",
+    unit: Unit.Gram,
     calories_per_100g: 0,
     protein_per_100g: 0,
     carbs_per_100g: 0,
@@ -133,21 +133,33 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
                         <div className='addIngredientRow'>
                             <label>Unit:</label>
                             <TextField
+                                select
                                 value={newIngredient.unit}
                                 onChange={(e) => handleInputChange("unit", e.target.value)}
+
                                 sx={{
                                     "& .MuiOutlinedInput-root": {
                                         height: "40px",
-                                        width: "75px",
+                                        width: "100px",
+
                                         border: "2px solid #b0dbb2",
                                         borderRadius: "10px",
                                         "& fieldset": { border: "none" },
+
                                         "&:hover fieldset": { border: "none" },
+
                                         "&.Mui-focused fieldset": { border: "none" },
                                         padding: "5px",
                                     },
                                 }}
-                            />
+
+                            >
+                                {Object.entries(Unit).map(([label, value]) => (
+                                    <MenuItem key={value} value={value}>
+                                        {value === Unit.None ? <em>&lt;No unit&gt;</em> : value}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
 
                         </div>
                         <div className='addIngredientRow'>

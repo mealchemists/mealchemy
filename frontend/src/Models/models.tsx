@@ -55,3 +55,20 @@ export interface FilterObject {
     range?: number[];
     mainIngredient?: string;
 }
+
+export enum Unit {
+    None = '',
+    Teaspoon = 'tsp',
+    Tablespoon = 'tbsp',
+    Pint = 'pt',
+    Quart = 'qt',
+    Cup = 'cup',
+    Gallon = 'gal',
+    Ounce = 'oz',
+    FluidOunce = 'fl oz',
+    Pound = 'lb',
+    Mililiter = 'mL',
+    Liter = 'L',
+    Gram = 'g',
+    Kilogram = 'kg',
+}

@@ -123,9 +123,9 @@ function AisleModal({ open, onClose, ingredient}) {
                     backgroundColor: '#6bb2f4',
                     color: 'white',
                     borderRadius:'10px'
-
                 }}
-                 onClick={sendAisleToParent}>Done</Button>
+                onClick={sendAisleToParent}
+                disabled={newAisle.trim() === ''}>Done</Button>
             </Box>
         </Modal >
     );
