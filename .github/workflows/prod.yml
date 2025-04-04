@@ -6,40 +6,40 @@ on:
       - prod-deploy
 
 jobs:
-  deploy-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # deploy-frontend:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Authenticate with GCP
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+  #     - name: Authenticate with GCP
+  #       uses: google-github-actions/auth@v2
+  #       with:
+  #         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+  #     - name: Set up Google Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@v2
 
-      - name: Set GCP project
-        run: |
-          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+  #     - name: Set GCP project
+  #       run: |
+  #         gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Build & Push Docker Image
-        run: |
-          gcloud auth configure-docker us-west1-docker.pkg.dev
-            docker build -t us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest ./frontend
-            docker push us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest
+  #     - name: Build & Push Docker Image
+  #       run: |
+  #         gcloud auth configure-docker us-west1-docker.pkg.dev
+  #           docker build -t us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest ./frontend
+  #           docker push us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest
 
-      # Step 6: Deploy the React App to Cloud Run
-      - name: Deploy React App to Cloud Run
-        run: |
-          gcloud run deploy react-service \
-            --region us-west1 \
-            --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest \
-            --allow-unauthenticated \
-            --platform managed \
-            --port 80 \
-            --memory 2G
+  #     # Step 6: Deploy the React App to Cloud Run
+  #     - name: Deploy React App to Cloud Run
+  #       run: |
+  #         gcloud run deploy react-service \
+  #           --region us-west1 \
+  #           --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest \
+  #           --allow-unauthenticated \
+  #           --platform managed \
+  #           --port 80 \
+  #           --memory 2G
 
 
   deploy-backend:
@@ -109,64 +109,64 @@ jobs:
         run: |
           gcloud run jobs execute migrate-job --region us-west1
 
-  deploy-consumer:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # deploy-consumer:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Authenticate with GCP
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+  #     - name: Authenticate with GCP
+  #       uses: google-github-actions/auth@v2
+  #       with:
+  #         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+  #     - name: Set up Google Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@v2
 
-      - name: Set GCP project
-        run: |
-          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+  #     - name: Set GCP project
+  #       run: |
+  #         gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Build & Push Docker Image for Consumer
-        run: |
-          gcloud auth configure-docker us-west1-docker.pkg.dev
-          docker build -t us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest ./recipe-extractors
-          docker push us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest
+  #     - name: Build & Push Docker Image for Consumer
+  #       run: |
+  #         gcloud auth configure-docker us-west1-docker.pkg.dev
+  #         docker build -t us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest ./recipe-extractors
+  #         docker push us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest
 
-      # Authenticate Docker with Artifact Registry
-      - name: Authenticate Docker to Google Artifact Registry
-        run: |
-          gcloud auth configure-docker us-west1-docker.pkg.dev
+  #     # Authenticate Docker with Artifact Registry
+  #     - name: Authenticate Docker to Google Artifact Registry
+  #       run: |
+  #         gcloud auth configure-docker us-west1-docker.pkg.dev
 
-      - name: Deploy Consumer to Google Compute Engine (VM)
-        run: |
-          # SSH into the Google Compute Engine instance and install Docker if not installed
-          gcloud compute ssh mealchemy-ce --zone us-west1-a --command "
-            if ! command -v docker &> /dev/null; then
-              echo 'Docker not found, installing...';
-              sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common;
-              curl -fsSL https://get.docker.com -o get-docker.sh;
-              sudo sh get-docker.sh;
-              sudo usermod -aG docker $USER; 
-              sudo systemctl enable docker;
-              sudo systemctl start docker;
-            else
-              echo 'Docker is already installed';
-            fi
-          "
+  #     - name: Deploy Consumer to Google Compute Engine (VM)
+  #       run: |
+  #         # SSH into the Google Compute Engine instance and install Docker if not installed
+  #         gcloud compute ssh mealchemy-ce --zone us-west1-a --command "
+  #           if ! command -v docker &> /dev/null; then
+  #             echo 'Docker not found, installing...';
+  #             sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common;
+  #             curl -fsSL https://get.docker.com -o get-docker.sh;
+  #             sudo sh get-docker.sh;
+  #             sudo usermod -aG docker $USER; 
+  #             sudo systemctl enable docker;
+  #             sudo systemctl start docker;
+  #           else
+  #             echo 'Docker is already installed';
+  #           fi
+  #         "
 
-          # Now that Docker is installed, pull the image and run the container
-          gcloud compute ssh mealchemy-ce --zone us-west1-a --command "
-            sudo docker pull us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest && \
-            sudo docker stop consumer || true && \
-            sudo docker rm consumer || true && \
-            sudo docker run -d --name consumer \
-              -e PIKA_URL=${{ secrets.PIKA_URL }} \
-              -e EXTRACT_URL=https://backend-service-102081122635.us-west1.run.app \
-              -e DJANGO_URL=${{ secrets.DJANGO_URL }} \
-              --memory 1G \
-              us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest
-          "
+  #         # Now that Docker is installed, pull the image and run the container
+  #         gcloud compute ssh mealchemy-ce --zone us-west1-a --command "
+  #           sudo docker pull us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest && \
+  #           sudo docker stop consumer || true && \
+  #           sudo docker rm consumer || true && \
+  #           sudo docker run -d --name consumer \
+  #             -e PIKA_URL=${{ secrets.PIKA_URL }} \
+  #             -e EXTRACT_URL=https://backend-service-102081122635.us-west1.run.app \
+  #             -e DJANGO_URL=${{ secrets.DJANGO_URL }} \
+  #             --memory 1G \
+  #             us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest
+  #         "
 
     
 
