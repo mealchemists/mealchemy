@@ -5,6 +5,9 @@ import { useLocation, useNavigate } from "react-router-dom";  // Use useNavigate
 import {validatePassword, validateConfirmPassword} from '../../utils/formValidation';
 import { toast } from 'react-toastify';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
+const RESET_PASSWORD_URL = `${API_BASE_URL}/reset-password/`;
+
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -40,7 +43,7 @@ const ResetPassword = () => {
     try {
       // Make POST request to your Django backend to reset password
       const response = await axios.post(
-        'http://localhost:8000/api/reset-password/', 
+        RESET_PASSWORD_URL,
         { 
           password,  // Send password if it's being updated
         },

@@ -38,6 +38,7 @@ jobs:
             --image us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/frontend:latest \
             --allow-unauthenticated \
             --platform managed \
+            --set-env-vars "REACT_APP_API_URL=https://backend-service-102081122635.us-west1.run.app/api" \
             --port 80 \
             --memory 2G
 
