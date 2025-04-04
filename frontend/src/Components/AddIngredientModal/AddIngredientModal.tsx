@@ -3,7 +3,9 @@ import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, Typography
 import { Ingredient } from '../../Models/models';
 import { getAllIngredients } from '../../api/recipeIngredientApi';
 import './AddIngredientModal.css';
-import apiClient from '../../api/apiClient';
+import { getAisles } from '../../api/aisles';
+import { useAuth } from '../../api/useAuth';
+
 const style = {
     position: 'absolute',
     top: '50%',
@@ -14,6 +16,7 @@ const style = {
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
+    borderRadius:'10px',
 };
 
 const blankRecipe1 = {
@@ -33,31 +36,63 @@ const blankRecipe1 = {
 
 function AddIngredientModal({ open, onClose, onAddIngredient }) {
     const [newIngredient, setNewIngredient] = useState<Ingredient>(blankRecipe1);
-    const [allIngredients, setAllIngredients] = useState([]);
+    const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
     const [allAisles, setAllAisles] = useState([]);
+    const { isAuthenticated, username, user_id } = useAuth();
+    const [isAisleDisabled, setIsAisleDisabled] = useState(false);
+
     const handleInputChange = (field: string, value: string) => {
-        setNewIngredient((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
+        if (field === "name") {
+            // Check if the name exists in allIngredients
+            const ingredient = allIngredients.find(ingredient => ingredient.name.toLowerCase() === value.toLowerCase());
+
+            if (ingredient) {
+                // If ingredient exists, set the whole object to newIngredient
+                setNewIngredient((prev) => ({
+                    ...prev,
+                    ...ingredient,
+                }));
+
+                setIsAisleDisabled(true);
+            } else {
+                setIsAisleDisabled(false);
+
+                // Update only the "name" field if it's a new ingredient
+                setNewIngredient((prev) => ({
+                    ...prev,
+                    [field]: value,
+                }));
+            }
+        } else {
+            // For fields other than "name", just update that field
+            setNewIngredient((prev) => ({
+                ...prev,
+                [field]: value,
+            }));
+        }
     };
 
+
     const sendIngredientToParent = () => {
+        console.log(newIngredient);
         onAddIngredient(newIngredient);
+        setNewIngredient(blankRecipe1);
     }
 
     useEffect(() => {
         const getIngredientsAisles = async () => {
-            const response = await getAllIngredients();
-            const ingredientNames = response.map((ingredient) => ingredient.name);
-            const aisleNames = Array.from(new Set(response.map((ingredient) => ingredient.aisle)));
-            // setAllAisles(aisleNames);
-            setAllAisles(["Fruit", "Dairy"]);
-            setAllIngredients(ingredientNames);
+            if (!user_id) {
+                return
+            }
+            const ingredientData = await getAllIngredients();
+            const aisleData = await getAisles(user_id);
+            const aisleNames = aisleData.map((aisle) => aisle.name);
+            setAllAisles(aisleNames);
+            setAllIngredients(ingredientData);
         };
 
         getIngredientsAisles();
-    },[])
+    }, [user_id])
 
 
 
@@ -70,7 +105,7 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
         >
             <Box sx={style}>
                 <div>
-                    <h3>
+                    <h3 className='AddIngredientTitle'>
                         Add Ingredient
                     </h3>
 
@@ -119,7 +154,7 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
                             <label>Ingredient name:</label>
                             <Autocomplete
                                 id="tags-outlined"
-                                options={allIngredients.map((option) => option)}
+                                options={allIngredients.map((option) => option.name)}
                                 freeSolo
                                 onInputChange={(event, newValue) => handleInputChange("name", newValue)}
                                 renderTags={() => null}
@@ -143,35 +178,37 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
                             />
                         </div>
 
-                        <div className='addIngredientRow'>
-                            <label>Grocery Aisle</label>
-                            <Autocomplete
-                                id="tags-outlined"
-                                options={allAisles.map((option) => option)}
-                                onInputChange={(event, newValue) => handleInputChange("aisle", newValue)}
-                                freeSolo
-                                renderTags={() => null}
-                                renderInput={(params) => (
-                                    <TextField
-                                        sx={{
-                                            "& .MuiOutlinedInput-root": {
-                                                height: "40px",
-                                                width: "150px",
-                                                border: "2px solid #b0dbb2",
-                                                borderRadius: "10px",
-                                                "& fieldset": { border: "none" },
-                                                "&:hover fieldset": { border: "none" },
-                                                "&.Mui-focused fieldset": { border: "none" },
-                                                padding: "5px",
-                                            },
-                                        }}
-                                        {...params}
-                                    />
-                                )}
-                            />
-                        </div>
-
+                        {!isAisleDisabled && (
+                            <div className='addIngredientRow'>
+                                <label>Grocery Aisle</label>
+                                <Autocomplete
+                                    id="tags-outlined"
+                                    options={allAisles.map((option) => option)}
+                                    onInputChange={(event, newValue) => handleInputChange("aisle", newValue)}
+                                    freeSolo
+                                    renderTags={() => null}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            sx={{
+                                                "& .MuiOutlinedInput-root": {
+                                                    height: "40px",
+                                                    width: "150px",
+                                                    border: "2px solid #b0dbb2",
+                                                    borderRadius: "10px",
+                                                    "& fieldset": { border: "none" },
+                                                    "&:hover fieldset": { border: "none" },
+                                                    "&.Mui-focused fieldset": { border: "none" },
+                                                    padding: "5px",
+                                                },
+                                            }}
+                                            {...params}
+                                        />
+                                    )}
+                                />
+                            </div>
+                        )}
                     </div>
+
 
 
 

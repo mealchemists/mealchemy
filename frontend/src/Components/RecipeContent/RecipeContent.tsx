@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Ingredient, Recipe, RecipeIngredient, RecipeStep } from '../../Models/models';
+import './RecipeContent.css';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
@@ -7,15 +9,15 @@ import { Avatar, Button, Chip, styled, TextField, Tooltip } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import SoupKitchenIcon from '@mui/icons-material/SoupKitchen'; 
+import SoupKitchenIcon from '@mui/icons-material/SoupKitchen';
 import FlatwareIcon from '@mui/icons-material/Flatware';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import DinnerDiningIcon from '@mui/icons-material/DinnerDining';
+import { toast } from 'react-toastify';
 
 import { deleteRecipeIngredients, putRecipeIngredients, createRecipeIngredients } from '../../api/recipeIngredientApi';
 import AddIngredientModal from '../AddIngredientModal/AddIngredientModal';
 import EditTagModal from '../EditTagModal/EditTagModal';
-import { Ingredient, Recipe, RecipeIngredient } from '../../Models/models';
 import './RecipeContent.css';
 
 
@@ -34,21 +36,7 @@ interface RecipeContentProps {
     initialEditMode?: boolean;
     exitEditMode: () => void;
     onDeleteRecipe: (recipe: RecipeIngredient) => void; // Adjusted prop type
-}
-
-const blankRecipe = {
-    id: -1,
-    name: "",
-    quantity: 0,
-    unit: '',
-    calories_per_100g: 0,
-    protein_per_100g: 0,
-    carbs_per_100g: 0,
-    sugar_per_100g: 0,
-    fat_per_100g: 0,
-    fiber_per_100g: 0,
-    sodium_per_100mg: 0,
-    aisle: ""
+    onUpdateRecipe: (recipe: RecipeIngredient) => void; // Adjusted prop type
 }
 
 const VisuallyHiddenInput = styled('input')({
@@ -68,7 +56,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     recipeIngredient,
     initialEditMode = false,
     exitEditMode,
-    onDeleteRecipe
+    onDeleteRecipe,
+    onUpdateRecipe
 }) => {
     const [recipe, setRecipe] = useState(recipeIngredient.recipe)
     // 3 dot menu, edit and delete options
@@ -96,6 +85,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
     const [imageBase64, setImageBase64] = useState<string>(recipe.image_url);
 
+    const ingredientRefs = useRef<(HTMLInputElement | null)[]>([]);
+
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
@@ -109,11 +100,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         }
     };
 
-    const deleteRecipe = async (id) => {
+    const deleteRecipe = () => {
         try {
-            const response = await deleteRecipeIngredients(id);
-            console.log(response)
-            // Notify parent to delete the recipe from the list
             onDeleteRecipe(recipeIngredient);
         } catch (error) {
             setError("Error fetching recipes");
@@ -123,8 +111,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
     const putRecipe = async (data) => {
         try {
+
             const response = await putRecipeIngredients(data);
-            console.log(response)
+            onUpdateRecipe(data);
         } catch (error) {
             setError("Error fetching recipes");
             console.error("Error updating recipe ingredient:", error);
@@ -135,6 +124,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const createRecipe = async (data) => {
         try {
             const response = await createRecipeIngredients(data);
+            onUpdateRecipe(data);
         } catch (error) {
             console.error("Error creating recipe Ingredient");
             return;
@@ -154,7 +144,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     // For editing the actual recipe content
     const [title, setTitle] = useState(recipe.name);
     const [ingredients, setIngredients] = useState<Ingredient[]>(recipeIngredient.ingredients);
-    const [instructions, setInstructions] = useState<string>(recipe.steps);
+    const [instructions, setInstructions] = useState<RecipeStep[]>(recipe.steps);
+    const sortedInstructions = instructions.sort((a, b) => Number(a.step_number) - Number(b.step_number));
+
 
     const openOptions = Boolean(anchorEl);
 
@@ -182,8 +174,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             setEditMode(true);
             handleOptionsClose();
         } else if (option == "Delete") {
-            deleteRecipe(recipeIngredient.id);
-            console.log(recipeIngredient.id)
+            deleteRecipe();
         }
     };
 
@@ -201,7 +192,25 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     };
 
     const handleSave = async () => {
-        // tags are managed by applyTagChanges
+        const updatedIngredients = ingredients.map((ingredient, index) => ({
+            ...ingredient,
+            quantity: Number(ingredientRefs.current[index]?.value || null),
+            unit: ingredientRefs.current[index + ingredients.length]?.value || "",
+            display_name:ingredientRefs.current[index + ingredients.length * 2]?.value || "",
+            name: ingredientRefs.current[index + ingredients.length * 2]?.value || "",
+        }));
+
+        const filteredIngredients = updatedIngredients.filter(ingredient => ingredient.name.trim() !== "" && ingredient.quantity !== null);
+        const filteredInstructions = instructions.filter(instruction => instruction.description.trim() !== "");
+        
+        setIngredients(filteredIngredients);
+        setInstructions(filteredInstructions);
+        
+        if (title == ""){
+            toast.error("Please enter a title");
+            return;
+        }
+
         const body = {
             ...recipeIngredient,
             recipe: {
@@ -211,33 +220,20 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 cook_time: Number(cookTime),
                 prep_time: Number(prepTime),
                 total_time: Number(totalTime),
-                image_url: imageBase64
+                image_url: imageBase64,
+                steps: instructions,
             },
-            ingredients: ingredients
+            ingredients: filteredIngredients
         };
 
-        if (recipeIngredient.id != -1) {
+        if(recipeIngredient.id != -1){
             await putRecipe(body);
-        } else {
+        }else{
             await createRecipe(body);
         }
-        // const filteredIngredients = newIngredients.filter(ingredient => ingredient.trim() !== "");
-        // const filteredInstructions = newInstructions.filter(instruction => instruction.trim() !== "");
-
-        // setTitle(newTitle);
-        // setIngredients(filteredIngredients);
-        // setInstructions(filteredInstructions);
+       
         setEditMode(false);
         exitEditMode();
-        // TODO: Save to database
-    };
-
-    const handleIngredientChange = (index: number, field: keyof Ingredient, value: string) => {
-        setIngredients((prevIngredients) =>
-            prevIngredients.map((ingredient, i) =>
-                i === index ? { ...ingredient, [field]: value } : ingredient
-            )
-        );
     };
 
     const handleAddIngredient = (ingredient) => {
@@ -248,15 +244,23 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     };
 
 
-    // const handleInstructionChange = (index, value) => {
-    //     const newInstructions = [...instructions];
-    //     newInstructions[index] = value;
-    //     setInstructions(newInstructions);
-    // };
+    const handleInstructionChange = (index, value) => {
+        const newInstructions = [...instructions];
+        newInstructions[index] = { ...newInstructions[index], description: value };
 
-    // const handleAddInstruction = () => {
-    //     setInstructions([...instructions, ""]); // Add an empty ingredient field
-    // };
+        setInstructions(newInstructions);
+    };
+
+    const handleAddInstruction = () => {
+        const newInstruction: RecipeStep = {
+            id: -1,
+            step_number: instructions.length + 1,
+            recipe: recipeIngredient.recipe.id,
+            description: "",
+        };
+        setInstructions([...instructions, newInstruction]);
+
+    };
 
     return (
         <div className="recipeContent">
@@ -331,7 +335,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                             fontSize: "24px", // Match h1 size
                             fontWeight: "bold",
                         },
-                        "& .MuiInputBase-input": { 
+                        "& .MuiInputBase-input": {
                             textAlign: "center",
                         },
                     }}
@@ -342,40 +346,40 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             <div className="tagContainer">
                 <span className="tagLabel">Tags:</span>
                 {tags.map((tag: string, index: number) => {
-                        let icon = null;
-                        let tooltipLabel = "";
+                    let icon = null;
+                    let tooltipLabel = "";
 
-                        if (index === 1) {
-                            icon = <SoupKitchenIcon />;
-                            tooltipLabel = "Cook Time";
-                        } 
-                        if (index === 2) { 
-                            icon = <FlatwareIcon />;
-                            tooltipLabel = "Prep Time";
-                         } 
-                        if (index === 3) {
-                            icon = <HourglassBottomIcon/>;
-                            tooltipLabel = "Total Time";
-                        }
-                        return (
-                            <Tooltip key={index} title={tooltipLabel} arrow disableHoverListener={!tooltipLabel}>
-                                <Chip
-                                    label={tag}
-                                    icon={icon}
-                                    variant="outlined"
-                                    sx={{
+                    if (index === 1) {
+                        icon = <SoupKitchenIcon />;
+                        tooltipLabel = "Cook Time";
+                    }
+                    if (index === 2) {
+                        icon = <FlatwareIcon />;
+                        tooltipLabel = "Prep Time";
+                    }
+                    if (index === 3) {
+                        icon = <HourglassBottomIcon />;
+                        tooltipLabel = "Total Time";
+                    }
+                    return (
+                        <Tooltip key={index} title={tooltipLabel} arrow disableHoverListener={!tooltipLabel}>
+                            <Chip
+                                label={tag}
+                                icon={icon}
+                                variant="outlined"
+                                sx={{
+                                    color: "#38793b",
+                                    backgroundColor: "#f8f8f8",
+                                    fontWeight: "bold",
+                                    border: "3px solid #38793b",
+                                    "& .MuiChip-icon": {
                                         color: "#38793b",
-                                        backgroundColor: "#f8f8f8",
-                                        fontWeight: "bold",
-                                        border: "3px solid #38793b",
-                                        "& .MuiChip-icon": {
-                                            color: "#38793b", 
-                                        },
-                                    }}
-                                />
-                            </Tooltip>
-                        );
-                    })}
+                                    },
+                                }}
+                            />
+                        </Tooltip>
+                    );
+                })}
 
                 {editMode && (
                     <IconButton onClick={handleOpenTagModal}>
@@ -400,26 +404,26 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             <div className="imgIngredients">
                 <div className='imageContainer'>
                     <Avatar
-                                    src={imageBase64}
-                                    alt={recipe.name}
-                                    variant = "square"
-                                    sx={{
-                                        width: "300px",
-                                        height: "300px",
-                                        objectFit: "cover",
-                                        borderRadius: "10px",
-                                        display: "flex", 
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        fontSize: "20rem",
-                                        backgroundColor: "#f0f0f0"
-                                    }}
-                                >
-                                    <DinnerDiningIcon sx={{ 
-                                        fontSize: "inherit",
-                                        color:'#38793b'
-                                        }}/>
-                                </Avatar>
+                        src={imageBase64}
+                        alt={recipe.name}
+                        variant="square"
+                        sx={{
+                            width: "300px",
+                            height: "300px",
+                            objectFit: "cover",
+                            borderRadius: "10px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "20rem",
+                            backgroundColor: "#f0f0f0"
+                        }}
+                    >
+                        <DinnerDiningIcon sx={{
+                            fontSize: "inherit",
+                            color: '#38793b'
+                        }} />
+                    </Avatar>
                     {editMode && (
                         <Button
                             component="label"
@@ -433,6 +437,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                 width: "fit-content",
                                 backgroundColor: '#b0dbb2',
                                 color: 'black',
+                                borderRadius: '10px'
                             }}
                         >
                             Upload a picture
@@ -454,9 +459,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                 {ingredients.map((ingredient, index) => (
                                     <li key={ingredient.name}> {/* Use id as the key */}
                                         <TextField
-                                            value={ingredient.quantity}
-                                            onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
+                                            defaultValue={ingredient.quantity}
                                             variant="outlined"
+                                            inputRef={(el) => (ingredientRefs.current[index] = el)}
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
                                                     fontSize: "14px"
@@ -465,9 +470,9 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                             }}
                                         />
                                         <TextField
-                                            value={ingredient.unit}
-                                            onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
+                                            defaultValue={ingredient.unit}
                                             variant="outlined"
+                                            inputRef={(el) => (ingredientRefs.current[index + ingredients.length] = el)}
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
                                                     fontSize: "14px",
@@ -477,8 +482,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                             }}
                                         />
                                         <TextField
-                                            value={ingredient.name}
-                                            onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
+                                            defaultValue={ingredient.name}
+                                            inputRef={(el) => (ingredientRefs.current[index + ingredients.length * 2] = el)}
                                             variant="outlined"
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
@@ -494,6 +499,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                 sx={{
                                     backgroundColor: '#b0dbb2',
                                     color: 'black',
+                                    borderRadius: '10px'
                                 }}
                                 onClick={handleOpenIngredientModal}>Add Ingredient</Button>
                         </>
@@ -512,47 +518,57 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 <div className="instructionContent">
                     {editMode ? (
                         <>
-                            <ul>
-                                {/* {instructions.map((instruction, index) => (
-                                    <li key={index}>
-                                        <TextField
-                                            value={instruction}
-                                            onChange={(e) => handleInstructionChange(index, e.target.value)}
-                                            variant="outlined"
-                                            sx={{
-                                                "& .MuiOutlinedInput-root": {
-                                                    fontSize: "14px",
-                                                    width: "100%",
-                                                },
-                                                "& .MuiInputBase-input": {
-                                                    width: "350px",
-                                                },
-                                            }}
-                                        />
+                            <div className="instructionList">
+                                <ol>
+                                {sortedInstructions.map((instruction, index) => (
+                                    <li key = {index}>
+                                    <TextField
+                                        key={index}
+                                        value={instruction.description}
+                                        onChange={(e) => handleInstructionChange(index, e.target.value)}
+                                        variant="outlined"
+                                        sx={{
+                                            "& .MuiOutlinedInput-root": {
+                                                fontSize: "14px",
+                                                width: "100%",
+                                            },
+                                            "& .MuiInputBase-input": {
+                                                width: "350px",
+                                            },
+                                        }}
+                                    />
                                     </li>
-                                ))} */}
-                            </ul>
-                            {/* <Button 
-                            variant = "contained"
-                            sx = {{
-                            backgroundColor:'#b0dbb2',
-                            color:'white',
-                            borderRadius:'10px'
-                            }}
-                             onClick={handleAddInstruction}>Add Instruction</Button> */}
+                                ))}
+                                </ol>
+                            </div>
+
+                            <div className="instructionActions">
+                                <Button
+                                    variant="contained"
+                                    sx={{
+                                        backgroundColor: '#b0dbb2',
+                                        color: 'black',
+                                        borderRadius: '10px',
+                                    }}
+                                    onClick={handleAddInstruction}
+                                >
+                                    Add Instruction
+                                </Button>
+                            </div>
 
                         </>
                     ) : (
-                        <ul>
-                            {instructions.split('\n').map((instruction, index) => (
-                                <li key={index}>{instruction}</li>
+                        <ol>
+                            {sortedInstructions.map((instruction) => (
+                                <li key={String(instruction.step_number)}>{instruction.description}</li>
                             ))}
-                        </ul>
+                        </ol>
                     )}
                 </div>
             </div>
         </div>
     );
+    
 }
 
 export default RecipeContent;

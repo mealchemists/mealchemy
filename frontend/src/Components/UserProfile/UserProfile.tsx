@@ -5,13 +5,16 @@ import { useAuth } from '../../api/useAuth';
 import './UserProfile.css';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { validateEmail, validatePassword } from '../../utils/formValidation';
 
 
 function UserProfile() {
-  const { isAuthenticated, username } = useAuth();
+  const { isAuthenticated, username, user_id } = useAuth();
   const [email, setEmail] = useState(username);
   const [showPasswordInput, setShowPasswordInput] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+
 
   const [newPassword, setNewPassword] = useState("");
   const navigate = useNavigate();
@@ -31,8 +34,14 @@ function UserProfile() {
     setShowPasswordInput(!showPasswordInput);
   };
   const handleSavePassword = async () => {
-    console.log("New Password:", newPassword); 
-    await changePassword({email: email, newPassword});
+
+    setPasswordError("");
+    
+    const isPasswordValid = validatePassword(newPassword, setPasswordError);
+            
+    if (!isPasswordValid ) return;
+
+    await changePassword({email: email, password: newPassword});
     setShowPasswordInput(false);
     setNewPassword(newPassword);
     navigate('/login');
@@ -77,7 +86,13 @@ function UserProfile() {
               Done
             </Button>
           </FormControl>
+          
         )}
+        {!!passwordError && (
+                <Typography color="error" variant="body2" sx={{ marginTop: 2 }}>
+                    {passwordError}
+                </Typography>
+            )}
         <Button variant="outlined" color="error" onClick={handleSignOut} sx={{ width: "100%" ,borderRadius:'10px'}}>
           Sign Out
         </Button>

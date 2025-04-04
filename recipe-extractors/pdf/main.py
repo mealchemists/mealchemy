@@ -1,79 +1,67 @@
-import pytesseract
-from pytesseract import TesseractNotFoundError
-
+from llm import setup_llm_chain
+from .pdf_utils import PDFUtils
+import requests
 import os
+import shutil
+import sys
+import json
+import glob
+import tempfile
 from pathlib import Path
-import argparse
+from time import perf_counter
 
-import pdf_utils
+# allow relative import
+sys.path.append(str(Path(__file__).parent.parent))
 
-TEST_SINGLE = False  # single-page PDFs
-TEST_MULTI = False  # multi-page PDFs
-TEST_HARDCOPY_SCANS = False
-TEST_ELECTRONIC_PRINTOUTS = False
+from dotenv import load_dotenv
 
-SRC_PATH = Path("./source_material/")
+load_dotenv()
 
-# Local test suite for PDF extraction. Will convert this to cover the main funcitonality as a service.
-
-# from the source_material/ directory (that contains some selected pdfs)
-# grab all the text from each images and save them (do not postprocess just yet)
-#
-# use OpenCV to:
-#  - preprocess the image (note that Tesseract already does some of this for you; research the existing options)
-#    (https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html)
-#  - identify the regions of structured text and obtain slices of the original image for each region
-#    - Bullet points most likely that contain recipe steps/ingredients
-#    - Paragraphs (recipe steps / description)
-#    - Short regions of text (cook time, preparation time, and sometimes ingredients)
-#  - from each slice, obtain the textual content for tesseract to extract from, and then
-#    perform some postprocessing (heuristics? LLM?). we are expecting that text will be in a lot of disconnected pieces.
-
-# NOTE: We will need to handle multipage PDFs, as well as PDFs that can contain several recipes.
-# I think that the LLM will likely handle this, as well as correct any mistakes.
+EXTRACT_URL = "http://localhost:8000/api/save-scraped-data/"
 
 
-def check_tesseract():
-    try:
-        _ = pytesseract.get_tesseract_version()
-    except TesseractNotFoundError as e:
-        print(e)
-        exit(-1)
+def extract_recipe_data_pdf(temp_path, user, token):
+    # load and extract
+    pages = PDFUtils.load_pdf_pages_path(temp_path)
 
+    # purge all temporary files
+    temp_dir = tempfile.gettempdir()
+    pattern = os.path.join(temp_dir, "mealchemy_pdf_upload*")
 
-def main():
-    parse_args()
-    check_tesseract()
+    for item in glob.glob(pattern):
+        shutil.rmtree(item)
 
+    print("Purged temporary directory!")
+
+    raw_texts = PDFUtils.extract_raw_text_hardcopy(pages, verbose=True)
+
+    # # TODO: Get aisles using the token and then pass it into the chain.
+    # headers = {
+    #     "Authorization": f"Bearer {token}",
+    # }
+    # aisles = requests.get(f"{AISLES_URL}/{user}", headers=headers)
+    # print(aisles)
+
+    chain = setup_llm_chain(mode="pdf", api_key=os.getenv("OPENAI_ECE493_G06_KEY"))
+    for text in raw_texts:
+        concatenated = "\n".join(text)
+        recipe_data_str = str(chain.invoke({"input": concatenated}).content)
+        result = json.loads(recipe_data_str)
+
+        assert result is not None
+        if result["recipe"].get("source_url", None) is None:
+            result["recipe"]["source_url"] = ""
+
+        headers = {
+            "Authorization": f"Bearer {token}",  # Add the token in Authorization header
+        }
+        response = requests.post(url=EXTRACT_URL, json=result, headers=headers)
+
+        # Check if the request was successful
+        if response.status_code == 201:
+            print("Successfully sent the recipe data.")
+        else:
+            print(
+                f"Failed to send recipe data. Status Code: {response.status_code}, Response: {response.text}"
+            )
     return
-
-
-def parse_args():
-    global TEST_SINGLE, TEST_MULTI, TEST_HARDCOPY_SCANS, TEST_ELECTRONIC_PRINTOUTS
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--multi", action="store_true", help="Run tests for multi-PDFs")
-    parser.add_argument(
-        "--single", action="store_true", help="Run tests for single PDFs"
-    )
-    parser.add_argument("--h", action="store_true", help="Run tests for hardcopy scans")
-    parser.add_argument(
-        "--e", action="store_true", help="Run tests for electronic printouts"
-    )
-
-    args = parser.parse_args()
-
-    if args.single:
-        TEST_SINGLE = True
-    if args.multi:
-        TEST_MULTI = True
-    if args.h:
-        TEST_HARDCOPY_SCANS = True
-    if args.e:
-        TEST_ELECTRONIC_PRINTOUTS = True
-
-    return
-
-
-if __name__ == "__main__":
-    main()

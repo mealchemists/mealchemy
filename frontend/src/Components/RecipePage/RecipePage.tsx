@@ -32,13 +32,41 @@ function RecipePage() {
         await deleteRecipe(recipeToDelete.recipe.id);
         setRecipeIngredients((prevRecipes) => {
             const updatedRecipes = prevRecipes.filter(recipe => recipe !== recipeToDelete);
-            // If the selected recipe is deleted, clear it
-            // TODO I think udapting the current content to be the next Recipe in the recipe panel would be better
+
             if (selectedRecipeIngredient === recipeToDelete) {
                 setSelectedRecipeIngredient(null);
             }
 
             return updatedRecipes;
+        });
+    };
+
+    // const handleUpdateRecipe = (updatedRecipe: RecipeIngredient) => {
+    //     setRecipeIngredients(prevRecipeIngredients => {
+    //         const updatedRecipeIngredients = prevRecipeIngredients.map(recipeIngredient => 
+    //             recipeIngredient.id === updatedRecipe.id ? updatedRecipe : recipeIngredient
+    //         );
+    //         return updatedRecipeIngredients;
+    //     });
+    // };
+
+    const handleUpdateRecipe = (updatedRecipe: RecipeIngredient) => {
+        setRecipeIngredients(prevRecipeIngredients => {
+            // Check if the updatedRecipe already exists by id
+            const existingRecipeIndex = prevRecipeIngredients.findIndex(recipeIngredient => recipeIngredient.id === updatedRecipe.id);
+    
+            if (existingRecipeIndex !== -1) {
+                // If found, update the existing recipe ingredient
+                const updatedRecipeIngredients = [...prevRecipeIngredients];
+                updatedRecipeIngredients[existingRecipeIndex] = updatedRecipe;
+                console.log("Updated recipe:", updatedRecipeIngredients);
+                return updatedRecipeIngredients;
+            } else {
+                // If not found, add the new recipe ingredient
+                const updatedRecipeIngredients = [...prevRecipeIngredients, updatedRecipe];
+                console.log("Added new recipe:", updatedRecipeIngredients);
+                return updatedRecipeIngredients;
+            }
         });
     };
 
@@ -62,6 +90,7 @@ function RecipePage() {
                         initialEditMode={editMode}
                         exitEditMode={handleExitEditMode}
                         onDeleteRecipe={handleDeleteRecipe}
+                        onUpdateRecipe={handleUpdateRecipe}
                     />
                 )}
             </div>

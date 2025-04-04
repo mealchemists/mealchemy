@@ -12,6 +12,7 @@ const style = {
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
+    borderRadius:'10px'
 };
 
 // TODO: Get from database
@@ -23,7 +24,7 @@ const allTags = [
     { title: 'Pork' },
 ]
 
-function EditTagModal({mainIngredient, cookTime, prepTime, onApplyTagChanges, open, onClose}) {
+function EditTagModal({mainIngredient='', cookTime='0', prepTime='0', onApplyTagChanges, open, onClose}) {
  // Temporary variables for edit tag modal
     const [tempMainIngredient, setTempMainIngredient] = useState(mainIngredient);
     const [tempCookTime, setTempCookTime] = useState(cookTime);

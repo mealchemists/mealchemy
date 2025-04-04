@@ -3,8 +3,9 @@ import { Recipe } from '../../Models/models';
 import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, Typography } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import { postRecipeUrl } from '../../api/recipes';
-
+import { postRecipePDF, postRecipeUrl } from '../../api/recipes';
+import { toast } from 'react-toastify';
+import './AddRecipeModal.css'
 
 const style = {
     position: 'absolute',
@@ -16,6 +17,7 @@ const style = {
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
+    borderRadius:'10px'
 };
 
 const VisuallyHiddenInput = styled('input')({
@@ -33,26 +35,36 @@ const VisuallyHiddenInput = styled('input')({
 
 function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
     const [newRecipe, setNewRecipe] = useState<Recipe>(null);
-    const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
+    const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
     const [recipeUrl, setRecipeUrl] = useState("");
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
-            setSelectedFiles(Array.from(event.target.files));
+            setSelectedFile(event.target.files[0]);
         }
     };
 
     const addByUrl = async () => {
         try {
             const response = await postRecipeUrl(recipeUrl);
+            toast.info('Sent recipe URL');
         } catch (error) {
             console.error(error);
         }
 
     }
 
+    const addByPDF = async () => {
+        try {
+            const response = await postRecipePDF(selectedFile);
+            toast.info('Sent recipe PDF');
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     const sendRecipeToParent = () => {
         if (addRecipeFormat) {
-
+            addByPDF();
         } else {
             addByUrl();
         }
@@ -69,7 +81,7 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
         >
             <Box sx={style}>
                 <div>
-                    <h3>
+                    <h3 className = 'addRecipeTitle'>
                         Add Recipe
                     </h3>
 
@@ -77,13 +89,25 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                         <div className="addRecipeUrl">
                             <label>Recipe Url:</label>
                             <TextField
-                                sx={{
-                                    width: "15ch",
-                                    "& .MuiOutlinedInput-root": {
-                                        height: "40px",
-                                        "& input": { height: "100%", padding: "10px" },
-                                    },
-                                }}
+                            sx={{
+                                "& .MuiOutlinedInput-root": {
+                                    height: "40px",
+                                    width: "200px",
+                                    border: "2px solid #b0dbb2",
+                                    borderRadius: "10px",
+                                    "& fieldset": { border: "none" },
+                                    "&:hover fieldset": { border: "none" },
+                                    "&.Mui-focused fieldset": { border: "none" },
+                                    padding: "5px",
+                                },
+                            }}
+                                // sx={{
+                                //     width: "15ch",
+                                //     "& .MuiOutlinedInput-root": {
+                                //         height: "40px",
+                                //         "& input": { height: "100%", padding: "10px" },
+                                //     },
+                                // }}
                                 value={(recipeUrl)}
                                 onChange={(e) => setRecipeUrl(e.target.value)}
                             />
@@ -94,13 +118,12 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                         <div className="addRecipePDF">
                             <label>Recipe PDF:</label>
 
-                            {selectedFiles.length > 0 && (
+                            {selectedFile && (
                                 <div style={{ marginTop: "10px" }}>
-                                    {selectedFiles.map((file, index) => (
-                                        <Typography key={index} variant="body2">
-                                            {file.name}
-                                        </Typography>
-                                    ))}
+                                    <Typography variant="body2">
+                                        {selectedFile.name}
+                                    </Typography>
+
                                 </div>
                             )}
                             <Button
@@ -109,10 +132,17 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                                 variant="contained"
                                 tabIndex={-1}
                                 startIcon={<CloudUploadIcon />}
+                                sx={{
+                                    width: "fit-content",
+                                    backgroundColor: '#b0dbb2',
+                                    color: 'black',
+                                    borderRadius: '10px'
+                                }}
                             >
                                 Upload files
                                 <VisuallyHiddenInput
                                     type="file"
+                                    accept='application/pdf'
                                     onChange={handleFileChange}
                                 />
                             </Button>
@@ -121,13 +151,18 @@ function AddRecipeModal({ addRecipeFormat, open, onClose, onAddRecipe }) {
                 </div>
 
 
-                <Button variant="contained"
+                <Button
+                    variant="contained"
+                    disabled={
+                        addRecipeFormat === 0 && recipeUrl.trim() === '' ||
+                        addRecipeFormat === 1 && !selectedFile
+                    }
                     sx={{
                         backgroundColor: '#6bb2f4',
                         color: 'white',
-                        borderRadius:'10px'
-
-                    }} 
+                        borderRadius: '10px',
+                        padding: '10px'
+                    }}
                     onClick={sendRecipeToParent}>Done</Button>
             </Box>
         </Modal>

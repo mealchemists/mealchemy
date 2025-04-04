@@ -1,16 +1,19 @@
 from rest_framework import serializers
 
 from .models.ingredients import Ingredient, RecipeIngredient, Aisle
-from .models.recipe import Recipe
+from .models.recipe import Recipe, Step
 
+
+class StepSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Step
+        fields = '__all__'
 
 class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = '__all__'
-        # read_only_fields = ['user']
      
-        
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
@@ -18,14 +21,20 @@ class IngredientSerializer(serializers.ModelSerializer):
         
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     recipe = RecipeSerializer()
-    # ingredient = IngredientSerializer(many=True)
     
     class Meta:
         model = RecipeIngredient
         fields = '__all__'
-    
+        
 
 class AisleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Aisle
         fields = '__all__'
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=Aisle.objects.all(),
+                fields=['name', 'user'],
+                message="An aisle with this name already exists for this user."
+            )
+        ]
