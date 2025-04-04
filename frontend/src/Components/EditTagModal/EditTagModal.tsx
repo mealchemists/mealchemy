@@ -55,7 +55,7 @@ function EditTagModal({ mainIngredient = '', cookTime = '0', prepTime = '0', onA
         >
             <Box sx={style}>
                 <div>
-                    <h3>
+                    <h3 style={{ textAlign: "center" }}>
                         Edit Tags
                     </h3>
                     <div className="editModalContentContainer">
@@ -98,7 +98,7 @@ function EditTagModal({ mainIngredient = '', cookTime = '0', prepTime = '0', onA
                                     />
                                 )}
                             />
-                           
+
                         </div>
 
                         {/* Cook Time */}
@@ -108,10 +108,14 @@ function EditTagModal({ mainIngredient = '', cookTime = '0', prepTime = '0', onA
                                 value={tempCookTime}
                                 onChange={(e) => setTempCookTime(e.target.value.replace(/\D/g, ""))}
                                 sx={{
-                                    width: "15ch",
                                     "& .MuiOutlinedInput-root": {
                                         height: "40px",
-                                        "& input": { height: "100%", padding: "10px" },
+                                        width: "150px",
+                                        border: "2px solid #b0dbb2",
+                                        borderRadius: "10px",
+                                        "& fieldset": { border: "none" },
+                                        "&:hover fieldset": { border: "none" },
+                                        "&.Mui-focused fieldset": { border: "none" },
                                     },
                                 }}
                                 slotProps={{
@@ -129,10 +133,14 @@ function EditTagModal({ mainIngredient = '', cookTime = '0', prepTime = '0', onA
                                 value={tempPrepTime}
                                 onChange={(e) => setTempPrepTime(e.target.value.replace(/\D/g, ""))}
                                 sx={{
-                                    width: "15ch",
                                     "& .MuiOutlinedInput-root": {
                                         height: "40px",
-                                        "& input": { height: "100%", padding: "10px" },
+                                        width: "150px",
+                                        border: "2px solid #b0dbb2",
+                                        borderRadius: "10px",
+                                        "& fieldset": { border: "none" },
+                                        "&:hover fieldset": { border: "none" },
+                                        "&.Mui-focused fieldset": { border: "none" },
                                     },
                                 }}
                                 slotProps={{
@@ -151,10 +159,19 @@ function EditTagModal({ mainIngredient = '', cookTime = '0', prepTime = '0', onA
                                 disabled
                                 type="number"
                                 sx={{
-                                    width: "15ch",
                                     "& .MuiOutlinedInput-root": {
                                         height: "40px",
-                                        "& input": { height: "100%", padding: "10px" },
+                                        width: "150px",
+                                        border: "2px solid #b0dbb2",
+                                        borderRadius: "10px",
+                                        "& fieldset": { border: "none" },
+                                        "&:hover fieldset": { border: "none" },
+                                        "&.Mui-focused fieldset": { border: "none" },
+                                        "&.Mui-disabled": {
+                                            backgroundColor: "#f0f0f0", 
+                                            color: "rgba(0, 0, 0, 0.5)",
+                                            WebkitTextFillColor: "rgba(0, 0, 0, 0.5)", 
+                                        },
                                     },
                                 }}
                                 slotProps={{
@@ -168,15 +185,15 @@ function EditTagModal({ mainIngredient = '', cookTime = '0', prepTime = '0', onA
                 </div>
 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
-                <Button variant="contained"
-                    sx={{
-                        backgroundColor: '#6bb2f4',
-                        color: 'white',
-                        borderRadius: '10px'
+                    <Button variant="contained"
+                        sx={{
+                            backgroundColor: '#6bb2f4',
+                            color: 'white',
+                            borderRadius: '10px'
 
-                    }} onClick={sendTagsToParent}>
+                        }} onClick={sendTagsToParent}>
                         Done
-                </Button>
+                    </Button>
                 </Box>
             </Box>
         </Modal>
