@@ -107,11 +107,11 @@ jobs:
         run: |
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Build & Push Docker Image for Consumer
-        run: |
-          gcloud auth configure-docker us-west1-docker.pkg.dev
-          docker build -t us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest ./recipe-extractors
-          docker push us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest
+      # - name: Build & Push Docker Image for Consumer
+      #   run: |
+      #     gcloud auth configure-docker us-west1-docker.pkg.dev
+      #     docker build -t us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest ./recipe-extractors
+      #     docker push us-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mealchemy-docker/consumer:latest
 
 #  Step 6: Deploy Consumer to Google Compute Engine (VM)
       - name: Deploy Consumer to Google Compute Engine (VM)
