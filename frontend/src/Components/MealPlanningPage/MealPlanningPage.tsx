@@ -511,7 +511,7 @@ function MealPlanningPage() {
                   },
                 }}
               >
-                <MenuItem value={0}>None</MenuItem>
+                <MenuItem value={0}>0</MenuItem>
                 {[1, 2, 3, 4, 5].map((number) => (
                   <MenuItem key={number} value={number}>
                     {number}

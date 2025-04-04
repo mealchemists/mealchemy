@@ -12,6 +12,8 @@ function ShoppingListRecipes({ removeRecipes }) {
     const [recipes, setRecipes] = useState([]);
     const [refreshTrigger, setRefreshTrigger] = useState(false);
 
+    const isMobile = useMediaQuery("(max-width:800px)");
+
     const getShoppingListRecipes = async() => {
         const recipes = await getShoppingList(user_id, "recipes");
         setRecipes(recipes);
@@ -55,12 +57,14 @@ function ShoppingListRecipes({ removeRecipes }) {
             width: '250px',
             maxWidth: 360,
             backgroundColor: 'white',
-            height: '500px',
+            height: isMobile? 'inherit' : '500px',
             borderRadius: '10px',
-            marginRight: "50px",
+            marginRight: isMobile ? '10px' : '50px',  
+            marginLeft: isMobile ? '5px' : '', 
             display: "flex",
             flexDirection: "column",
             border: "3px solid #38793b",
+            overflowY:"auto"
         }}>
             <Typography
                 variant="h6"
