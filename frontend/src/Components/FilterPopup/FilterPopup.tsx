@@ -147,6 +147,23 @@ export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSo
             options={mainIngredientList}
             value={selectedMainIngredient}
             onChange={(event, newValue) => setSelectedMainIngredient(newValue || '')} // Handle single value
+            slotProps={{
+              popper: {
+                modifiers: [
+                  {
+                    name: 'zIndex',
+                    enabled: true,
+                    phase: 'beforeWrite',
+                    fn: ({ state }) => {
+                      state.styles.popper.zIndex = '2000';
+                    },
+                  },
+                ],
+                sx: {
+                  zIndex: 2000, // fallback for basic control
+                },
+              },
+            }}
             renderInput={(params) => (
               <TextField {...params}
                 sx={{
