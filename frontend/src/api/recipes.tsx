@@ -1,5 +1,6 @@
 import { toast } from "react-toastify";
 import apiClient from "./apiClient";
+import Cookies from 'js-cookie'
 
 const RECIPE_ADD_BY_URL_URI = "recipe-url/";
 const RECIPE_ADD_BY_PDF_URI = "recipe-pdf/";
@@ -11,8 +12,7 @@ const POLL_INTERVAL_SECONDS = 15;
 
 export const postRecipeUrl = async (url) => {
   try {
-    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1]; // Get CSRF token from the cookie
-
+    const csrfToken = Cookies.get('csrftoken');
     const response = await apiClient.post(
       RECIPE_ADD_BY_URL_URI,
       {
@@ -74,8 +74,7 @@ export const pollRecipeIngredients = async (extractedRecipeCount: number): Promi
 
 export const postRecipePDF = async (file: File) => {
   try {
-    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1]; // Get CSRF token from the cookie
-
+    const csrfToken = Cookies.get('csrftoken');
     const formData = new FormData();
     formData.append("temp_file", file);
 
@@ -96,8 +95,7 @@ export const postRecipePDF = async (file: File) => {
 
 export const deleteRecipe = async (recipe_id) => {
   try {
-    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1]; // Get CSRF token from the cookie
-
+    const csrfToken = Cookies.get('csrftoken');
     const response = await apiClient.delete(`recipe/${recipe_id}`, {
       headers: {
         "X-CSRFToken": csrfToken, // Include CSRF token

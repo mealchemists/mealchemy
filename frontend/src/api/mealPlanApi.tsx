@@ -1,4 +1,5 @@
 import apiClient from "./apiClient";
+import Cookies from 'js-cookie';
 import { Recipe, RecipeIngredient } from '../Models/models';
 
 const MEAL_PLAN = "meal-plan";
@@ -14,7 +15,7 @@ export const getMealPlans = async (searchParams = {}) => {
 };
 
 export const deleteMealPlan = async (id) => {
-  const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];  // Get CSRF token from the cookie
+  const csrfToken = Cookies.get('csrftoken');
   const url =   `${MEAL_PLAN}/${id}`
   const response = await apiClient.delete(
     url,
@@ -31,7 +32,7 @@ export const deleteMealPlan = async (id) => {
 
 
 export const putMealPlan = async (data) => {
-  const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];  // Get CSRF token from the cookie
+  const csrfToken = Cookies.get('csrftoken');
   // Construct the query string if there are search parameters
   
   const url = MEAL_PLAN

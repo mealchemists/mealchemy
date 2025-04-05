@@ -1,4 +1,5 @@
 import apiClient from "./apiClient";
+import Cookies from 'js-cookie';
 
 export const getAisles = async(user_id) => {
     const response = await apiClient.get(`/aisles/${user_id}`);
@@ -6,7 +7,8 @@ export const getAisles = async(user_id) => {
 }
 
 export const addAisle = async(aisle_name, user_id) => {
-    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];  // Get CSRF token from the cookie
+    const csrfToken = Cookies.get('csrftoken');
+    
     console.log("AISLE USER_ID", user_id);
     try {
         const response = await apiClient.post(

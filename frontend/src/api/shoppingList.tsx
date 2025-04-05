@@ -1,8 +1,8 @@
 import apiClient from "./apiClient";
+import Cookies from 'js-cookie'
 
 export const addToShoppingList = async(recipe_ids, user_id) => {
-    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];  // Get CSRF token from the cookie
-
+    const csrfToken = Cookies.get('csrftoken');
     try {
         const response = await apiClient.post(
             `/shopping-list/${user_id}/`, 
@@ -31,8 +31,7 @@ export const getShoppingList = async(user_id, type) => {
 }
 
 export const deleteRecipes = async(recipe_ids, user_id) => {
-    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];  // Get CSRF token from the cookie
-
+    const csrfToken = Cookies.get('csrftoken');
     const response = await apiClient.delete(
         `/shopping-list/${user_id}/`, 
         {
