@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Ingredient, Recipe, RecipeIngredient, RecipeStep } from '../../Models/models';
+import { Ingredient, Recipe, RecipeIngredient, RecipeStep, Unit } from '../../Models/models';
 import './RecipeContent.css';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
@@ -314,7 +314,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                             color: 'white',
                             borderRadius: '10px'
                         }}
-                        onClick={() => handleSave()}>Save</Button>
+                        onClick={() => handleSave()}>Save
+                    </Button>
                 )}
 
             </div>
@@ -455,6 +456,17 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                         <TextField
                                             defaultValue={ingredient.quantity}
                                             variant="outlined"
+                                            onChange={(e) => {
+                                                const sanitizedValue = e.target.value
+                                                // allow only positive decimals
+                                                .replace(/[^0-9.]/g, '')
+                                                .replace(/^\./, '')
+                                                .replace(/\.+/g, '.')
+                                                .replace(/(\..*)\./g, '$1');
+                                                if (ingredientRefs.current[index]) {
+                                                    ingredientRefs.current[index].value = sanitizedValue;
+                                                }
+                                            }}
                                             inputRef={(el) => (ingredientRefs.current[index] = el)}
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
@@ -464,6 +476,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                             }}
                                         />
                                         <TextField
+                                            select
                                             defaultValue={ingredient.unit}
                                             variant="outlined"
                                             inputRef={(el) => (ingredientRefs.current[index + ingredients.length] = el)}
@@ -471,10 +484,15 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                                 "& .MuiOutlinedInput-root": {
                                                     fontSize: "14px",
                                                 },
-                                                width: '75px',
-
+                                                width: "75px",
                                             }}
-                                        />
+                                        >
+                                            {Object.entries(Unit).map(([label, value]) => (
+                                                <MenuItem key={value} value={value}>
+                                                    {value === Unit.None ? <em>&lt;No unit&gt;</em> : value}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
                                         <TextField
                                             defaultValue={ingredient.name}
                                             inputRef={(el) => (ingredientRefs.current[index + ingredients.length * 2] = el)}

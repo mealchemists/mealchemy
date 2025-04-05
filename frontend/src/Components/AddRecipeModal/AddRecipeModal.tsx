@@ -112,26 +112,30 @@ function AddRecipeModal({
         >
             <Box sx={style}>
                 <div>
-                    <h3 className='addRecipeTitle'>
+                    <h3 className = 'addRecipeTitle'>
                         Add Recipe
                     </h3>
 
+                    {addRecipeFormat === 1 && (
+                        <p className = 'addRecipeSubTitle'>Works best with uniformly lit scans of recipe printouts.</p>
+                    )}
+
                     {addRecipeFormat === 0 && (
                         <div className="addRecipeUrl">
-                            <label>Recipe Url:</label>
+                            <label>Recipe URL:</label>
                             <TextField
-                                sx={{
-                                    "& .MuiOutlinedInput-root": {
-                                        height: "40px",
-                                        width: "200px",
-                                        border: "2px solid #b0dbb2",
-                                        borderRadius: "10px",
-                                        "& fieldset": { border: "none" },
-                                        "&:hover fieldset": { border: "none" },
-                                        "&.Mui-focused fieldset": { border: "none" },
-                                        padding: "5px",
-                                    },
-                                }}
+                            sx={{
+                                "& .MuiOutlinedInput-root": {
+                                    height: "40px",
+                                    width: "200px",
+                                    border: "2px solid #b0dbb2",
+                                    borderRadius: "10px",
+                                    "& fieldset": { border: "none" },
+                                    "&:hover fieldset": { border: "none" },
+                                    "&.Mui-focused fieldset": { border: "none" },
+                                    padding: "5px",
+                                },
+                            }}
                                 // sx={{
                                 //     width: "15ch",
                                 //     "& .MuiOutlinedInput-root": {

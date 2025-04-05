@@ -159,7 +159,6 @@ def recipe_pdf(request):
         message["token"] = access_token
         message["task_type"] = "pdf"
         message["payload"] = {"temp_path": temp_path}
-        print(message)
 
         producer.publish(message)
 
