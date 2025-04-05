@@ -5,78 +5,32 @@ import os
 from dotenv import load_dotenv
 from pika.exceptions import AMQPConnectionError, StreamLostError
 
-
 load_dotenv()
 
-is_testing = os.environ.get("DJANGO_TEST", "FALSE").upper() == "TRUE"
-if not is_testing:
+
+def publish_message(data, amqp_url=os.environ["PIKA_URL"], queue_name="admin"):
     try:
-        # We do not care about the producer consumer if we are testing.
-        params = pika.URLParameters(
-            os.environ.get("PIKA_URL", "amqp://localhost:5672/")
-        )
+        params = pika.URLParameters(amqp_url)
+        params.heartbeat = 60
         connection = pika.BlockingConnection(params)
         channel = connection.channel()
-    except Exception as _:
-        channel = None
 
+        channel.queue_declare(queue=queue_name)
+        channel.confirm_delivery()
 
-def publish(data):
-    body = json.dumps(data).encode("utf-8")  # Serialize to JSON and convert to bytes
-    if channel is not None:
-        try:
-            channel.basic_publish(exchange="", routing_key="admin", body=body)
-        except Exception as e:
-            print(e)
+        channel.basic_publish(
+            exchange="",
+            routing_key=queue_name,
+            body=json.dumps(data).encode("utf-8"),
+            properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent),
+            mandatory=True,
+        )
 
+        print("Published message.")
 
-class Producer:
-    def __init__(self):
-        self.is_testing = os.environ.get("DJANGO_TEST", "FALSE").upper() == "TRUE"
-        self.amqp_url = os.environ.get("PIKA_URL", "amqp://localhost:5672/")
-        self.connection = None
-        self.channel = None
+        channel.close()
+        return True
 
-        if not self.is_testing:
-            self.connect()
-
-    def connect(self):
-        try:
-            # We do not care about the producer consumer if we are testing.
-            params = pika.URLParameters(
-                os.environ.get("PIKA_URL", "amqp://localhost:5672/")
-            )
-            self.connection = pika.BlockingConnection(params)
-            self.channel = self.connection.channel()
-        except Exception as _:
-            self.channel = None
-
-    def publish(self, data):
-        if self.is_testing:
-            return
-
-        body = json.dumps(data).encode(
-            "utf-8"
-        )  # Serialize to JSON and convert to bytes
-
-        assert self.connection is not None
-
-        try:
-            if self.channel is None or self.connection.is_closed:
-                print(
-                    f"producer reconnecting before publishing: connection closed: {self.connection.is_closed} | channel: {self.channel is None}"
-                )
-                self.connect()
-
-            assert self.channel is not None
-            self.channel.basic_publish(exchange="", routing_key="admin", body=body)
-
-        except (AMQPConnectionError, StreamLostError) as e:
-            print("producer connection lost")
-            self.connect()
-
-            if self.channel:
-                self.channel.basic_publish(exchange="", routing_key="admin", body=body)
-
-        except Exception as e:
-            print(f"failed to publish message: {e}")
+    except Exception as e:
+        print(f"Error publishing message!\n{e}")
+        return False
