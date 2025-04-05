@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+
 import io
 import os
 from pathlib import Path
@@ -65,7 +66,7 @@ else:
 SECRET_KEY = env("SECRET_KEY")
 
 DEBUG = env("DEBUG")
-ROOT_URLCONF = 'backend.urls'
+ROOT_URLCONF = "backend.urls"
 # [START cloudrun_django_csrf]
 # SECURITY WARNING: It's recommended that you use this when
 # running in production. The URLs will be known once you first deploy
@@ -83,58 +84,58 @@ else:
 # [END cloudrun_django_csrf]
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'corsheaders',
-    'django_filters',
-    'rest_framework',
-    'backend.apps.recipes',
-    'backend.apps.meal_plan',
-    'backend.apps.user',
-    'backend.apps.shopping_list',
-    'rest_framework_simplejwt',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "corsheaders",
+    "django_filters",
+    "rest_framework",
+    "backend.apps.recipes",
+    "backend.apps.meal_plan",
+    "backend.apps.user",
+    "backend.apps.shopping_list",
+    "rest_framework_simplejwt",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'backend.wsgi.application'
+WSGI_APPLICATION = "backend.wsgi.application"
 
 
 if os.getenv("USE_SQLITE3", "False").lower() == "true":
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
         }
     }
     print(os.getenv("USE_SQLITE3", "False"))
@@ -149,45 +150,44 @@ else:
     if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
         DATABASES["default"]["HOST"] = "127.0.0.1"
         DATABASES["default"]["PORT"] = 3306
-    
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-        'rest_framework.permissions.AllowAny',
-        
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+        "rest_framework.permissions.AllowAny",
     ],
 }
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -213,16 +213,16 @@ STATIC_URL = "/static/"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    
-    'ROTATE_REFRESH_TOKENS': False,                  
-    'BLACKLIST_AFTER_ROTATION': False,               
-    'UPDATE_LAST_LOGIN': False,
-    'ALGORITHM': 'HS256',      
-    'SIGNING_KEY': 'your-secret-key',
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": False,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": "your-secret-key",
 }
 
 
@@ -233,18 +233,42 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_EMAIL")
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
-ALLOWED_HOSTS = ['backend-service-102081122635.us-west1.run.app', 'localhost', '127.0.0.1', 'frontend-service-102081122635.us-west1.run.app', 'consumer-102081122635.us-central1.run.app']
-CSRF_TRUSTED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app", "https://react-service-102081122635.us-west1.run.app", 'http://localhost:3000', "https://consumer-102081122635.us-central1.run.app"]
-CORS_ALLOWED_ORIGINS = ["https://backend-service-102081122635.us-west1.run.app", "https://react-service-102081122635.us-west1.run.app", 'http://localhost:3000', 'https://consumer-102081122635.us-central1.run.app']
+ALLOWED_HOSTS = [
+    "backend-service-102081122635.us-west1.run.app",
+    "localhost",
+    "127.0.0.1",
+    "frontend-service-102081122635.us-west1.run.app",
+    "consumer-102081122635.us-central1.run.app",
+    "api.mealchemy.app",
+    "mealchemy.app",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://backend-service-102081122635.us-west1.run.app",
+    "https://react-service-102081122635.us-west1.run.app",
+    "http://localhost:3000",
+    "https://consumer-102081122635.us-central1.run.app",
+    "https://www.mealchemy.app",
+    "https://mealchemy.app",
+    "https://api.mealchemy.app",
+]
+CORS_ALLOWED_ORIGINS = [
+    "https://backend-service-102081122635.us-west1.run.app",
+    "https://react-service-102081122635.us-west1.run.app",
+    "http://localhost:3000",
+    "https://consumer-102081122635.us-central1.run.app",
+    "https://www.mealchemy.app",
+    "https://mealchemy.app",
+    "https://api.mealchemy.app",
+]
 CORS_ALLOW_CREDENTIALS = True
 
-SESSION_COOKIE_SAMESITE = 'None'  # Allow cross-site cookies
+SESSION_COOKIE_SAMESITE = "None"  # Allow cross-site cookies
 SESSION_COOKIE_SECURE = True  # Only send cookies over HTTPS
-CSRF_COOKIE_SAMESITE = 'None'  # CSRF cookies for cross-site requests
+CSRF_COOKIE_SAMESITE = "None"  # CSRF cookies for cross-site requests
 CSRF_COOKIE_SECURE = True  # Only send cookies over HTTPS
-CSRF_COOKIE_DOMAIN = '.app'
+CSRF_COOKIE_DOMAIN = "mealchemy.app"
 
 print(f" allowed {ALLOWED_HOSTS}")
 print(f" trusted_origins {CSRF_TRUSTED_ORIGINS}")
