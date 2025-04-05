@@ -42,6 +42,7 @@ export const deleteRecipeIngredients = async (id) => {
 
 export const putRecipeIngredients = async (data) => {
     const csrfToken = Cookies.get('csrftoken');
+    console.log("CSRFTOKEN", csrfToken);
     try {
         const response = await apiClient.put(
             RECIPE_INGREDIENT_URI,
@@ -63,7 +64,6 @@ export const putRecipeIngredients = async (data) => {
 
 export const createRecipeIngredients = async (recipeData) => {
     const csrfToken = Cookies.get('csrftoken');
-    console.log(recipeData);
     const response = await apiClient.post(
         RECIPE_INGREDIENT_URI,
         recipeData,
