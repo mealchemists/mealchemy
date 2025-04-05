@@ -138,17 +138,21 @@ function AddRecipeModal({
 
                     <p className='addRecipeSubTitle'>
                         Extracted data may miss details from time to time.<br />
-                        Please make sure to verify measurements, instructions, and ingredients before use.
+                        Please make sure to verify measurements, instructions, cook/prep times, and ingredients after use.
                     </p>
 
-                    {addRecipeFormat === 1 && (
-                        <p className='addRecipePDFInformation'>
+                    {addRecipeFormat === 1 ? (
+                        <p className='addRecipeInformation'>
                             For best accuracy:<br />
                             - Use <strong>clear typed text</strong> (not handwritten) recipes
                             <br />
                             - Ensure <strong>good contrast</strong> between text and background
                             <br />
                             - Avoid shadows/glare in scanned documents
+                        </p>
+                    ) : (
+                        <p className='addRecipeInformation'>
+                            Results may vary per website. Make sure that the website does not require a login/subscription.
                         </p>
                     )}
 
