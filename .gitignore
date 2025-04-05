@@ -22,3 +22,5 @@ venv/
 #django migrations
 */migrations/
 backend/db.sqlite3
+
+/node_modules

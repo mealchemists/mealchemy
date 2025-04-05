@@ -56,11 +56,9 @@ function ShoppingListPage() {
   const isAnyChecked = checked.length > 0;
 
   const getShoppingData = async () => {
-    console.log("user_id:", user_id);
     if (!user_id) return;
     const data = await getShoppingList(user_id, "aisleIngredients");
     setShoppingListData(data);
-    console.log(data);
     const recipes = await getShoppingList(user_id, "recipes");
     setRecipes(recipes);
   }
@@ -77,7 +75,6 @@ function ShoppingListPage() {
   };
 
   const handleCloseAisleModal = () => {
-    console.log("close modal");
     setRefreshTrigger(prev => !prev);
     setOpenAisleModal(false);
     setSelectedAisle(null);
@@ -113,7 +110,6 @@ function ShoppingListPage() {
 
   const removeRecipes = async () => {
     const resp = await deleteRecipes(checked, user_id);
-    console.log(resp);
     setRefreshTrigger(prev => !prev);
   }
 

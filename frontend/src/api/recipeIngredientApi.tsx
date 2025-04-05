@@ -25,6 +25,7 @@ export const getRecipeIngredients = async (searchParams = {}): Promise<RecipeIng
 
 export const deleteRecipeIngredients = async (id) => {
     const csrfToken = Cookies.get('csrftoken');
+    console.log("CSRFTOKEN", csrfToken);
     const response = await apiClient.delete(
         `${RECIPE_INGREDIENT_URI}/${id}`,
         {
