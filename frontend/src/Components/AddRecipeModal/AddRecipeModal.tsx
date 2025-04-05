@@ -136,8 +136,20 @@ function AddRecipeModal({
                         Add Recipe
                     </h3>
 
+                    <p className='addRecipeSubTitle'>
+                        Extracted data may miss details from time to time.<br />
+                        Please make sure to verify measurements, instructions, and ingredients before use.
+                    </p>
+
                     {addRecipeFormat === 1 && (
-                        <p className='addRecipeSubTitle'>Works best with uniformly lit scans of recipe printouts.</p>
+                        <p className='addRecipePDFInformation'>
+                            For best accuracy:<br />
+                            - Use <strong>clear typed text</strong> (not handwritten) recipes
+                            <br />
+                            - Ensure <strong>good contrast</strong> between text and background
+                            <br />
+                            - Avoid shadows/glare in scanned documents
+                        </p>
                     )}
 
                     {addRecipeFormat === 0 && (
