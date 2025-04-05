@@ -2,6 +2,7 @@
 FROM python:3.12
 
 ENV PIKA_URL=amqps://njslbjoh:sBepSHwzktvaxnpm9-5kcCAtJR63rzJ0@horse.lmq.cloudamqp.com/njslbjoh
+ENV OPENAI_ECE493_G06_KEY=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
 
 # Install manually all the missing libraries
 RUN apt-get update
