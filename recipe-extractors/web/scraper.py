@@ -4,6 +4,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 from .lookup import lookup_data
 from .util import extract_base_domain
+import tempfile
+import shutil
 
 
 class Scraper:
@@ -19,10 +21,13 @@ class Scraper:
 
         # Automatically download and install the correct ChromeDriver
         chrome_driver_path = ChromeDriverManager().install()
-
+        user_data_dir = tempfile.mkdtemp()
         # Set up Chrome options if needed
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")  # Run in headless mode (no GUI)
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument(f"--user-data-dir={user_data_dir}") 
 
         # Launch the Chrome browser with the automatically downloaded ChromeDriver
         driver = webdriver.Chrome(service=Service(chrome_driver_path), options=options)
@@ -34,6 +39,8 @@ class Scraper:
             return html
         finally:
             driver.quit()
+             # Clean up the temp user data dir
+            shutil.rmtree(user_data_dir, ignore_errors=True)
 
     def extract_body_content(self, html_content):
         return self.preprocess(html_content)
