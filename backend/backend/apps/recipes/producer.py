@@ -34,6 +34,7 @@ class Producer:
     def __init__(self):
         self.is_testing = os.environ.get("DJANGO_TEST", "FALSE").upper() == "TRUE"
         self.amqp_url = os.environ.get("PIKA_URL", "amqp://localhost:5672/")
+        print(f"PARTIAL PIKA URL: {self.amqp_url[-24:]}")
         self.connection = None
         self.channel = None
 
@@ -41,6 +42,7 @@ class Producer:
             self.connect()
 
     def connect(self):
+        print("ATTEMPTED TO CONNECT")
         try:
             # We do not care about the producer consumer if we are testing.
             params = pika.URLParameters(
@@ -59,7 +61,7 @@ class Producer:
             "utf-8"
         )  # Serialize to JSON and convert to bytes
 
-        assert self.connection is not None
+        # assert self.connection is not None
 
         try:
             if self.channel is None or self.connection.is_closed:
