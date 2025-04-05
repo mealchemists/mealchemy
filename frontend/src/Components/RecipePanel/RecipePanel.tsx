@@ -7,9 +7,9 @@ import { getRecipeIngredients } from '../../api/recipeIngredientApi';
 import { handleFilterApply } from '../../utils/filter';
 import Button from '@mui/material/Button';
 import { deleteRecipe } from '../../api/recipes';
-import {addToShoppingList} from '../../api/shoppingList';
+import { addToShoppingList } from '../../api/shoppingList';
 import { useAuth } from '../../api/useAuth';
-import {toast} from 'react-toastify';
+import { toast } from 'react-toastify';
 interface RecipePanelProps {
     recipeIngredient: RecipeIngredient[];
     setRecipeIngredients: React.Dispatch<React.SetStateAction<RecipeIngredient[]>>; // Set recipe list from parent
@@ -18,7 +18,7 @@ interface RecipePanelProps {
     recipeExtractor: (recipe: RecipeIngredient[]) => void
 }
 
-const blankStep: RecipeStep= {
+const blankStep: RecipeStep = {
     id: -1,
     step_number: 1,
     description: "",
@@ -37,10 +37,10 @@ const blankRecipe: Recipe = {
     image_url: "",
 };
 
-const blankRecipeIngredient:RecipeIngredient = {
-    id:-1,
+const blankRecipeIngredient: RecipeIngredient = {
+    id: -1,
     recipe: blankRecipe,
-    ingredients: [] as Ingredient[], 
+    ingredients: [] as Ingredient[],
     added_by_extractor: false
 };
 
@@ -60,8 +60,6 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const recipeSearchRef = useRef<any>(null);
-
-
 
     const fetchRecipes = async () => {
         try {
@@ -92,11 +90,11 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
             }
         });
     };
-    
+
     const filterApply = (filterObj: FilterObject) => {
         handleFilterApply(filterObj, setRecipeIngredients);
     }
-    
+
 
     // TODO convert this to recipe ingredients instead
     const handleAddManualRecipe = () => {
@@ -151,9 +149,9 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
         }
     };
 
-    const {isAuthenticated, username, user_id} = useAuth();
+    const { isAuthenticated, username, user_id } = useAuth();
 
-    const handleAddShoppingList = async() => {
+    const handleAddShoppingList = async () => {
         addToShoppingList(selectedRecipes, user_id);
         setMultiSelect(false);
         setButtonVisibility(false);
@@ -169,15 +167,15 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
 
     return (
         <div className="recipe-container">
-            <RecipeSearch 
+            <RecipeSearch
                 onSelect={handleSelectOption}
-                recipeExtractor={recipeExtractor} 
-                applyFiltering={ filterApply }
+                recipeExtractor={recipeExtractor}
+                applyFiltering={filterApply}
                 recipeIngredientsList={recipeIngredient}
                 mainIngredientList={allRecipeIngredients
                     .filter(recipeIngredient => recipeIngredient.recipe.main_ingredient)  // Filter based on `main_ingredient`
                     .map(recipeIngredient => recipeIngredient.recipe.main_ingredient)}
-                ref = {recipeSearchRef}/>
+                ref={recipeSearchRef} />
             <div className='recipeListContainer'>
                 {searchRecipes.map((recipeIngredient, index) => (
                     <ListItem
@@ -206,9 +204,12 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
                         sx={{
                             backgroundColor: '#6bb2f4',
                             color: 'white',
-                            borderRadius: '10px'
+                            borderRadius: '10px',
+                            marginRight:'3px'
+
                         }}
-                        onClick={handleAddShoppingList}>Add to Shopping List</Button>
+                        onClick={handleAddShoppingList}
+                        disabled={selectedRecipes.length == 0}>Add to Shopping List</Button>
                 </div>
             )}
         </div>
