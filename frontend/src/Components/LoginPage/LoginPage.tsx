@@ -31,7 +31,6 @@ function LoginPage() {
     };
 
     const handleForgotPassword = async (data) => {
-        console.log(data)
         try {
             await forgotPassword(data);
             toast.success('Password reset link sent to your email!');

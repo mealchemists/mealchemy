@@ -9,7 +9,6 @@ export const getAisles = async(user_id) => {
 export const addAisle = async(aisle_name, user_id) => {
     const csrfToken = Cookies.get('csrftoken');
     
-    console.log("AISLE USER_ID", user_id);
     try {
         const response = await apiClient.post(
             `/aisles/${user_id}`, 

@@ -145,7 +145,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const [title, setTitle] = useState(recipe.name);
     const [ingredients, setIngredients] = useState<Ingredient[]>(recipeIngredient.ingredients);
     const [instructions, setInstructions] = useState<RecipeStep[]>(recipe.steps);
-    console.log(recipe)
     const sortedInstructions = instructions.sort((a, b) => Number(a.step_number) - Number(b.step_number)); 
 
 

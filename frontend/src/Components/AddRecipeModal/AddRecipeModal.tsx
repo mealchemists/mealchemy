@@ -69,9 +69,7 @@ function AddRecipeModal({
       const extractedRecipes = recipeIngredients.filter(
         (ri) => ri.added_by_extractor == true
       );
-      console.log("ok")
       await pollRecipeIngredients(extractedRecipes.length);
-      console.log("IDK")
       recipeExtractor()
     } catch (error) {
       console.error("Process failed:", error);

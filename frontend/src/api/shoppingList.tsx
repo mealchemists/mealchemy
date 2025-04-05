@@ -16,7 +16,6 @@ export const addToShoppingList = async(recipe_ids, user_id) => {
                 withCredentials: true,  // Ensure cookies are sent with the request
             }
         );
-        console.log("Response:", response.data);
     } catch (error) {
         console.error("Error sending recipe IDs:", error);
     }

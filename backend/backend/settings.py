@@ -244,6 +244,7 @@ SESSION_COOKIE_SAMESITE = 'None'  # Allow cross-site cookies
 SESSION_COOKIE_SECURE = True  # Only send cookies over HTTPS
 CSRF_COOKIE_SAMESITE = 'None'  # CSRF cookies for cross-site requests
 CSRF_COOKIE_SECURE = True  # Only send cookies over HTTPS
+CSRF_COOKIE_DOMAIN = '.app'
 
 print(f" allowed {ALLOWED_HOSTS}")
 print(f" trusted_origins {CSRF_TRUSTED_ORIGINS}")
