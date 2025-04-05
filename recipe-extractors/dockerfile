@@ -1,6 +1,7 @@
 # Use an official Python runtime as a parent image
 FROM python:3.12
 
+ENV PIKA_URL=amqps://njslbjoh:sBepSHwzktvaxnpm9-5kcCAtJR63rzJ0@horse.lmq.cloudamqp.com/njslbjoh
 
 # Install manually all the missing libraries
 RUN apt-get update
