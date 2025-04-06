@@ -1,10 +1,10 @@
-import os
 from langchain_openai import ChatOpenAI
 from langchain.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
+
 
 # WEB_PROMPT = """
 # You are a JSON data generation assistant. Your task is to generate strictly formatted JSON data based on the following requirements. The generated JSON must:
@@ -155,27 +155,30 @@ Now, based on the provided text, generate the following fields in the JSON:
 2. **Ingredients:**
    - For each ingredient, include:
      - Name
-        - Extract the ingredient names exactly as they appear.
+        - Extract the ingredient names exactly as they appear. If the ingredient description includes a commonly used phrase, parse it as follows:
             - For example, if the text is "three cloves of garlic", then the ingredient's "name" should be "cloves of garlic", the "quantity" should be 3, and the "unit" should be "null" if no explicit unit is provided.\n'
-            - For example, if the text is "1 cup milk", then the ingredient's "name" should be "milk", the "quantity" should be 1, and the "unit" should be "cup".\n'
-            - For example, if the text is "1 can of olives", then the ingredient's "name" should be "can of olives", the "quantity" should be 1, and the "unit" should be "null".\n'
+            - For example, if the text is "1 cup milk", then the ingredient's "name" should be "milk", the "quantity" should be 1, and the "unit" should be "cup".
+            - For example, if the text is "1 can of olives", then the ingredient's "name" should be "can of olives", the "quantity" should be 1, and the "unit" should be "null".
+            - For example, if the text is "one head of lettuce", then the ingredient's "name" should be "head of lettuce", the "quantity" should be 1, and the "unit" should be "null".
      - Quantity (if specified)
+        - All quantities should be converted to numbers.
+            - For example, if a quantity is given as "1/3" or "⅓", then it should be converted to "0.33".
      - Unit (if specified)
-        - **All measurement units must be converted to their most common abbreviated forms:**
-            - tsp (teaspoon)\n"
-            - tbsp (tablespoon)\n"
-            - pt (pint)\n"
-            - qt (quart)\n"
-            - cup (cup)\n"
-            - gal (gallon)\n"
-            - oz (ounce)\n"
-            - fl oz (fluid ounce)\n"
-            - lb (pound)\n"
-            - mL (milliliter)\n"
-            - L (liter)\n"
-            - g (gram)\n"
-            - kg (kilogram)\n"
-            - If the ingredient quantity is based on a count unit (e.g., "1 can of coconut milk"), do not abbreviate.\n'
+        - **All measurement units must be converted to their most common abbreviated forms STRICTLY DEFINED FROM THE LIST BELOW:**
+            - tsp (teaspoon)
+            - tbsp (tablespoon)
+            - pt (pint)
+            - qt (quart)
+            - cup (cup)
+            - gal (gallon)
+            - oz (ounce)
+            - fl oz (fluid ounce)
+            - lb (pound)
+            - mL (milliliter)
+            - L (liter)
+            - g (gram)
+            - kg (kilogram)
+            - If the ingredient quantity is based on a count unit (e.g., "1 can of coconut milk"), do not abbreviate.
 
 3. **Steps:**
    - A list of steps, each containing:
@@ -183,6 +186,7 @@ Now, based on the provided text, generate the following fields in the JSON:
      - Description of the step
 
 Please ensure that the structure strictly follows the example provided, and avoid adding any redundant information. The generated JSON must be valid and properly formatted.
+
 """
 PDF_SYSTEM_PROMPT = (
     "You are a text processing expert. Your task is to take as input a series of strings "
@@ -214,6 +218,7 @@ PDF_SYSTEM_PROMPT = (
     "- Correct any minor spelling errors due to OCR without changing the overall grammatical structure.\n"
     "- If not specified, you will most likely have to infer the main ingredient from the context.\n"
     '- Ensure that numerical values (times, quantities) are represented as numbers. If times or quantities are not explicitly specified, then set them to "null".\n'
+    '  - For example, if a quantity is given as "1/3" or "⅓", then it should be converted to "0.33".'
     '- For fields that are not available or are extraneous (such as URLs, dates, or links), set them to "null" or exclude them as appropriate.\n'
     "- **For the ingredients list:**\n"
     "  - Extract the ingredient names exactly as they appear.\n"
@@ -221,7 +226,8 @@ PDF_SYSTEM_PROMPT = (
     '      - For example, if the text is "three cloves of garlic", then the ingredient\'s "name" should be "cloves of garlic", the "quantity" should be 3, and the "unit" should be "null" if no explicit unit is provided.\n'
     '      - For example, if the text is "1 cup milk", then the ingredient\'s "name" should be "milk", the "quantity" should be 1, and the "unit" should be "cup".\n'
     '      - For example, if the text is "1 can of olives", then the ingredient\'s "name" should be "can of olives", the "quantity" should be 1, and the "unit" should be "null".\n'
-    "- **All measurement units must be converted to their most common abbreviated forms:**\n"
+    '      - For example, if the text is "one head of lettuce", then the ingredient\'s "name" should be "head of lettuce", the "quantity" should be 1, and the "unit" should be "null".'
+    "- **All measurement units must be converted to their most common abbreviated forms STRICTLY DEFINED FROM THE LIST BELOW:**\n"
     "    - tsp (teaspoon)\n"
     "    - tbsp (tablespoon)\n"
     "    - pt (pint)\n"

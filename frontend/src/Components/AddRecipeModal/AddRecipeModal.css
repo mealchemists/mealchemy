@@ -6,3 +6,12 @@
 .addRecipeTitle {
     text-align: center;
 }
+
+.addRecipeSubTitle {
+    font-style: italic;
+    color: gray;
+}
+
+.addRecipeInformation {
+    font-style: italic;
+}
