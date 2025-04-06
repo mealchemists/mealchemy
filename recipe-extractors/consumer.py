@@ -35,7 +35,7 @@ class AsyncConsumer:
 
     def connect(self):
         params = pika.URLParameters(self.amqp_url)
-        params.heartbeat = 60
+        params.heartbeat = 120
         return pika.SelectConnection(
             parameters=params,
             on_open_callback=self.on_connection_open,
@@ -101,7 +101,9 @@ class AsyncConsumer:
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
         except Exception as e:
-            logging.error(f"Unexpected error processing message!\n{e}")
+            logging.error(
+                f"Unexpected error {type(e).__name__} processing message!\n{e}"
+            )
             self.channel.queue_purge(f"{self.queue_name}")  # type: ignore
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 

@@ -11,7 +11,7 @@ load_dotenv()
 def publish_message(data, amqp_url=os.environ["PIKA_URL"], queue_name="admin"):
     try:
         params = pika.URLParameters(amqp_url)
-        params.heartbeat = 60
+        params.heartbeat = 120
         connection = pika.BlockingConnection(params)
         channel = connection.channel()
 
