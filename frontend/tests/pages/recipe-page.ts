@@ -8,6 +8,7 @@ export class RecipePage {
     await this.page.getByRole('button', { name: 'more' }).click();
     await this.page.getByRole('menuitem', { name: 'Add Manually' }).click();
     await this.page.getByRole('textbox').nth(1).fill(title);
+    await this.page.locator('div', { hasText: /^Tags:Main Ingredient000$/ }).getByRole('button').click();
     await this.page.locator('#tags-outlined').click();
     await this.page.getByRole('option', { name: 'Carrots' }).click();
     await this.page.getByRole('textbox').first().fill('10');
@@ -24,7 +25,7 @@ export class RecipePage {
     // Add Ingredient 2
     await this.page.getByRole('button', { name: 'Add Ingredient' }).click();
     await this.page.getByRole('textbox').first().fill('20');
-    await this.page.locator('#tags-outlined').fill('Strawberries');
+    await this.page.locator('#tags-outlined').fill('Pineapples');
     await this.page.locator('#tags-outlined').nth(1).fill('Produce');
     await this.page.getByRole('button', { name: 'Done' }).click();
 
