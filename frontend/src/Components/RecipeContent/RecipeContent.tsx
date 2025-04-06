@@ -208,6 +208,10 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
             return;
         }
 
+        if (mainIngredient == ""){
+            toast.error("Please enter a main ingredient in tags");
+            return;
+        }
         const body = {
             ...recipeIngredient,
             recipe: {
