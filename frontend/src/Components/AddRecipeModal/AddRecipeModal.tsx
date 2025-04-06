@@ -61,19 +61,19 @@ function AddRecipeModal({
         }
     };
 
-  // Usage example
-  const startProcess = async (url) => {
-    try {
-    //   await postRecipeUrl(url);
-      const extractedRecipes = recipeIngredients.filter(
-        (ri) => ri.added_by_extractor == true
-      );
-      await pollRecipeIngredients(extractedRecipes.length);
-      recipeExtractor()
-    } catch (error) {
-      console.error("Process failed:", error);
-    }
-  };
+    // Usage example
+    const startProcess = async (url) => {
+        try {
+            //   await postRecipeUrl(url);
+            const extractedRecipes = recipeIngredients.filter(
+                (ri) => ri.added_by_extractor == true
+            );
+            await pollRecipeIngredients(extractedRecipes.length);
+            recipeExtractor()
+        } catch (error) {
+            console.error("Process failed:", error);
+        }
+    };
 
     const addByUrl = async () => {
         let message: string;
@@ -103,7 +103,6 @@ function AddRecipeModal({
             const response: AxiosResponse<ProducerResponse> = await postRecipePDF(selectedFile);
             message = response?.data.message;
             toast.info(message)
-            await startProcess(recipeUrl);
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 message = error.response?.data?.error || "Failed to send recipe PDF!"
