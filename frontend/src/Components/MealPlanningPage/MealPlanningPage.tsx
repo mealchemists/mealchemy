@@ -25,7 +25,7 @@ import {
 } from "./CalendarComponents";
 import NutritionalAccordion from "../NutritionAccordion/NutritionAccordion";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import {FilterObject } from '../../Models/models';
+
 
 import { getRecipeIngredients } from "../../api/recipeIngredientApi";
 import {
@@ -38,6 +38,14 @@ import { addToShoppingList } from "../../api/shoppingList";
 
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar);
+
+interface FilterObject {
+  searchQuery?: string;
+  filters?: string[];
+  sortBy?: string;
+  range?: number[];
+  tags?: string[];
+}
 
 function MealPlanningPage() {
   const [myEventsList, setMyEventsList] = useState([]);
@@ -73,7 +81,6 @@ function MealPlanningPage() {
   };
 
   const filterApply = (filterObj: FilterObject) => {
-    filterObj.needs_review = true
     handleFilterApply(filterObj, setRecipeIngredients);
   };
 
@@ -102,9 +109,7 @@ function MealPlanningPage() {
 
   const fetchRecipes = async () => {
     try {
-      const queryParams = new URLSearchParams();
-      queryParams.append('needs_review', 'false')
-      const response = await getRecipeIngredients(queryParams);
+      const response = await getRecipeIngredients();
       setRecipeIngredients(response); // Store fetched recipes
       const pageCount = Math.ceil(response.length / recipesPerPage);
       setTotalPages(pageCount);

@@ -70,18 +70,10 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const handleCloseIngredientModal = () => setOpenAddIngredientModal(false);
 
     // For tags
-    const [mainIngredient, setMainIngredient] = useState(
-        recipe.main_ingredient ? String(recipe.main_ingredient) : ""
-    );
-    const [cookTime, setCookTime] = useState(
-        recipe.cook_time !== null ? String(recipe.cook_time) : ""
-    );
-    const [prepTime, setPrepTime] = useState(
-        recipe.prep_time !== null ? String(recipe.prep_time) : ""
-    );
-    const [totalTime, setTotalTime] = useState(
-        recipe.total_time !== null ? String(recipe.total_time) : ""
-    );
+    const [mainIngredient, setMainIngredient] = useState(String(recipe.main_ingredient));
+    const [cookTime, setCookTime] = useState(String(recipe.cook_time));
+    const [prepTime, setPrepTime] = useState(String(recipe.prep_time));
+    const [totalTime, setTotalTime] = useState(String(recipe.total_time));
 
     const [tags, setTags] = useState([mainIngredient, cookTime, prepTime, totalTime]);
     const [error, setError] = useState("");
@@ -138,10 +130,10 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
     useEffect(() => {
         setTags([
-            mainIngredient || "", // Fallback to empty string if mainIngredient is null or undefined
-            cookTime || "",       // Fallback to empty string if cookTime is null or undefined
-            prepTime || "",       // Fallback to empty string if prepTime is null or undefined
-            totalTime || ""       // Fallback to empty string if totalTime is null or undefined
+            mainIngredient,
+            String(cookTime),
+            String(prepTime),
+            String(totalTime)
         ]);
     }, [mainIngredient, cookTime, prepTime, totalTime]);
 
@@ -185,15 +177,14 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
     const handleApplyTagChanges = (
         tempMainIngredient: string,
-        tempCookTime: number | null,
-        tempPrepTime: number | null,
-        tempTotalTime: number | null
+        tempCookTime: number,
+        tempPrepTime: number,
+        tempTotalTime: number
     ) => {
-        // Ensure null or undefined values don't cause unwanted string conversion
-        setMainIngredient(tempMainIngredient || "");  // Default to an empty string if tempMainIngredient is null
-        setCookTime(tempCookTime !== null ? String(tempCookTime) : "");  // Default to an empty string if tempCookTime is null
-        setPrepTime(tempPrepTime !== null ? String(tempPrepTime) : "");  // Default to an empty string if tempPrepTime is null
-        setTotalTime(tempTotalTime !== null ? String(tempTotalTime) : "");  // Default to an empty string if tempTotalTime is null
+        setMainIngredient(tempMainIngredient);
+        setCookTime(String(tempCookTime));
+        setPrepTime(String(tempPrepTime));
+        setTotalTime(String(tempTotalTime));
         handleCloseTagModal();
     };
 
@@ -211,51 +202,14 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         
         setIngredients(filteredIngredients);
         setInstructions(filteredInstructions);
-        let error = false;
-        // validate fields 
-        console.log("COOK TIME", cookTime === null)
-        console.log("COOK TIME", cookTime)
-        if (!title){
-            error = true
+        
+        if (title == ""){
             toast.error("Please enter a title");
             return;
         }
 
-        if (!cookTime ){
-            error = true
-            toast.error("Please enter cook time");
-            return;
-        }
-
-        if (!prepTime){
-            error = true
-            toast.error("Please enter a prep time");
-            return;
-        }
-
-        if (!totalTime){
-            error = true
-            toast.error("Please enter a total time");
-            return;
-        }
-
-        if (instructions == null || instructions.length == 0){
-            error = true
-            toast.error("Please enter steps");
-            return;
-        }
-
-        if (filteredIngredients.length == 0){
-            error = true
-            toast.error("Please enter ingredients");
-            return;
-        }
-
-    
-
         const body = {
             ...recipeIngredient,
-            needsReview: false,
             recipe: {
                 ...recipeIngredient.recipe,
                 name: title,
@@ -265,22 +219,18 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 total_time: Number(totalTime),
                 image_url: imageBase64,
                 steps: instructions,
-                needs_review: false
             },
-             ingredients: filteredIngredients.map(ingredient => ({
-                ...ingredient,
-                needs_review: false // Setting needs_review to false for each ingredient
-            }))
+            ingredients: filteredIngredients
         };
-    
+
         if(recipeIngredient.id != -1){
             await putRecipe(body);
         }else{
             await createRecipe(body);
         }
+       
         setEditMode(false);
         exitEditMode();
-
     };
 
     const handleAddIngredient = (ingredient) => {

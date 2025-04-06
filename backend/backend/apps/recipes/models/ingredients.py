@@ -7,6 +7,7 @@ from backend.models import TimeStampedModel
 
 # from .units import CountUnit, MassUnit, BaseUnit, VolumeUnit
 
+
 class Aisle(TimeStampedModel):
     name = models.CharField(max_length=255)
     llm_generated = models.BooleanField(
@@ -17,11 +18,9 @@ class Aisle(TimeStampedModel):
     )  # To track if a user modified the tag
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
-def get_default_aisle():
-    return Aisle.objects.get_or_create(name="Uncategorized")[0]
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    name = models.CharField(max_length=255, unique=True)
 
     # NOTE: USDA FoodData Central API uses kcal; this is the same thing as actual Calories.
     calories_per_100g = models.FloatField(
@@ -38,14 +37,8 @@ class Ingredient(models.Model):
     fiber_per_100g = models.FloatField(help_text="grams of fiber per 100g", null=True)
     sodium_per_100mg = models.FloatField(help_text="mg of sodium per 100g")
 
-    aisle = models.ForeignKey(
-        Aisle,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        default=get_default_aisle, 
-    )
-    needs_review = models.BooleanField(default=False)
+    aisle = models.ForeignKey(Aisle, on_delete=models.SET_NULL, null=True, blank=True)
+    needs_review = models.BooleanField(default=True)
 
     @classmethod
     def find_best_match(cls, name, threshold=0.6):

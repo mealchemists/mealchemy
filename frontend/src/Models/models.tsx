@@ -48,7 +48,6 @@ export interface FilterObject {
     filters?: string[];
     sortBy?: string;
     range?: number[];
-    needs_review: boolean,
     mainIngredient?: string;
 }
 
