@@ -2,9 +2,9 @@
 import { Page, expect } from '@playwright/test';
 
 export class RecipePage {
-  constructor(private page: Page) {}
+  constructor(private page: Page) { }
 
-  async selectManualRecipe(){
+  async selectManualRecipe() {
     await this.page.getByRole('button', { name: 'more' }).click();
     await this.page.getByRole('menuitem', { name: 'Add Manually' }).click();
   }
@@ -127,5 +127,21 @@ export class RecipePage {
     await expect(
       this.page.locator('div').filter({ hasText: new RegExp(`^${title}${ingredient}$`) }).first()
     ).toBeVisible();
+  }
+
+  async openMoreMenu(recipeIndex = 0) {
+    await this.page.getByRole('button', { name: 'more' }).nth(recipeIndex).click();
+  }
+
+  async selectRecipes(indices: number[]) {
+    await this.page.getByRole('menuitem', { name: 'Select' }).click();
+    for (const index of indices) {
+      await this.page.getByRole('checkbox').nth(index).check();
+    }
+  }
+
+  async addToShoppingList() {
+    await this.page.getByRole('button', { name: 'Add to Shopping List' }).click();
+    await expect(this.page.getByText('Added to Shopping List!')).toBeVisible();
   }
 }
