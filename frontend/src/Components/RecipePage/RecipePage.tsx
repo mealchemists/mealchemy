@@ -8,6 +8,7 @@ import { Drawer, IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { getRecipeIngredients } from '../../api/recipeIngredientApi';
+import { toast } from 'react-toastify';
 
 
 function RecipePage() {
@@ -61,12 +62,13 @@ function RecipePage() {
                 // If found, update the existing recipe ingredient
                 const updatedRecipeIngredients = [...prevRecipeIngredients];
                 updatedRecipeIngredients[existingRecipeIndex] = updatedRecipe;
+                toast.success("Recipe Updated! 🍔");
                 console.log("Updated recipe:", updatedRecipeIngredients);
                 return updatedRecipeIngredients;
             } else {
                 // If not found, add the new recipe ingredient
                 const updatedRecipeIngredients = [...prevRecipeIngredients, updatedRecipe];
-                console.log("Added new recipe:", updatedRecipeIngredients);
+                toast.success("Recipe Added! 🍔");
                 return updatedRecipeIngredients;
             }
         });
