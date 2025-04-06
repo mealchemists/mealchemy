@@ -12,7 +12,7 @@ class Recipe(TimeStampedModel):
     total_time = models.IntegerField(help_text="Total time in minutes", null=True)
     source_url = models.URLField(blank=True, null=True) 
     image_url = models.TextField(null=True, blank=True)
-    steps = models.JSONField(default=list)
+    steps = models.JSONField(default=list, null=True)
     main_ingredient = models.TextField(null=True, max_length=100)
     needs_review = models.BooleanField(default=False)
 
