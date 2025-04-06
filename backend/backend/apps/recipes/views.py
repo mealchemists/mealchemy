@@ -224,7 +224,7 @@ class RecipeIngredientsAPIView(APIView):
                         "aisle": ri.ingredient.aisle.name
                         if ri.ingredient.aisle
                         else None,
-                        "need_review": ri.needs_review,
+                        "needs_review": ri.needs_review,
                     }
                 )
 
@@ -259,7 +259,7 @@ class RecipeIngredientsAPIView(APIView):
                 "name": ri.ingredient.name,  # Assuming Ingredient has a `name` field
                 "aisle":ri.ingredient.aisle,
                 "id":ri.ingredient.id,
-                "need_review": ri.needs_review
+                "needs_review": ri.needs_review
             }
             for ri in recipe_ingredients
         ]
@@ -297,6 +297,10 @@ class RecipeIngredientsAPIView(APIView):
                         {"error": "Missing ingredient data"},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
+                
+                if not ingredient_data.get("aisle"):
+                    Aisle.objects.get_or_create(name="Uncategorized", user=self.request.user)
+                    
 
                 aisle_obj = Aisle.objects.filter(
                     user_id=data["recipe"]["user"], name=aisle
@@ -389,7 +393,10 @@ class RecipeIngredientsAPIView(APIView):
                 unit = ingredient_data.get("unit")
                 display_name = ingredient_data.get("display_name")
                 aisle = ingredient_data.get("aisle")  # the aisle name
-
+                
+                if not ingredient_data.get("aisle"):
+                    Aisle.objects.get_or_create(name="Uncategorized", user=self.request.user)
+                
                 if not display_name:
                     display_name = ingredient_name
 
@@ -476,6 +483,8 @@ class RecipeIngredientsAPIView(APIView):
                 Q(ingredient__needs_review=True) |
                 Q(needs_review=True)
             )
+        elif needs_review and needs_review.lower() == 'false':
+            queryset = queryset.filter(recipe__needs_review=False, ingredient__needs_review=False, needs_review=False)
 
         search = request.query_params.get("search", None)
         if search:

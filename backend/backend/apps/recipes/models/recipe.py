@@ -21,9 +21,9 @@ class Recipe(TimeStampedModel):
         self.needs_review = not (
             self.name
             and self.steps
-            and self.total_time
-            and self.prep_time
-            and self.cook_time
+            and self.total_time is not None 
+            and self.prep_time is not None   
+            and self.cook_time is not None   
             and self.main_ingredient
         )
         super().save(*args, **kwargs)
