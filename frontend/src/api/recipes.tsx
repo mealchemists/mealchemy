@@ -1,13 +1,14 @@
 import { toast } from "react-toastify";
 import apiClient from "./apiClient";
+import { needsReview } from "../utils/review";
 
 const RECIPE_ADD_BY_URL_URI = "recipe-url/";
 const RECIPE_ADD_BY_PDF_URI = "recipe-pdf/";
 const REVIEW_RECIPES = "recipe-ingredients";
 
-const POLL_DURATION_MINUTES = 3;
-const POLL_WAIT_SECONDS = 1;
-const POLL_INTERVAL_SECONDS = 15;
+const POLL_DURATION_MINUTES = 3; // How long we poll for before giving up
+const POLL_WAIT_SECONDS = 5; // When polling, how often we request recipe ingredients
+const POLL_INTERVAL_SECONDS = 15; // inital wait time before starting the poll period
 
 export const postRecipeUrl = async (url) => {
     try {
@@ -17,7 +18,7 @@ export const postRecipeUrl = async (url) => {
             RECIPE_ADD_BY_URL_URI,
             {
                 url,
-            }, // The request body
+            },
             {
                 headers: {
                     "X-CSRFToken": csrfToken, // Include CSRF token
@@ -33,7 +34,7 @@ export const postRecipeUrl = async (url) => {
     }
 };
 
-export const pollRecipeIngredients = async (extractedRecipeCount: number): Promise<void> => {
+export const pollRecipeIngredients = async (currentExtractedRecipeCount: number): Promise<void> => {
     return new Promise((resolve) => {
         setTimeout(() => {
             const pollingInterval = POLL_INTERVAL_SECONDS * 1000;
@@ -43,13 +44,13 @@ export const pollRecipeIngredients = async (extractedRecipeCount: number): Promi
             const intervalId = setInterval(async () => {
                 try {
                     const response = await apiClient.get(REVIEW_RECIPES);
-                    const data = response.data;
-                    console.log("Polling response:", response);
-
-                    if (response.data.length > extractedRecipeCount) {
-                        const review_recipe = data.filter((ri) => ri.needs_review === false);
-                        if (review_recipe.length > 0) {
-                            toast.warning("Added recipe requires review!");
+                    const extracted_recipes = response.data.filter((ri) => ri.added_by_extractor == true);
+                   
+                    if (extracted_recipes.length > currentExtractedRecipeCount) {
+                        const reviewable_recipes = extracted_recipes.filter((ri) => needsReview(ri))
+                        console.log("reviewable_Recipes", reviewable_recipes )
+                        if (reviewable_recipes.length > 0) {
+                            toast.error("Added Recipe is invalid Please Fix!");
                         } else {
                             toast.success("Recipe was successfully added!");
                         }
