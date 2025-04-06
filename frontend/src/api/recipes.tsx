@@ -52,7 +52,7 @@ export const pollRecipeIngredients = async (currentExtractedRecipeCount: number)
                         if (reviewable_recipes.length > 0) {
                             toast.error("Added Recipe is invalid Please Fix!");
                         } else {
-                            toast.success("Recipe was Added!");
+                            toast.success("Recipe was successfully added!");
                         }
                         clearInterval(intervalId);
                         resolve();

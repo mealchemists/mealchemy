@@ -1,10 +1,10 @@
-import os
 from langchain_openai import ChatOpenAI
 from langchain.prompts import (
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
+
 
 # WEB_PROMPT = """
 # You are a JSON data generation assistant. Your task is to generate strictly formatted JSON data based on the following requirements. The generated JSON must:
@@ -155,29 +155,30 @@ Now, based on the provided text, generate the following fields in the JSON:
 2. **Ingredients:**
    - For each ingredient, include:
      - Name
-        - Extract the ingredient names exactly as they appear.
+        - Extract the ingredient names exactly as they appear. If the ingredient description includes a commonly used phrase, parse it as follows:
             - For example, if the text is "three cloves of garlic", then the ingredient's "name" should be "cloves of garlic", the "quantity" should be 3, and the "unit" should be "null" if no explicit unit is provided.\n'
-            - For example, if the text is "1 cup milk", then the ingredient's "name" should be "milk", the "quantity" should be 1, and the "unit" should be "cup".\n'
-            - For example, if the text is "1 can of olives", then the ingredient's "name" should be "can of olives", the "quantity" should be 1, and the "unit" should be "null".\n'
+            - For example, if the text is "1 cup milk", then the ingredient's "name" should be "milk", the "quantity" should be 1, and the "unit" should be "cup".
+            - For example, if the text is "1 can of olives", then the ingredient's "name" should be "can of olives", the "quantity" should be 1, and the "unit" should be "null".
+            - For example, if the text is "one head of lettuce", then the ingredient's "name" should be "head of lettuce", the "quantity" should be 1, and the "unit" should be "null".
      - Quantity (if specified)
-        - All quantities should be converted to numbers. 
+        - All quantities should be converted to numbers.
             - For example, if a quantity is given as "1/3" or "⅓", then it should be converted to "0.33".
      - Unit (if specified)
         - **All measurement units must be converted to their most common abbreviated forms STRICTLY DEFINED FROM THE LIST BELOW:**
-            - tsp (teaspoon)\n"
-            - tbsp (tablespoon)\n"
-            - pt (pint)\n"
-            - qt (quart)\n"
-            - cup (cup)\n"
-            - gal (gallon)\n"
-            - oz (ounce)\n"
-            - fl oz (fluid ounce)\n"
-            - lb (pound)\n"
-            - mL (milliliter)\n"
-            - L (liter)\n"
-            - g (gram)\n"
-            - kg (kilogram)\n"
-            - If the ingredient quantity is based on a count unit (e.g., "1 can of coconut milk"), do not abbreviate.\n'
+            - tsp (teaspoon)
+            - tbsp (tablespoon)
+            - pt (pint)
+            - qt (quart)
+            - cup (cup)
+            - gal (gallon)
+            - oz (ounce)
+            - fl oz (fluid ounce)
+            - lb (pound)
+            - mL (milliliter)
+            - L (liter)
+            - g (gram)
+            - kg (kilogram)
+            - If the ingredient quantity is based on a count unit (e.g., "1 can of coconut milk"), do not abbreviate.
 
 3. **Steps:**
    - A list of steps, each containing:
@@ -225,6 +226,7 @@ PDF_SYSTEM_PROMPT = (
     '      - For example, if the text is "three cloves of garlic", then the ingredient\'s "name" should be "cloves of garlic", the "quantity" should be 3, and the "unit" should be "null" if no explicit unit is provided.\n'
     '      - For example, if the text is "1 cup milk", then the ingredient\'s "name" should be "milk", the "quantity" should be 1, and the "unit" should be "cup".\n'
     '      - For example, if the text is "1 can of olives", then the ingredient\'s "name" should be "can of olives", the "quantity" should be 1, and the "unit" should be "null".\n'
+    '      - For example, if the text is "one head of lettuce", then the ingredient\'s "name" should be "head of lettuce", the "quantity" should be 1, and the "unit" should be "null".'
     "- **All measurement units must be converted to their most common abbreviated forms STRICTLY DEFINED FROM THE LIST BELOW:**\n"
     "    - tsp (teaspoon)\n"
     "    - tbsp (tablespoon)\n"

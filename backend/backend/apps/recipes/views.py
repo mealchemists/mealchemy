@@ -11,7 +11,9 @@ from django.http import Http404
 from ..meal_plan.models.meal_plan import MealPlan
 from .models.ingredients import Ingredient, RecipeIngredient, Aisle
 from .models.recipe import Recipe, Step
-from .producer import Producer, publish
+from .models.units import Unit
+
+from .producer import publish_message
 from .serializers import (
     IngredientSerializer,
     RecipeIngredientSerializer,
@@ -33,7 +35,7 @@ import os
 import json
 
 # The server will be the producer that will send messages to the queue.
-producer = Producer()
+# producer = Producer()
 
 
 def get_jwt_token(user_id):
@@ -93,9 +95,16 @@ def save_scraped_data(request):
                 # If an IntegrityError occurs, we simply ignore it and continue
                 ingredient = Ingredient.objects.get(name=ingredient_data["name"])
 
-            # Handle units that are given as count quantities
             quantity = ingredient_data["quantity"]
             unit = ingredient_data["unit"]
+
+            # Handle units that are given as count quantities
+            if unit is None:
+                unit = ""
+            elif unit not in Unit:
+                # Prevent saving non-measurement units from extracted data
+                unit = ""
+                needs_review_flag = True
 
             RecipeIngredient.objects.create(
                 recipe=recipe,
@@ -103,7 +112,7 @@ def save_scraped_data(request):
                 quantity="" if quantity is None else quantity,
                 unit="" if unit is None else unit,
                 display_name=ingredient_data["name"],
-                added_by_extractor = request.data["added_by_extractor"]
+                added_by_extractor=request.data["added_by_extractor"],
             )  # Create relationship
         return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -117,21 +126,27 @@ def recipe_url(request):
         data = request.data
         user_id = request.user.id
 
+        # Add the token to the data to send via message queue
         access_token = get_jwt_token(user_id)
         print(f"Generated token for user {user_id}: {access_token}")
 
-        # Add the token to the data to send via message queue
-
-        # construct message for consumer
+        # construct message for consumer, sending the URL
         message = dict()
         message["user"] = user_id
         message["token"] = access_token
         message["task_type"] = "web"
         message["payload"] = {"url": data["url"]}
 
-        producer.publish(message)
+        success = publish_message(message)
+        if success:
+            return Response(
+                {"message": "Queued recipe URL!"}, status=status.HTTP_200_OK
+            )
 
-        return Response(data, status=status.HTTP_201_CREATED)
+        return Response(
+            {"error": "Unable to queue recipe URL!"},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
 
 
 @api_view(["POST"])
@@ -148,19 +163,25 @@ def recipe_pdf(request):
             for chunk in file.chunks():
                 dst.write(chunk)
 
+        # Add the token to the data to send via message queue
         access_token = get_jwt_token(user_id)
         print(f"Generated token for user {user_id}: {access_token}")
 
-        # construct message for consumer
+        # construct message for consumer, sending the path to the tempfile
         message = dict()
         message["user"] = user_id
         message["token"] = access_token
         message["task_type"] = "pdf"
         message["payload"] = {"temp_path": temp_path}
 
-        producer.publish(message)
+        success = publish_message(message)
+        if success:
+            return Response(status=status.HTTP_200_OK)
 
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(
+            {"error": "Unable to publish message"},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
 
 
 class RecipeIngredientsAPIView(APIView):
@@ -170,12 +191,13 @@ class RecipeIngredientsAPIView(APIView):
         DjangoFilterBackend,
         filters.OrderingFilter,
     )
-    filterset_fields = ["recipe__cook_time", 
-                        "recipe__main_ingredient", 
-                        "needs_review", 
-                        "ingredients__needs_review", 
-                        "recipe__needs_review"
-                    ]
+    filterset_fields = [
+        "recipe__cook_time",
+        "recipe__main_ingredient",
+        "needs_review",
+        "ingredients__needs_review",
+        "recipe__needs_review",
+    ]
     search_fields = ["recipe__name", "ingredient__name", "recipe__main_ingredient"]
     ordering_fields = ["recipe__cook_time"]
     ordering = "recipe__created_at"
@@ -473,13 +495,13 @@ class RecipeIngredientsAPIView(APIView):
 
         if not query_params:
             return queryset
-        
+
         needs_review = request.query_params.get("needs_review", None)
-        if needs_review and needs_review.lower() == 'true':
+        if needs_review and needs_review.lower() == "true":
             queryset = queryset.filter(
-                Q(recipe__needs_review=True) |
-                Q(ingredient__needs_review=True) |
-                Q(needs_review=True)
+                Q(recipe__needs_review=True)
+                | Q(ingredient__needs_review=True)
+                | Q(needs_review=True)
             )
         elif needs_review and needs_review.lower() == 'false':
             queryset = queryset.filter(recipe__needs_review=False, ingredient__needs_review=False, needs_review=False)

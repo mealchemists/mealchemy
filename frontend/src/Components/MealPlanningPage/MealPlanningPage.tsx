@@ -367,7 +367,8 @@ function MealPlanningPage() {
   };
 
   const resetEventToPlaceholder = async (event) => {
-    if (event.placeholder === false) {
+    // if we just added the meal plan its not indatabase and mealPlan_id is null
+    if (event.placeholder === false && event.mealPlan_id != null) {
       try {
         const response = await deleteMealPlan(event.mealPlan_id);
       } catch (error) {
@@ -398,7 +399,8 @@ function MealPlanningPage() {
     const mealCount = myEventsList.filter(
       (meal) => meal.placeholder === false
     ).length;
-    if (mealCount != expectedMealCount) {
+    // fail on save if mismatch in slot count or mealplan is empty
+    if ((mealCount === 0 && expectedMealCount === 0) || mealCount != expectedMealCount) {
       return false;
     }
     return true;
@@ -411,7 +413,7 @@ function MealPlanningPage() {
       return;
     }
     toast.error(
-      "Please add meals to each slot or reduce number of meal plans ❌"
+      "Fill in all slots, or start adding meals! ❌"
     );
   };
 
