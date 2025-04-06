@@ -6,13 +6,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# prevent pipeline errors; we aren't testing producer/consumer here.
-is_testing = os.environ.get("DJANGO_TEST", "FALSE").upper() == "TRUE"
-amqp_url = os.environ["PIKA_URL"] if not is_testing else "amqp://localhost:5672/"
 
-
-def publish_message(data, amqp_url=os.environ["PIKA_URL"], queue_name="admin"):
+def publish_message(data, queue_name="admin"):
     # Publish a message to to the queue with a temporary connection.
+
+    # prevent pipeline errors; we aren't testing producer/consumer here.
+    is_testing = os.environ.get("DJANGO_TEST", "FALSE").upper() == "TRUE"
+    amqp_url = os.environ["PIKA_URL"] if not is_testing else "amqp://localhost:5672/"
+
     try:
         params = pika.URLParameters(amqp_url)
         params.heartbeat = 120
