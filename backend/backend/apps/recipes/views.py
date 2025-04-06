@@ -11,6 +11,7 @@ from django.http import Http404
 from ..meal_plan.models.meal_plan import MealPlan
 from .models.ingredients import Ingredient, RecipeIngredient, Aisle
 from .models.recipe import Recipe, Step
+from .models.units import Unit
 
 from .producer import publish_message
 from .serializers import (
@@ -47,8 +48,6 @@ def get_jwt_token(user_id):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def save_scraped_data(request):
-    with open("out.json", "w") as f:
-        json.dump(request.data, f)
     permission_classes = [AllowAny]
     # Authenticate the user using the token passed in the request
     jwt_auth = JWTAuthentication()
@@ -96,9 +95,16 @@ def save_scraped_data(request):
                 # If an IntegrityError occurs, we simply ignore it and continue
                 ingredient = Ingredient.objects.get(name=ingredient_data["name"])
 
-            # Handle units that are given as count quantities
             quantity = ingredient_data["quantity"]
             unit = ingredient_data["unit"]
+
+            # Handle units that are given as count quantities
+            if unit is None:
+                unit = ""
+            elif unit not in Unit:
+                # Prevent saving non-measurement units from extracted data
+                unit = ""
+                needs_review_flag = True
 
             RecipeIngredient.objects.create(
                 recipe=recipe,
