@@ -10,7 +10,6 @@ import { deleteRecipe } from '../../api/recipes';
 import { addToShoppingList } from '../../api/shoppingList';
 import { useAuth } from '../../api/useAuth';
 import { toast } from 'react-toastify';
-import { needsReview } from '../../utils/review';
 interface RecipePanelProps {
     recipeIngredient: RecipeIngredient[];
     setRecipeIngredients: React.Dispatch<React.SetStateAction<RecipeIngredient[]>>; // Set recipe list from parent
@@ -153,16 +152,6 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const { isAuthenticated, username, user_id } = useAuth();
 
     const handleAddShoppingList = async () => {
-        console.log(selectedRecipes)
-        const selectedRecipeIngredients = recipeIngredient.filter((ri) => selectedRecipes.includes(ri.recipe.id));
-        console.log(selectedRecipeIngredients)
-        // Loop through each selectedRecipeIngredient and check needsReview
-        for (const ri of selectedRecipeIngredients) {
-            if (needsReview(ri)) {
-                toast.error("Cannot add malformed recipes to shopping list");
-                return; 
-            }
-        }
         addToShoppingList(selectedRecipes, user_id);
         setMultiSelect(false);
         setButtonVisibility(false);

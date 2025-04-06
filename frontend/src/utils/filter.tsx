@@ -4,11 +4,11 @@ import { getRecipeIngredients } from '../api/recipeIngredientApi';
 // This function receives the filter object and applies it to the GET request
 export const handleFilterApply = async (filterObj: FilterObject, setRecipeIngredients) => {
     // Construct the query string based on the filters
-    const { searchQuery, sortBy, range, mainIngredient, needs_review } = filterObj;
+    const { searchQuery, sortBy, range, mainIngredient } = filterObj;
     const queryParams = new URLSearchParams();
     // Add filters to query params (example)
     if (searchQuery) queryParams.append('search', searchQuery);
-    if (needs_review) queryParams.append('needs_review', 'true')
+
     if (sortBy) queryParams.append('ordering', sortBy);
     if (range.length) queryParams.append('cook_time_min', range[0].toString());
     if (range.length > 1) queryParams.append('cook_time_max', range[1].toString());
