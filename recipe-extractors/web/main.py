@@ -7,7 +7,8 @@ import requests
 import validators
 from dotenv import load_dotenv
 
-from .parse import parse_with_openai
+from .parse import parse_with_openai, process_data
+from json_schema import REQUIRED_SCHEMA
 from .scraper import Scraper
 
 load_dotenv()
@@ -17,7 +18,6 @@ EXTRACT_URL = os.environ.get(
 )
 
 
-# TODO: Error handling
 def extract_recipe_data_url(url, user, token):
     if validators.url(url):
         scraper = Scraper(url)
@@ -26,7 +26,7 @@ def extract_recipe_data_url(url, user, token):
         cleaned_content = scraper.clean_body_content(body_content)
         start_time = perf_counter()
         result = parse_with_openai(cleaned_content)
-
+        
         assert result is not None
         if result["recipe"].get("source_url", None) is None:
             result["recipe"]["source_url"] = url

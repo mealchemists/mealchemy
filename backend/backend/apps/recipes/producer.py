@@ -29,7 +29,7 @@ def publish_message(data, queue_name="admin"):
             body=json.dumps(data).encode("utf-8"),
             # 1 minute should be more than enough for messages to live in the queue.
             properties=pika.BasicProperties(
-                delivery_mode=pika.DeliveryMode.Persistent, expiration=60000
+                delivery_mode=pika.DeliveryMode.Persistent, expiration="60000"
             ),
             mandatory=True,
         )

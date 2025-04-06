@@ -44,6 +44,29 @@ def get_jwt_token(user_id):
     refresh = RefreshToken.for_user(user)
     return str(refresh.access_token)
 
+def validate_aisle(aisle, request):
+    user = request.user
+
+    # Handle empty aisle name
+    if not aisle:
+        aisle_obj, _ = Aisle.objects.get_or_create(name="Uncategorized", user=user)
+        return aisle_obj
+
+    # Try to find existing aisle
+    aisle_obj = Aisle.objects.filter(user=user, name=aisle).first()
+    if aisle_obj:
+        return aisle_obj
+
+    # Create new aisle
+    aisle_data = {"user": user.id, "name": aisle}
+    aisle_serializer = AisleSerializer(data=aisle_data)
+    if aisle_serializer.is_valid():
+        return aisle_serializer.save()
+    else:
+        raise Exception({
+            "aisle": f"Invalid aisle data: {aisle_serializer.errors}"
+        })
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -70,6 +93,8 @@ def save_scraped_data(request):
         for ingredient_data in ingredients:
             # TODO: handle nutrition information
             # TODO: handle fuzzy Ingredient retrieval in a different function
+            aisle_name = ingredient_data.get("aisle", None)
+            aisle = validate_aisle(aisle_name, request)
             calories_per_100g = random.uniform(50, 500)
             protein_per_100g = random.uniform(1, 30)
             carbs_per_100g = random.uniform(1, 50)
@@ -89,11 +114,19 @@ def save_scraped_data(request):
                         "fat_per_100g": fat_per_100g,
                         "sodium_per_100mg": sodium_per_100mg,
                         "fiber_per_100g": fiber_per_100g,
+                        "aisle": aisle,
                     },
                 )
+                if not created:
+                    # If the ingredient already existed, we may still want to update its aisle
+                    if ingredient.aisle != aisle:
+                        ingredient.aisle = aisle
+                        ingredient.save()
             except IntegrityError:
-                # If an IntegrityError occurs, we simply ignore it and continue
                 ingredient = Ingredient.objects.get(name=ingredient_data["name"])
+                if ingredient.aisle != aisle:
+                    ingredient.aisle = aisle
+                    ingredient.save()
 
             quantity = ingredient_data["quantity"]
             unit = ingredient_data["unit"]
@@ -112,7 +145,7 @@ def save_scraped_data(request):
                 quantity="" if quantity is None else quantity,
                 unit="" if unit is None else unit,
                 display_name=ingredient_data["name"],
-                added_by_extractor=request.data["added_by_extractor"],
+                added_by_extractor=request.data.get("added_by_extractor", True), # this api is expected to be used only by extractors defau;t to true
             )  # Create relationship
         return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -310,28 +343,14 @@ class RecipeIngredientsAPIView(APIView):
 
                 if not display_name:
                     display_name = ingredient_name
-                # todo fix quanity and unit
-                # if not ingredient_name or not quantity or not unit:
-                if not ingredient_name:
-                    return Response(
-                        {"error": "Missing ingredient data"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-                
-                if not ingredient_data.get("aisle"):
-                    Aisle.objects.get_or_create(name="Uncategorized", user=self.request.user)
-                    
 
-                aisle_obj = Aisle.objects.filter(
-                    user_id=data["recipe"]["user"], name=aisle
-                ).first()
-                if not aisle_obj:
-                    aisle_data = {"user": data["recipe"]["user"], "name": aisle}
-                    aisle_serializer = AisleSerializer(data=aisle_data)
-                    if aisle_serializer.is_valid():
-                        aisle_obj = aisle_serializer.save()
-                    else:
-                        print(aisle_serializer.errors)
+                # if not ingredient_name:
+                #     return Response(
+                #         {"error": "Missing ingredient data"},
+                #         status=status.HTTP_400_BAD_REQUEST,
+                #     )
+                
+                aisle_obj = validate_aisle(aisle, request)
 
                 # TODO: handle nutrition information
                 # TODO: handle fuzzy Ingredient retrieval in a different function
@@ -366,7 +385,7 @@ class RecipeIngredientsAPIView(APIView):
                     quantity=quantity,
                     unit=unit,
                     display_name=display_name,
-                )  # Create relationship
+                )  
 
             return Response(
                 RecipeSerializer(recipe).data, status=status.HTTP_201_CREATED
