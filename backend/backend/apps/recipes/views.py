@@ -46,8 +46,6 @@ def get_jwt_token(user_id):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def save_scraped_data(request):
-    with open("out.json", "w") as f:
-        json.dump(request.data, f)
     permission_classes = [AllowAny]
     # Authenticate the user using the token passed in the request
     jwt_auth = JWTAuthentication()
