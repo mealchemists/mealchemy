@@ -49,9 +49,9 @@ export const pollRecipeIngredients = async (extractedRecipeCount: number): Promi
                     if (response.data.length > extractedRecipeCount) {
                         const review_recipe = data.filter((ri) => ri.needs_review === false);
                         if (review_recipe.length > 0) {
-                            toast.error("Added Recipe is invalid Please Fix!");
+                            toast.warning("Added recipe requires review!");
                         } else {
-                            toast.success("Recipe was Added!");
+                            toast.success("Recipe was successfully added!");
                         }
                         clearInterval(intervalId);
                         resolve();
