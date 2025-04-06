@@ -163,7 +163,7 @@ function AddRecipeModal({
                                 sx={{
                                     "& .MuiOutlinedInput-root": {
                                         height: "40px",
-                                        width: "200px",
+                                        width: "100%",
                                         border: "2px solid #b0dbb2",
                                         borderRadius: "10px",
                                         "& fieldset": { border: "none" },
