@@ -6,8 +6,6 @@ from langchain.prompts import (
     SystemMessagePromptTemplate,
 )
 
-from ..backend.backend.apps.recipes.models.units import Unit
-
 # WEB_PROMPT = """
 # You are a JSON data generation assistant. Your task is to generate strictly formatted JSON data based on the following requirements. The generated JSON must:
 #
