@@ -4,9 +4,10 @@ from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
+from units import Unit, Quantity
 
 # load API key
-load_dotenv(Path("./.env"))
+load_dotenv()
 API_KEY_USDA = os.getenv("USDA_FDC_API_KEY")
 
 BASE_URL = "https://api.nal.usda.gov/fdc/v1"
@@ -28,12 +29,14 @@ FDC_NUTRITION_IDS = {
 # Remove all physical recipe preparation descriptors - as they don't
 # affect nutrition information very much and it will make things easier to
 # search up.
-pattern = (
+PHYSICAL_DESCRIPTOR_PATTERN = (
     r"\b("
     r"chopped|sliced|diced|shredded|grated|minced|crushed|mashed|"
     r"julienned|cubed|quartered|halved|peeled|cored|pitted|trimmed|"
     r"stemmed|deveined|zested|rinsed|washed|pre-washed|unpeeled|"
-    r"untrimmed|destemmed|skinned"
+    r"untrimmed|destemmed|skinned|cut|smashed|torn|broken|separated|"
+    r"cracked|split|scraped|shelled|snapped|chipped|ground|slivered|"
+    r"spiralized"
     r")\b"
 )
 
@@ -42,7 +45,7 @@ def preprocess_food_name(ingredient_name):
     # TODO: use named entity recognition to extract food names, and use FDC's search operators...
     ingredient_name = ingredient_name.lower()
     ingredient_name = re.sub(
-        pattern,
+        PHYSICAL_DESCRIPTOR_PATTERN,
         "",
         ingredient_name,
     )
@@ -62,7 +65,8 @@ def search_fdc(query):
         "query": query,
         # "sortBy": "publishedDate",
         # "sortOrder": "desc",
-        "dataType": ["Foundation"],
+        # Survey (FNDDS) is the only dataset where I can retrieve portion information.
+        "dataType": ["Survey (FNDDS)"],
         "pageSize": 10,
     }
 
