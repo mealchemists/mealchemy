@@ -9,42 +9,22 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("recipes", "0001_initial"),
+        ('recipes', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name="MealPlan",
+            name='MealPlan',
             fields=[
-                (
-                    "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
-                ("updated_at", models.DateTimeField(auto_now=True)),
-                ("day_planned", models.DateField(null=True)),
-                (
-                    "meal_type",
-                    models.CharField(
-                        help_text="breakfast/lunch/dinner", max_length=255, null=True
-                    ),
-                ),
-                (
-                    "recipe",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="recipes.recipe",
-                    ),
-                ),
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('day_planned', models.DateField(null=True)),
+                ('meal_type', models.CharField(help_text='breakfast/lunch/dinner', max_length=255, null=True)),
+                ('recipe', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='recipes.recipe')),
             ],
             options={
-                "abstract": False,
+                'abstract': False,
             },
         ),
     ]
