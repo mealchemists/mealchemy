@@ -21,6 +21,7 @@ class ShoppingListViewTest(APITestCase):
         self.recipe = Recipe.objects.create(user=self.user, name="Test Recipe")
         self.aisle = Aisle.objects.create(name="Produce")
         self.ingredient = Ingredient.objects.create(
+            user = self.user,
             name="Carrot",
             calories_per_100g=random.uniform(50, 500),
             protein_per_100g=random.uniform(1, 30),
@@ -40,7 +41,7 @@ class ShoppingListViewTest(APITestCase):
             user=self.user, ingredient=self.recipe_ingredient
         )
         self.url = reverse("shopping-list", kwargs={"user_id": self.user.id})  # adjust name
-    
+
     def test_get_aisle_ingredients(self):
         response = self.client.get(self.url, {"type": "aisleIngredients"})
         self.assertEqual(response.status_code, 200)

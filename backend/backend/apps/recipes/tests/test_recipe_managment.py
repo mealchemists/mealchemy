@@ -327,7 +327,7 @@ class RecipeIngredientsAPITest(APITestCase):
         }
 
         response = self.client.put(put_url, updated_payload, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Refresh from DB
         recipe.refresh_from_db()
