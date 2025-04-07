@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-from time import perf_counter, time
+from time import perf_counter
 
 import requests
 import validators
@@ -13,9 +13,10 @@ from .scraper import Scraper
 
 load_dotenv()
 
-EXTRACT_URL = os.environ.get(
-    "EXTRACT_URL", "http://localhost:8000/api/save-scraped-data/"
-)
+EXTRACT_URL = os.getenv("EXTRACT_URL", "http://localhost:8000")
+EXTRACTOR_ENDPOINT = "/api/save-scraped-data/"
+
+URL = EXTRACT_URL + EXTRACTOR_ENDPOINT
 
 
 def extract_recipe_data_url(url, user, token):
@@ -38,7 +39,7 @@ def extract_recipe_data_url(url, user, token):
         headers = {
             "Authorization": f"Bearer {token}",  # Add the token in Authorization header
         }
-        response = requests.post(url=EXTRACT_URL, json=result, headers=headers)
+        response = requests.post(url=URL, json=result, headers=headers)
 
         # Check if the request was successful
         if response.status_code == 201:

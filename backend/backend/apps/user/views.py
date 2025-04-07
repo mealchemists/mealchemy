@@ -12,10 +12,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from dotenv import load_dotenv
 from backend.apps.user.serializer import RegisterSerializer
 
-
+load_dotenv()
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -84,9 +84,14 @@ class ForgotPasswordView(APIView):
                     "access_token": access_token,
                 }
 
-                reset_link = (
-                    f"http://localhost:3000/#/reset-password?token={access_token}"
-                )
+                if os.getenv("PROD", "False").lower() == "true":
+                    reset_link = (
+                        f"https://www.mealchemy.app/#/reset-password?token={access_token}"
+                    )
+                else:
+                    reset_link = (
+                        f"http://localhost:3000/#/reset-password?token={access_token}"
+                    )
 
                 send_mail(
                     "Mealchemy Password Reset",
