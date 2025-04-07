@@ -37,13 +37,18 @@ import json
 # The server will be the producer that will send messages to the queue.
 # producer = Producer()
 
+@api_view(["GET"])
+def get_jwt_token_endpoint(request, user_id):
+    # Generate JWT token for the user
+    user = User.objects.get(id=user_id)
+    refresh = RefreshToken.for_user(user)
+    return Response({"access_token": str(refresh.access_token)})
 
 def get_jwt_token(user_id):
     # Generate JWT token for the user
     user = User.objects.get(id=user_id)
     refresh = RefreshToken.for_user(user)
     return str(refresh.access_token)
-
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -101,7 +106,7 @@ def save_scraped_data(request):
             # Handle units that are given as count quantities
             if unit is None:
                 unit = ""
-            elif unit not in Unit:
+            elif unit not in [u.value for u in Unit]:
                 # Prevent saving non-measurement units from extracted data
                 unit = ""
                 needs_review_flag = True

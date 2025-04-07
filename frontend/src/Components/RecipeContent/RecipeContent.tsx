@@ -211,47 +211,52 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         
         setIngredients(filteredIngredients);
         setInstructions(filteredInstructions);
+        console.log(filteredInstructions);
         let error = false;
         // validate fields 
         console.log("COOK TIME", cookTime === null)
         console.log("COOK TIME", cookTime)
         if (!title){
-            error = true
+            error = true;
             toast.error("Please enter a title");
             return;
         }
 
         if (!cookTime ){
-            error = true
-            toast.error("Please enter cook time");
+            error = true;
+            toast.error("Please enter a cook time");
             return;
         }
 
         if (!prepTime){
-            error = true
+            error = true;
             toast.error("Please enter a prep time");
             return;
         }
 
         if (!totalTime){
-            error = true
+            error = true;
             toast.error("Please enter a total time");
             return;
         }
 
         if (instructions == null || instructions.length == 0){
-            error = true
+            error = true;
             toast.error("Please enter steps");
             return;
         }
 
         if (filteredIngredients.length == 0){
-            error = true
+            error = true;
             toast.error("Please enter ingredients");
             return;
         }
 
-    
+        if (mainIngredient == ""){
+            error = true;
+            toast.error("Please enter a Main Ingredient Tag");
+            return;
+        }
 
         const body = {
             ...recipeIngredient,
@@ -264,7 +269,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 prep_time: Number(prepTime),
                 total_time: Number(totalTime),
                 image_url: imageBase64,
-                steps: instructions,
+                steps: filteredInstructions,
                 needs_review: false
             },
              ingredients: filteredIngredients.map(ingredient => ({

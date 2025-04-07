@@ -12,11 +12,31 @@ export class RecipePage {
     await this.page.getByRole('textbox').nth(1).click();
   }
   async expectError(text: string) {
-    await expect(this.page.getByText(text)).toBeVisible();
+    await expect(this.page.getByText(text)).toBeVisible()
   }
   async enterTitle(title: string) {
     await this.page.locator('input[type="text"]').click();
     await this.page.locator('input[type="text"]').fill(title);
+  }
+  async clearCookPrepTime() {
+    await this.page.locator('div').filter({ hasText: /^Tags:000$/ }).getByRole('button').click();
+    await this.page.getByRole('textbox').first().click();
+    await this.page.getByRole('textbox').first().fill('');
+    await this.page.getByRole('textbox').nth(1).click();
+    await this.page.getByRole('textbox').nth(1).fill('');
+    await this.page.getByRole('button', { name: 'Done' }).click();
+  }
+  async fillCookTime() {
+    await this.page.locator('div').filter({ hasText: /^Tags:0$/ }).getByRole('button').click();
+    await this.page.getByRole('textbox').first().click();
+    await this.page.getByRole('textbox').first().fill('10');
+    await this.page.getByRole('button', { name: 'Done' }).click();
+  }
+  async fillPrepTime() {
+    await this.page.locator('div').filter({ hasText: /^Tags:1010$/ }).getByRole('button').click();    
+    await this.page.getByRole('textbox').nth(1).click();
+    await this.page.getByRole('textbox').nth(1).fill('10');
+    await this.page.getByRole('button', { name: 'Done' }).click();
   }
   async clearMainIngredient() {
     await this.page.locator('div').filter({ hasText: /^Tags:Main Ingredient000$/ }).getByRole('button').click();
@@ -104,9 +124,9 @@ export class RecipePage {
     await textbox.fill(text);
   }
 
-  async addInstruction(text: string) {
+  async addInstruction(text: string, index = 1) {
     await this.page.getByRole('button', { name: 'Add Instruction' }).click();
-    await this.updateInstruction(1, text);
+    await this.updateInstruction(index, text);
   }
 
   async save() {
@@ -117,8 +137,8 @@ export class RecipePage {
     await expect(this.page.locator('span').filter({ hasText: title })).toBeVisible();
     await expect(this.page.getByText(ingredient)).toBeVisible();
   }
-  async addMainIngredient(name: string) {
-    await this.page.locator('div').filter({ hasText: /^Tags:000$/ }).getByRole('button').click();
+  async addMainIngredient(name: string, tags='000') {
+    await this.page.locator('div')  .filter({ hasText: new RegExp(`^Tags:${tags}$`) }).getByRole('button').click();
     await this.page.locator('#tags-outlined').click();
     await this.page.getByRole('option', { name }).click();
     await this.page.getByRole('button', { name: 'Done' }).click();
