@@ -118,7 +118,7 @@ jobs:
             - name: Run database migrations
               working-directory: ./backend/
               env:
-                DATABASE_URL: postgres://django:password@localhost:5432/test_db
+                DATABASE_URL: postgres://admin:root@localhost:5432/test_db
                 SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
                 DOCKER: "True"
                 USE_SQLITE3: "False"
@@ -129,7 +129,7 @@ jobs:
             - name: Run tests
               working-directory: ./backend/
               env:
-                DATABASE_URL: postgres://django:password@localhost:5432/test_db
+                DATABASE_URL: postgres://admin:root@localhost:5432/test_db
                 SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
                 DOCKER: "True"
                 USE_SQLITE3: "False"
