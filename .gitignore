@@ -9,7 +9,7 @@ db.sqlite3
 # random test files
 *.json
 *.html
-*.txt
+
 
 
 # IDE files

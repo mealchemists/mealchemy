@@ -1,0 +1,37 @@
+# Use an official Python runtime as a parent image
+FROM python:3.12
+
+ENV PIKA_URL=amqps://njslbjoh:sBepSHwzktvaxnpm9-5kcCAtJR63rzJ0@horse.lmq.cloudamqp.com/njslbjoh
+ENV OPENAI_ECE493_G06_KEY=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
+ENV EXTRACT_URL=https://api.mealchemy.app
+# Install manually all the missing libraries
+RUN apt-get update
+RUN apt-get install -y gconf-service libasound2 libatk1.0-0 libcairo2 libcups2 libfontconfig1 libgdk-pixbuf2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libxss1 fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils
+
+# Install Chrome
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+RUN dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install
+
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr \
+    libleptonica-dev \
+    imagemagick \
+    ghostscript \
+    && apt-get clean
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the current directory contents into the container at /app
+COPY . /app
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install necessary OS packages (like for PDF extraction, if any)
+RUN apt-get update && apt-get install -y \
+    # Add any dependencies you need, like libpoppler-utils for PDFs, etc.
+    && apt-get clean
+
+# Make the consumer script executable
+CMD ["python", "consumer.py"]
