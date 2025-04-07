@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 
 from backend.apps.recipes.models.ingredients import Aisle, Ingredient, RecipeIngredient
 from backend.apps.recipes.models.recipe import Recipe
+from backend.apps.recipes.models.units import Unit
 # from backend.data_generator import create_ingredients
 
 class RecipeIngredientsAPITest(APITestCase):
@@ -41,7 +42,7 @@ class RecipeIngredientsAPITest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("ingredients", response.data[0])
 
-    def test_post_new_recipe_with_ingredients(self):
+    def test_FR19_post_new_recipe_with_ingredients(self):
         url = reverse("recipe-ingredients")
         payload = {
             "recipe": {
@@ -88,7 +89,7 @@ class RecipeIngredientsAPITest(APITestCase):
         self.assertFalse(recipe_ingredient.needs_review)
         self.assertEqual(recipe_ingredient.display_name, "Romaine Lettuce")
         
-    def test_post_new_recipe_missing_steps(self):
+    def test_FR18_FR11_post_new_recipe_missing_steps(self):
         url = reverse("recipe-ingredients")
         payload = {
             "recipe": {
@@ -135,7 +136,7 @@ class RecipeIngredientsAPITest(APITestCase):
         self.assertFalse(recipe_ingredient.needs_review)
         self.assertEqual(recipe_ingredient.display_name, "Romaine Lettuce")
         
-    def test_post_new_recipe_missing_prep(self):
+    def test_FR18_FR11_post_new_recipe_missing_prep(self):
         url = reverse("recipe-ingredients")
         payload = {
             "recipe": {
@@ -182,7 +183,7 @@ class RecipeIngredientsAPITest(APITestCase):
         self.assertFalse(recipe_ingredient.needs_review)
         self.assertEqual(recipe_ingredient.display_name, "Romaine Lettuce")
     
-    def test_post_new_ingredient_missing_name(self):
+    def test_FR18_FR11_post_new_ingredient_missing_name(self):
         url = reverse("recipe-ingredients")
         payload = {
             "recipe": {
@@ -275,4 +276,72 @@ class RecipeIngredientsAPITest(APITestCase):
         self.assertEqual(recipe_ingredient.unit, "bunch")
         self.assertFalse(recipe_ingredient.needs_review)
         self.assertEqual(recipe_ingredient.display_name, "Romaine Lettuce")
-        
+    
+    def test_FR21_put_recipe_object(self):
+        url = reverse("recipe-ingredients")
+        initial_payload = {
+            "recipe": {
+                "name": "Salad",
+                "cook_time": 10,
+                "prep_time": 10,
+                "total_time": 20,
+                "main_ingredient": "Chicken",
+                "steps": [{"step": 1, "description": "Step"}],
+            },
+            "ingredients": [
+                {
+                    "name": "no aisle",
+                    "quantity": 1,
+                    "unit": "bunch",
+                    "display_name": "Romaine Lettuce",
+                    "aisle": None,
+                }
+            ],
+        }
+
+        response = self.client.post(url, initial_payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        recipe = Recipe.objects.get(name="Salad")
+        put_url = reverse("recipe-ingredients")  
+
+        updated_payload = {
+            "recipe": {
+                "id": recipe.id,
+                "name": "New Name", 
+                "cook_time": 15,
+                "prep_time": 5,
+                "total_time": 25,
+                "main_ingredient": "Tofu",
+                "steps": [{"step": 1, "description": "Updated Step"}],
+            },
+            "ingredients": [
+                {
+                    "name": "no aisle",
+                    "quantity": 2,
+                    "unit": Unit.GRAM.label,
+                    "display_name": "Butter Lettuce",
+                    "aisle": None,
+                }
+            ],
+        }
+
+        response = self.client.put(put_url, updated_payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Refresh from DB
+        recipe.refresh_from_db()
+        ingredient = Ingredient.objects.get(name="no aisle")
+        recipe_ingredient = RecipeIngredient.objects.get(recipe=recipe, ingredient=ingredient)
+
+        # Updated assertions
+        self.assertEqual(recipe.name, "New Name")
+        self.assertEqual(recipe.cook_time, 15)
+        self.assertEqual(recipe.prep_time, 5)
+        self.assertEqual(recipe.total_time, 25)
+        self.assertEqual(recipe.main_ingredient.lower(), "tofu")
+        self.assertEqual(recipe.steps, [{"step": 1, "description": "Updated Step"}])
+
+        self.assertEqual(recipe_ingredient.quantity, "2")
+        self.assertEqual(recipe_ingredient.unit, Unit.GRAM.label)
+        self.assertEqual(recipe_ingredient.display_name, "Butter Lettuce")
