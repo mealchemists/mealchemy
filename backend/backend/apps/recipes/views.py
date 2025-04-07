@@ -1,6 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -33,6 +34,7 @@ from rest_framework import filters
 import tempfile
 import os
 import json
+import traceback
 
 # The server will be the producer that will send messages to the queue.
 # producer = Producer()
@@ -49,6 +51,29 @@ def get_jwt_token(user_id):
     user = User.objects.get(id=user_id)
     refresh = RefreshToken.for_user(user)
     return str(refresh.access_token)
+
+
+def validate_aisle(aisle, request):
+    user = request.user
+
+    # Handle empty aisle name
+    if not aisle:
+        aisle_obj, _ = Aisle.objects.get_or_create(name="Uncategorized", user=user)
+        return aisle_obj
+
+    # Try to find existing aisle
+    aisle_obj = Aisle.objects.filter(user=user, name=aisle).first()
+    if aisle_obj:
+        return aisle_obj
+
+    # Create new aisle
+    aisle_data = {"user": user.id, "name": aisle}
+    aisle_serializer = AisleSerializer(data=aisle_data)
+    if aisle_serializer.is_valid():
+        return aisle_serializer.save()
+    else:
+        raise Exception({"aisle": f"Invalid aisle data: {aisle_serializer.errors}"})
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -75,6 +100,8 @@ def save_scraped_data(request):
         for ingredient_data in ingredients:
             # TODO: handle nutrition information
             # TODO: handle fuzzy Ingredient retrieval in a different function
+            aisle_name = ingredient_data.get("aisle", None)
+            aisle = validate_aisle(aisle_name, request)
             calories_per_100g = random.uniform(50, 500)
             protein_per_100g = random.uniform(1, 30)
             carbs_per_100g = random.uniform(1, 50)
@@ -84,8 +111,15 @@ def save_scraped_data(request):
             fiber_per_100g = random.uniform(0, 15)
 
             try:
+                # Newly created recipe ingredients will be uncategorized.
+                aisle, _ = Aisle.objects.get_or_create(
+                    name="Uncategorized", user=request.user
+                )
+
                 ingredient, created = Ingredient.objects.get_or_create(
                     name=ingredient_data["name"],
+                    aisle=aisle,
+                    user=request.user,
                     defaults={
                         "calories_per_100g": calories_per_100g,
                         "protein_per_100g": protein_per_100g,
@@ -94,11 +128,19 @@ def save_scraped_data(request):
                         "fat_per_100g": fat_per_100g,
                         "sodium_per_100mg": sodium_per_100mg,
                         "fiber_per_100g": fiber_per_100g,
+                        "aisle": aisle,
                     },
                 )
+                if not created:
+                    # If the ingredient already existed, we may still want to update its aisle
+                    if ingredient.aisle != aisle:
+                        ingredient.aisle = aisle
+                        ingredient.save()
             except IntegrityError:
-                # If an IntegrityError occurs, we simply ignore it and continue
                 ingredient = Ingredient.objects.get(name=ingredient_data["name"])
+                if ingredient.aisle != aisle:
+                    ingredient.aisle = aisle
+                    ingredient.save()
 
             quantity = ingredient_data["quantity"]
             unit = ingredient_data["unit"]
@@ -109,15 +151,17 @@ def save_scraped_data(request):
             elif unit not in [u.value for u in Unit]:
                 # Prevent saving non-measurement units from extracted data
                 unit = ""
-                needs_review_flag = True
 
             RecipeIngredient.objects.create(
+                user=request.user,
                 recipe=recipe,
                 ingredient=ingredient,
                 quantity="" if quantity is None else quantity,
                 unit="" if unit is None else unit,
                 display_name=ingredient_data["name"],
-                added_by_extractor=request.data["added_by_extractor"],
+                added_by_extractor=request.data.get(
+                    "added_by_extractor", True
+                ),  # this api is expected to be used only by extractors defau;t to true
             )  # Create relationship
         return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -222,7 +266,6 @@ class RecipeIngredientsAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-
         queryset = self.parse_query_params(queryset, request)
 
         if not self.kwargs:
@@ -282,9 +325,9 @@ class RecipeIngredientsAPIView(APIView):
                 "unit": ri.unit,
                 "display_name": ri.display_name,
                 "name": ri.ingredient.name,  # Assuming Ingredient has a `name` field
-                "aisle":ri.ingredient.aisle,
-                "id":ri.ingredient.id,
-                "needs_review": ri.needs_review
+                "aisle": ri.ingredient.aisle,
+                "id": ri.ingredient.id,
+                "needs_review": ri.needs_review,
             }
             for ri in recipe_ingredients
         ]
@@ -315,28 +358,8 @@ class RecipeIngredientsAPIView(APIView):
 
                 if not display_name:
                     display_name = ingredient_name
-                # todo fix quanity and unit
-                # if not ingredient_name or not quantity or not unit:
-                if not ingredient_name:
-                    return Response(
-                        {"error": "Missing ingredient data"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-                
-                if not ingredient_data.get("aisle"):
-                    Aisle.objects.get_or_create(name="Uncategorized", user=self.request.user)
-                    
 
-                aisle_obj = Aisle.objects.filter(
-                    user_id=data["recipe"]["user"], name=aisle
-                ).first()
-                if not aisle_obj:
-                    aisle_data = {"user": data["recipe"]["user"], "name": aisle}
-                    aisle_serializer = AisleSerializer(data=aisle_data)
-                    if aisle_serializer.is_valid():
-                        aisle_obj = aisle_serializer.save()
-                    else:
-                        print(aisle_serializer.errors)
+                aisle_obj = validate_aisle(aisle, request)
 
                 # TODO: handle nutrition information
                 # TODO: handle fuzzy Ingredient retrieval in a different function
@@ -351,7 +374,9 @@ class RecipeIngredientsAPIView(APIView):
                 try:
                     ingredient, created = Ingredient.objects.get_or_create(
                         name=ingredient_name,
+                        user=self.request.user,
                         defaults={
+                            "user": self.request.user,
                             "calories_per_100g": calories_per_100g,
                             "protein_per_100g": protein_per_100g,
                             "carbs_per_100g": carbs_per_100g,
@@ -364,17 +389,25 @@ class RecipeIngredientsAPIView(APIView):
                     )
                 except IntegrityError:
                     # If an IntegrityError occurs, we simply ignore it and continue
-                    ingredient = Ingredient.objects.get(name=ingredient_name)
-                RecipeIngredient.objects.create(
+                    ingredient = Ingredient.objects.get(
+                        name=ingredient_name, id=self.request.user
+                    )
+                ri = RecipeIngredient.objects.create(
+                    user=self.request.user,
                     recipe=recipe,
                     ingredient=ingredient,
                     quantity=quantity,
                     unit=unit,
                     display_name=display_name,
-                )  # Create relationship
+                )
 
+            # Serialize the recipe object to get its data
+            recipe_data = RecipeSerializer(recipe).data
+
+            # Return the response with recipe and ingredients data
             return Response(
-                RecipeSerializer(recipe).data, status=status.HTTP_201_CREATED
+                {"id": ri.id, "recipe": recipe_data, "ingredients": ingredients_data},
+                status=status.HTTP_201_CREATED,
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -418,10 +451,7 @@ class RecipeIngredientsAPIView(APIView):
                 unit = ingredient_data.get("unit")
                 display_name = ingredient_data.get("display_name")
                 aisle = ingredient_data.get("aisle")  # the aisle name
-                
-                if not ingredient_data.get("aisle"):
-                    Aisle.objects.get_or_create(name="Uncategorized", user=self.request.user)
-                
+
                 if not display_name:
                     display_name = ingredient_name
 
@@ -440,23 +470,30 @@ class RecipeIngredientsAPIView(APIView):
                 sodium_per_100mg = random.uniform(0, 1500)
                 fiber_per_100g = random.uniform(0, 15)
 
-                # Check if aisle exists
-                aisle_obj = Aisle.objects.filter(
-                    user_id=data["recipe"]["user"], name=aisle
-                ).first()
-                if not aisle_obj:
-                    aisle_data = {"user": data["recipe"]["user"], "name": aisle}
-                    aisle_serializer = AisleSerializer(data=aisle_data)
-                    if aisle_serializer.is_valid():
-                        aisle_obj = aisle_serializer.save()
-                    else:
-                        aisle_obj = None
+                if not ingredient_data.get("aisle"):
+                    Aisle.objects.get_or_create(
+                        name="Uncategorized", user=self.request.user
+                    )
+                else:
+                    # Check if aisle exists
+                    aisle_obj = Aisle.objects.filter(
+                        user_id=self.request.user, name=aisle
+                    ).first()
+                    if not aisle_obj:
+                        aisle_data = {"user": data["recipe"]["user"], "name": aisle}
+                        aisle_serializer = AisleSerializer(data=aisle_data)
+                        if aisle_serializer.is_valid():
+                            aisle_obj = aisle_serializer.save()
+                        else:
+                            aisle_obj = None
 
                 try:
                     # Check if the ingredient exists, if not, create it
                     ingredient, created = Ingredient.objects.get_or_create(
                         name=ingredient_name,
+                        user=self.request.user,
                         defaults={
+                            "user": self.request.user,
                             "calories_per_100g": calories_per_100g,
                             "protein_per_100g": protein_per_100g,
                             "carbs_per_100g": carbs_per_100g,
@@ -469,10 +506,13 @@ class RecipeIngredientsAPIView(APIView):
                     )
                 except IntegrityError:
                     # If an IntegrityError occurs, we simply ignore it and continue
-                    ingredient = Ingredient.objects.get(name=ingredient_name)
+                    ingredient = Ingredient.objects.get(
+                        name=ingredient_name, user=self.request.user
+                    )
 
                 # Create RecipeIngredient relationships
-                RecipeIngredient.objects.create(
+                ri = RecipeIngredient.objects.create(
+                    user=self.request.user,
                     recipe=recipe,
                     ingredient=ingredient,
                     quantity=quantity,
@@ -480,13 +520,19 @@ class RecipeIngredientsAPIView(APIView):
                     display_name=display_name,
                 )
 
-            return Response(RecipeSerializer(recipe).data, status=status.HTTP_200_OK)
+                # Serialize the recipe object to get its data
+            recipe_data = RecipeSerializer(recipe).data
+
+            # Return the response with recipe and ingredients data
+            return Response(
+                {"id": ri.id, "recipe": recipe_data, "ingredients": ingredients_data},
+                status=status.HTTP_201_CREATED,
+            )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
-        print(pk)
         if pk:
             recipe_ingredient = self.get_object(pk=pk)
             recipe = recipe_ingredient.recipe
@@ -508,8 +554,12 @@ class RecipeIngredientsAPIView(APIView):
                 | Q(ingredient__needs_review=True)
                 | Q(needs_review=True)
             )
-        elif needs_review and needs_review.lower() == 'false':
-            queryset = queryset.filter(recipe__needs_review=False, ingredient__needs_review=False, needs_review=False)
+        elif needs_review and needs_review.lower() == "false":
+            queryset = queryset.filter(
+                recipe__needs_review=False,
+                ingredient__needs_review=False,
+                needs_review=False,
+            )
 
         search = request.query_params.get("search", None)
         if search:
@@ -571,62 +621,101 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, pk=None):  # /api/Recipes/<stor:id>
         try:
-            recipe = Recipe.objects.get(id=pk)
+            recipe = Recipe.objects.filter(user=self.request.user).get(id=pk)
             recipe.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Recipe.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 
-class IngredientViewSet(viewsets.ViewSet):
+class IngredientViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+
     def list(self, request):  # /api/Recipes
-        ingredients = Ingredient.objects.all()
+        ingredients = Ingredient.objects.filter(user=request.user)
         serializer = IngredientSerializer(ingredients, many=True)
         return Response(serializer.data)
 
     def create(self, request):
+        request.data.update({"user": request.user.id})
         serializer = IngredientSerializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
+
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk=None):  # /api/Recipes/<str:id>
-        ingredient = Ingredient.objects.get(id=pk)
+        try:
+            ingredient = Ingredient.objects.get(id=pk, user=request.user)
+        except Ingredient.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
         serializer = IngredientSerializer(ingredient)
         return Response(serializer.data)
 
     def update(self, request, pk=None):  # /api/Recipes/<str:id>
-        ingredient = Ingredient.objects.get(id=pk)
+        try:
+            ingredient = Ingredient.objects.get(id=pk, user=request.user)
+        except Ingredient.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        request.data.pop("user", None)  # prevent user field modification
+
         serializer = IngredientSerializer(instance=ingredient, data=request.data)
         serializer.is_valid(raise_exception=True)
+
         serializer.save()
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
     def destroy(self, request, pk=None):  # /api/Recipes/<str:id>
-        ingredient = Ingredient.objects.get(id=pk)
-        ingredient.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            ingredient = Ingredient.objects.get(id=pk, user=request.user)
+            ingredient.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Ingredient.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class RecipeIngredientViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
     def list(self, request):  # /api/Recipes
-        recipe_ingredient = RecipeIngredient.objects.all()
+        recipe_ingredient = RecipeIngredient.objects.filter(
+            recipe__user=self.request.user
+        )
         serializer = RecipeIngredientSerializer(recipe_ingredient, many=True)
         return Response(serializer.data)
 
     def create(self, request):
+        try:
+            _ = Recipe.objects.get(id=request.data.get("recipe"), user=request.user)
+        except Recipe.DoesNotExist:
+            raise PermissionDenied("You do not own this recipe!")
+
         serializer = RecipeIngredientSerializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk=None):  # /api/Recipes/<str:id>
-        recipe_ingredient = RecipeIngredient.objects.get(id=pk)
-        serializer = RecipeIngredientSerializer(recipe_ingredient, many=True)
+        try:
+            recipe_ingredient = RecipeIngredient.objects.filter(
+                recipe__user=self.request.user
+            ).get(id=pk)
+        except RecipeIngredient.DoesNotExist:
+            raise NotFound("Recipe ingredient not found!")
+
+        serializer = RecipeIngredientSerializer(recipe_ingredient)
         return Response(serializer.data)
 
     def update(self, request, pk=None):  # /api/Recipes/<str:id>
-        recipe_ingredient = RecipeIngredient.objects.get(id=pk)
+        try:
+            recipe_ingredient = RecipeIngredient.objects.filter(
+                recipe__user=self.request.user
+            ).get(id=pk)
+        except RecipeIngredient.DoesNotExist:
+            raise NotFound("Recipe ingredient not found!")
+
         serializer = RecipeIngredientSerializer(
             instance=recipe_ingredient, data=request.data
         )
@@ -635,9 +724,14 @@ class RecipeIngredientViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
     def destroy(self, request, pk=None):  # /api/Recipes/<str:id>
-        recipe_ingredient = RecipeIngredient.objects.get(id=pk)
-        recipe_ingredient.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            recipe_ingredient = RecipeIngredient.objects.filter(
+                recipe__user=self.request.user
+            ).get(id=pk)
+            recipe_ingredient.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except RecipeIngredient.DoesNotExist:
+            raise NotFound("Recipe ingredient not found!")
 
 
 class AisleAPIView(APIView):

@@ -46,12 +46,12 @@ export const pollRecipeIngredients = async (currentExtractedRecipeCount: number)
                 try {
                     const response = await apiClient.get(REVIEW_RECIPES);
                     const extracted_recipes = response.data.filter((ri) => ri.added_by_extractor == true);
-                   
+
                     if (extracted_recipes.length > currentExtractedRecipeCount) {
                         const reviewable_recipes = extracted_recipes.filter((ri) => needsReview(ri))
-                        console.log("reviewable_Recipes", reviewable_recipes )
+                        console.log("reviewable_Recipes", reviewable_recipes)
                         if (reviewable_recipes.length > 0) {
-                            toast.error("Added Recipe is invalid Please Fix!");
+                            toast.warning("Recipe was extracted, but needs review!");
                         } else {
                             toast.success("Recipe was successfully added!");
                         }

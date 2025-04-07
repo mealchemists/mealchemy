@@ -31,27 +31,28 @@ def clean_answer(raw_data):
     json_string = raw_data[start_idx:end_idx]
     # json_string = json_string.lower()
 
-    data = json.loads(json_string)
-
-    return data
-
-
-def join_steps(data):
-    # Check if 'steps' key exists in the data
-    if "steps" in data:
-        # Join all the step descriptions into a single string, with a separator (e.g., newline)
-        joined_steps = "\n".join(step["description"] for step in data["steps"])
-        data["recipe"]["steps"] = (
-            joined_steps  # Replace the list of steps with the joined string
-        )
-        del data["steps"]
-    return data
-
+    return json.loads(json_string)
 
 def replace_separators_with_underscore(input_string):
     # Replace spaces, hyphens, commas, and quotes with an underscore
     return re.sub(r'[ ,"-]', "_", input_string)
 
+def ensure_keys(data, schema):
+    if isinstance(schema, dict):
+        if not isinstance(data, dict):
+            data = {}
+        for key, default in schema.items():
+            if key not in data:
+                data[key] = default
+            else:
+                data[key] = ensure_keys(data[key], default)
+    elif isinstance(schema, list):
+        if not isinstance(data, list):
+            data = schema
+        elif len(schema) > 0:
+            # Assume all list items follow the schema of the first item
+            data = [ensure_keys(item, schema[0]) for item in data]
+    return data
 
 def transform_dict_keys(data):
     if isinstance(data, dict):  # If the data is a dictionary
@@ -63,3 +64,15 @@ def transform_dict_keys(data):
         return [transform_dict_keys(item) for item in data]
     else:
         return data
+    
+def process_data(dom_chunks, schema):
+    # Step 1: Parse the DOM chunks with OpenAI
+    parsed_data = parse_with_openai(dom_chunks)
+    
+    # Step 3: Ensure required keys based on the provided schema
+    ensured_data = ensure_keys(parsed_data, schema)
+    
+    # Step 4: Transform the dictionary keys (e.g., replace separators with underscores)
+    transformed_data = transform_dict_keys(ensured_data)
+    
+    return transformed_data

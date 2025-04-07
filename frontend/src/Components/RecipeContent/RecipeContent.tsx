@@ -116,8 +116,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
     const putRecipe = async (data) => {
         try {
-
-            const response = await putRecipeIngredients(data);
+            await putRecipeIngredients(data);
             onUpdateRecipe(data);
         } catch (error) {
             setError("Error fetching recipes");
@@ -129,7 +128,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const createRecipe = async (data) => {
         try {
             const response = await createRecipeIngredients(data);
-            onUpdateRecipe(data);
+            onUpdateRecipe(response);
         } catch (error) {
             console.error("Error creating recipe Ingredient");
             return;
@@ -214,8 +213,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         console.log(filteredInstructions);
         let error = false;
         // validate fields 
-        console.log("COOK TIME", cookTime === null)
-        console.log("COOK TIME", cookTime)
         if (!title){
             error = true;
             toast.error("Please enter a title");
