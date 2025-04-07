@@ -1,6 +1,5 @@
 import { toast } from "react-toastify";
 import apiClient from "./apiClient";
-import Cookies from 'js-cookie'
 import { needsReview } from "../utils/review";
 
 const RECIPE_ADD_BY_URL_URI = "recipe-url/";
@@ -13,7 +12,8 @@ const POLL_INTERVAL_SECONDS = 15; // inital wait time before starting the poll p
 
 export const postRecipeUrl = async (url) => {
   try {
-    const csrfToken = Cookies.get('csrftoken');
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];
+
     const response = await apiClient.post(
       RECIPE_ADD_BY_URL_URI,
       {
@@ -75,7 +75,8 @@ export const pollRecipeIngredients = async (currentExtractedRecipeCount: number)
 
 export const postRecipePDF = async (file: File) => {
   try {
-    const csrfToken = Cookies.get('csrftoken');
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];
+    
     const formData = new FormData();
     formData.append("temp_file", file);
 
@@ -96,7 +97,8 @@ export const postRecipePDF = async (file: File) => {
 
 export const deleteRecipe = async (recipe_id) => {
   try {
-    const csrfToken = Cookies.get('csrftoken');
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];
+    
     const response = await apiClient.delete(`recipe/${recipe_id}`, {
       headers: {
         "X-CSRFToken": csrfToken, // Include CSRF token

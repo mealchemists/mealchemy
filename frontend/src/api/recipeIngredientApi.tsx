@@ -1,6 +1,5 @@
 import apiClient from "./apiClient";
 import { Recipe, RecipeIngredient } from '../Models/models';
-import Cookies from 'js-cookie'
 
 const RECIPE_INGREDIENT_URI = "recipe-ingredients";
 
@@ -24,8 +23,8 @@ export const getRecipeIngredients = async (searchParams = {}): Promise<RecipeIng
 // }
 
 export const deleteRecipeIngredients = async (id) => {
-    const csrfToken = Cookies.get('csrftoken');
-    console.log("CSRFTOKEN", csrfToken);
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];
+
     const response = await apiClient.delete(
         `${RECIPE_INGREDIENT_URI}/${id}`,
         {
@@ -41,8 +40,8 @@ export const deleteRecipeIngredients = async (id) => {
 };
 
 export const putRecipeIngredients = async (data) => {
-    const csrfToken = Cookies.get('csrftoken');
-    console.log("CSRFTOKEN", csrfToken);
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];
+    
     try {
         const response = await apiClient.put(
             RECIPE_INGREDIENT_URI,
@@ -63,7 +62,8 @@ export const putRecipeIngredients = async (data) => {
 };
 
 export const createRecipeIngredients = async (recipeData) => {
-    const csrfToken = Cookies.get('csrftoken');
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];
+    
     const response = await apiClient.post(
         RECIPE_INGREDIENT_URI,
         recipeData,
@@ -82,7 +82,8 @@ export const getAllIngredients = async () => {
 };
 
 export const updateIngredientAisle = async(ingredientData)=>{
-    const csrfToken = Cookies.get('csrftoken');
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)[1];
+    
     let ingredient_id = ingredientData.id;
     const response = await apiClient.put(
         `ingredient/${ingredient_id}`,
