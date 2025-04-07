@@ -17,6 +17,10 @@ from backend.apps.user.serializer import RegisterSerializer
 
 
 class RegisterView(APIView):
+    """
+    FR1 - User.Register
+    This Creates and endpoint and does most of the logic surronded with registering a user
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -35,6 +39,10 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
+    """
+    FR2 - User.Login
+    This endpoint authenticates and logins the user and creates a session 
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -65,6 +73,10 @@ class LogoutView(APIView):
 
 
 class ForgotPasswordView(APIView):
+    """
+    FR3 - Security.Forgot.Password
+    Forgot password endpoint sends an password request form to the email associated with the account
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -106,6 +118,11 @@ class ForgotPasswordView(APIView):
 
 
 class UpdateAccountView(APIView):
+    """
+    FR4 - Security.Update.Password
+    
+    Authenticated users can update account password
+    """
     authentication_classes = [
         SessionAuthentication,
         JWTAuthentication,
@@ -138,6 +155,10 @@ class UpdateAccountView(APIView):
         )
         
 class ResetPasswordView(APIView):
+    """
+    FR3 - Security.Forgot.Password
+    This endpoint is used when the user clicks the email and is presented a form to update, the request lands here for validation
+    """
     authentication_classes = [
         JWTAuthentication,
     ]
