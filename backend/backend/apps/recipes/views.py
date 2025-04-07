@@ -113,6 +113,7 @@ def save_scraped_data(request):
                 ingredient, created = Ingredient.objects.get_or_create(
                     name=ingredient_data["name"],
                     aisle=aisle,
+                    user=request.user,
                     defaults={
                         "calories_per_100g": calories_per_100g,
                         "protein_per_100g": protein_per_100g,
