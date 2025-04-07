@@ -120,6 +120,8 @@ jobs:
               env:
                 DATABASE_URL: postgres://django:password@localhost:5432/test_db
                 SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+                DOCKER: "True"
+                USE_SQLITE3: "False"
               run: |
                 python manage.py makemigrations
                 python manage.py migrate
@@ -129,5 +131,8 @@ jobs:
               env:
                 DATABASE_URL: postgres://django:password@localhost:5432/test_db
                 SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+                DOCKER: "True"
+                USE_SQLITE3: "False"
+
               run: |
                 python manage.py test
