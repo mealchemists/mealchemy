@@ -70,8 +70,6 @@ def save_scraped_data(request):
 
         ingredients = request.data["ingredients"]
         for ingredient_data in ingredients:
-            needs_review_flag = False
-
             # TODO: handle nutrition information
             # TODO: handle fuzzy Ingredient retrieval in a different function
             calories_per_100g = random.uniform(50, 500)
@@ -114,10 +112,8 @@ def save_scraped_data(request):
             elif unit not in Unit:
                 # Prevent saving non-measurement units from extracted data
                 unit = ""
-                needs_review_flag = True
 
             RecipeIngredient.objects.create(
-                needs_review_flag=needs_review_flag,
                 recipe=recipe,
                 ingredient=ingredient,
                 quantity="" if quantity is None else quantity,
@@ -128,7 +124,6 @@ def save_scraped_data(request):
         return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
 
     except Exception as e:
-        print(traceback.format_exc())
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -506,7 +501,6 @@ class RecipeIngredientsAPIView(APIView):
 
     def delete(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
-        print(pk)
         if pk:
             recipe_ingredient = self.get_object(pk=pk)
             recipe = recipe_ingredient.recipe
@@ -595,8 +589,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, pk=None):  # /api/Recipes/<stor:id>
         try:
-            print(pk)
-            print(self.request.user)
             recipe = Recipe.objects.filter(user=self.request.user).get(id=pk)
             recipe.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
