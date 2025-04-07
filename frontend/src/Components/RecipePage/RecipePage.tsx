@@ -41,16 +41,22 @@ function RecipePage() {
 
     const handleDeleteRecipe = async (recipeToDelete: RecipeIngredient) => {
         // Delete the recipe from the list
-        await deleteRecipe(recipeToDelete.recipe.id);
-        setRecipeIngredients((prevRecipes) => {
-            const updatedRecipes = prevRecipes.filter(recipe => recipe !== recipeToDelete);
+        try {
+            await deleteRecipe(recipeToDelete.recipe.id);
+            setRecipeIngredients((prevRecipes) => {
+                const updatedRecipes = prevRecipes.filter(recipe => recipe !== recipeToDelete);
 
-            if (selectedRecipeIngredient === recipeToDelete) {
-                setSelectedRecipeIngredient(null);
-            }
-
-            return updatedRecipes;
-        });
+                if (selectedRecipeIngredient === recipeToDelete) {
+                    setSelectedRecipeIngredient(null);
+                }
+                toast.success("Recipe Deleted! 🍔");
+                return updatedRecipes;
+            });
+        } catch (error) {
+            console.error(error)
+            toast.error("Failed to delete recipe!")
+        }
+        
     };
 
     const handleUpdateRecipe = (updatedRecipe: RecipeIngredient) => {

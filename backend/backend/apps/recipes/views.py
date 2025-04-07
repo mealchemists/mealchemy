@@ -350,13 +350,7 @@ class RecipeIngredientsAPIView(APIView):
 
                 if not display_name:
                     display_name = ingredient_name
-
-                # if not ingredient_name:
-                #     return Response(
-                #         {"error": "Missing ingredient data"},
-                #         status=status.HTTP_400_BAD_REQUEST,
-                #     )
-                
+               
                 aisle_obj = validate_aisle(aisle, request)
 
                 # TODO: handle nutrition information
@@ -390,7 +384,7 @@ class RecipeIngredientsAPIView(APIView):
                     ingredient = Ingredient.objects.get(
                         name=ingredient_name, id=self.request.user
                     )
-                RecipeIngredient.objects.create(
+                ri = RecipeIngredient.objects.create(
                     recipe=recipe,
                     ingredient=ingredient,
                     quantity=quantity,
@@ -398,8 +392,13 @@ class RecipeIngredientsAPIView(APIView):
                     display_name=display_name,
                 )  
 
+            # Serialize the recipe object to get its data
+            recipe_data = RecipeSerializer(recipe).data
+
+            # Return the response with recipe and ingredients data
             return Response(
-                RecipeSerializer(recipe).data, status=status.HTTP_201_CREATED
+                {"id": ri.id, "recipe": recipe_data, "ingredients": ingredients_data},
+                status=status.HTTP_201_CREATED
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -503,7 +502,7 @@ class RecipeIngredientsAPIView(APIView):
                     )
 
                 # Create RecipeIngredient relationships
-                RecipeIngredient.objects.create(
+                ri = RecipeIngredient.objects.create(
                     recipe=recipe,
                     ingredient=ingredient,
                     quantity=quantity,
@@ -511,7 +510,14 @@ class RecipeIngredientsAPIView(APIView):
                     display_name=display_name,
                 )
 
-            return Response(RecipeSerializer(recipe).data, status=status.HTTP_200_OK)
+                        # Serialize the recipe object to get its data
+            recipe_data = RecipeSerializer(recipe).data
+
+            # Return the response with recipe and ingredients data
+            return Response(
+                {"id": ri.id, "recipe": recipe_data, "ingredients": ingredients_data},
+                status=status.HTTP_201_CREATED
+            )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

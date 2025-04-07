@@ -97,7 +97,6 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     }
 
 
-    // TODO convert this to recipe ingredients instead
     const handleAddManualRecipe = () => {
         setRecipeEditMode(true);
         setAllRecipeIngredients(prevRecipes => [...prevRecipes, blankRecipeIngredient]);
@@ -154,9 +153,8 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
     const { isAuthenticated, username, user_id } = useAuth();
 
     const handleAddShoppingList = async () => {
-        console.log(selectedRecipes)
         const selectedRecipeIngredients = recipeIngredient.filter((ri) => selectedRecipes.includes(ri.recipe.id));
-        console.log(selectedRecipeIngredients)
+
         // Loop through each selectedRecipeIngredient and check needsReview
         for (const ri of selectedRecipeIngredients) {
             if (needsReview(ri)) {
