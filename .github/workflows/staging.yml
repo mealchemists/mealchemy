@@ -119,6 +119,7 @@ jobs:
               working-directory: ./backend/
               env:
                 DATABASE_URL: postgres://django:password@localhost:5432/test_db
+                SECRET: ${{ secrets.DJANGO_SECRET_KEY }}
               run: |
                 python manage.py makemigrations
                 python manage.py migrate
@@ -127,5 +128,6 @@ jobs:
               working-directory: ./backend/
               env:
                 DATABASE_URL: postgres://django:password@localhost:5432/test_db
+                SECRET: ${{ secrets.DJANGO_SECRET_KEY }}
               run: |
                 python manage.py test
