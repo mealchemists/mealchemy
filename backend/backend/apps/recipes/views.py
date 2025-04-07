@@ -46,6 +46,7 @@ def get_jwt_token(user_id):
     refresh = RefreshToken.for_user(user)
     return str(refresh.access_token)
 
+
 def validate_aisle(aisle, request):
     user = request.user
 
@@ -65,9 +66,7 @@ def validate_aisle(aisle, request):
     if aisle_serializer.is_valid():
         return aisle_serializer.save()
     else:
-        raise Exception({
-            "aisle": f"Invalid aisle data: {aisle_serializer.errors}"
-        })
+        raise Exception({"aisle": f"Invalid aisle data: {aisle_serializer.errors}"})
 
 
 @api_view(["POST"])
@@ -147,12 +146,15 @@ def save_scraped_data(request):
                 unit = ""
 
             RecipeIngredient.objects.create(
+                user=request.user,
                 recipe=recipe,
                 ingredient=ingredient,
                 quantity="" if quantity is None else quantity,
                 unit="" if unit is None else unit,
                 display_name=ingredient_data["name"],
-                added_by_extractor=request.data.get("added_by_extractor", True), # this api is expected to be used only by extractors defau;t to true
+                added_by_extractor=request.data.get(
+                    "added_by_extractor", True
+                ),  # this api is expected to be used only by extractors defau;t to true
             )  # Create relationship
         return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -257,7 +259,6 @@ class RecipeIngredientsAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-
         queryset = self.parse_query_params(queryset, request)
 
         if not self.kwargs:
@@ -350,7 +351,7 @@ class RecipeIngredientsAPIView(APIView):
 
                 if not display_name:
                     display_name = ingredient_name
-               
+
                 aisle_obj = validate_aisle(aisle, request)
 
                 # TODO: handle nutrition information
@@ -385,12 +386,13 @@ class RecipeIngredientsAPIView(APIView):
                         name=ingredient_name, id=self.request.user
                     )
                 ri = RecipeIngredient.objects.create(
+                    user=self.request.user,
                     recipe=recipe,
                     ingredient=ingredient,
                     quantity=quantity,
                     unit=unit,
                     display_name=display_name,
-                )  
+                )
 
             # Serialize the recipe object to get its data
             recipe_data = RecipeSerializer(recipe).data
@@ -398,7 +400,7 @@ class RecipeIngredientsAPIView(APIView):
             # Return the response with recipe and ingredients data
             return Response(
                 {"id": ri.id, "recipe": recipe_data, "ingredients": ingredients_data},
-                status=status.HTTP_201_CREATED
+                status=status.HTTP_201_CREATED,
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -503,6 +505,7 @@ class RecipeIngredientsAPIView(APIView):
 
                 # Create RecipeIngredient relationships
                 ri = RecipeIngredient.objects.create(
+                    user=self.request.user,
                     recipe=recipe,
                     ingredient=ingredient,
                     quantity=quantity,
@@ -510,13 +513,13 @@ class RecipeIngredientsAPIView(APIView):
                     display_name=display_name,
                 )
 
-                        # Serialize the recipe object to get its data
+                # Serialize the recipe object to get its data
             recipe_data = RecipeSerializer(recipe).data
 
             # Return the response with recipe and ingredients data
             return Response(
                 {"id": ri.id, "recipe": recipe_data, "ingredients": ingredients_data},
-                status=status.HTTP_201_CREATED
+                status=status.HTTP_201_CREATED,
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
