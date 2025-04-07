@@ -23,11 +23,13 @@ from google.cloud import secretmanager
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
 # [START cloudrun_django_secret_config]
 # SECURITY WARNING: don't run with debug turned on in production!
 # Change this to "False" when you are ready for production
 env = environ.Env(DEBUG=(bool, True))
 env_file = os.path.join(BASE_DIR, ".env")
+
 
 # Attempt to load the Project ID into the environment, safely failing on error.
 try:
@@ -40,7 +42,7 @@ if os.path.isfile(env_file):
 
     env.read_env(env_file)
 # [START_EXCLUDE]
-elif os.getenv("TRAMPOLINE_CI", None):
+elif os.getenv("TRAMPOLINE_CI", None) or os.getenv("DOCKER", None):
     # Create local settings if running with CI, for unit testing
 
     placeholder = (
@@ -60,8 +62,8 @@ elif os.environ.get("GOOGLE_CLOUD_PROJECT", None):
     payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
 
     env.read_env(io.StringIO(payload))
-else:
-    raise Exception("No local .env or GOOGLE_CLOUD_PROJECT detected. No secrets found.")
+# else:
+    # raise Exception("No local .env or GOOGLE_CLOUD_PROJECT detected. No secrets found.")
 # [END cloudrun_django_secret_config]
 SECRET_KEY = env("SECRET_KEY")
 
@@ -148,6 +150,7 @@ else:
 
     # Optionally, use Cloud SQL Auth Proxy if the flag is set
     if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
+        print("HELLO\n\n\n\n\n")
         DATABASES["default"]["HOST"] = "127.0.0.1"
         DATABASES["default"]["PORT"] = 3306
 
@@ -265,6 +268,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 if os.getenv("PROD", "False").lower() == "true":
+    print("HELLO\n\n\n\n\n\n")
     SESSION_COOKIE_SAMESITE = "None"  # Allow cross-site cookies
     SESSION_COOKIE_SECURE = True  # Only send cookies over HTTPS
     CSRF_COOKIE_SAMESITE = "None"  # CSRF cookies for cross-site requests
