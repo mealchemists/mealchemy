@@ -65,42 +65,54 @@ const ListItem: React.FC<ListItemProps> = ({
             <Avatar
                 src={recipe.image_url}
                 alt={recipe.name}
-                variant = "square"
+                variant="square"
                 sx={{
                     width: "80px",
                     height: "80px",
                     objectFit: "cover",
                     borderRadius: "10px",
-                    display: "flex", 
+                    display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: "6rem",
                     backgroundColor: "#f0f0f0"
                 }}
             >
-                <DinnerDiningIcon sx={{ 
+                <DinnerDiningIcon sx={{
                     fontSize: "inherit",
-                    color:'#38793b'
-                    }}/>
+                    color: '#38793b'
+                }} />
             </Avatar>
             <div className="contentContainer">
-                <p className="itemTitle" 
-                    style={{ 
-                        display: "flex", 
-                        alignItems: "center", 
-                        whiteSpace: "nowrap", 
-                        overflow: "hidden", 
+                <p className="itemTitle"
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
                         textOverflow: "ellipsis",
-                        maxWidth: "200px"  // Adjust as needed
+                        maxWidth: "200px",
+                        lineHeight: "1"
                     }}>
                     {checkNeedsReview() && (
                         <Tooltip title="Needs Review" arrow>
-                            <WarningIcon sx={{ color: "red", marginRight: "8px" }} />
+                            <WarningIcon sx={{
+                                color: "coral",
+                                marginRight: "8px",
+                                display: "flex",
+                                fontSize: "inherit"
+                            }} />
                         </Tooltip>
                     )}
-                    
+
                     <Tooltip title={recipe.name.length > 12 ? recipe.name : ""} arrow>
-                        <span>{recipe.name.length > 12 ? `${recipe.name.substring(0, 12)}...` : recipe.name}</span>
+                        <span style={{
+                            display: "flex",
+                            alignItems: "center",
+                            height: "100%"
+                        }}>
+                            {recipe.name.length > 12 ? `${recipe.name.substring(0, 12)}...` : recipe.name}
+                        </span>
                     </Tooltip>
                 </p>
                 <div className="tagsContainer">
@@ -122,9 +134,9 @@ const ListItem: React.FC<ListItemProps> = ({
                         }
                         return (
                             <Tooltip key={index} title={tooltipLabel} arrow disableHoverListener={!tooltipLabel}>
-                                
+
                                 <Chip
-                                    label={tag && tag.length > 18 ? `${tag.substring(0, 18)}...` : tag || ""} 
+                                    label={tag && tag.length > 18 ? `${tag.substring(0, 18)}...` : tag || ""}
                                     icon={icon}
                                     variant="outlined"
                                     sx={{
@@ -135,7 +147,7 @@ const ListItem: React.FC<ListItemProps> = ({
                                         "& .MuiChip-icon": {
                                             color: "#38793b",
                                         },
-                                        textOverflow:"ellipses"
+                                        textOverflow: "ellipses"
                                     }}
                                 />
                             </Tooltip>
@@ -143,7 +155,7 @@ const ListItem: React.FC<ListItemProps> = ({
                     })}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 

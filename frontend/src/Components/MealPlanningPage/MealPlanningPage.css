@@ -62,6 +62,11 @@
   justify-content: center;
 }
 
+.mealPlanningContent{
+  width: 100%; 
+  max-width: 1004px; 
+  margin: 0 auto;
+}
 /* Style the toolbar container to stack label and buttons vertically */
 .rbc-toolbar {
   display: flex;
@@ -128,7 +133,7 @@ div.rbc-btn-group.rbc-btn-group-left button:hover{
 }
 
 .recipeGrid {
-  width: 1000px;
+  /* width: 1000px; */
   text-align: center;
   margin: 0 auto;
 }
@@ -156,7 +161,7 @@ div.rbc-btn-group.rbc-btn-group-left button:hover{
   gap: 3px;
   justify-items: center;
   align-items: center;
-  width: 1000px;
+  width: 100%;
   min-height: 300px;
 }
 
@@ -205,12 +210,29 @@ div.rbc-btn-group.rbc-btn-group-left button:hover{
   text-align: right;
 }
 
-.recipeGrid h3{
-  margin-top:0;
-}
-
 .recipeGrid .filterTagContainer{
   margin-top:0px;
   margin-bottom:0px;
+}
+
+
+@media screen and (max-width:800px){
+  .recipe-grid {
+    grid-template-columns: repeat(2, 0.5fr);
+    grid-template-rows: repeat(2, auto);
+    gap: 3px;
+    justify-items: center;
+    align-items: center;
+    width: 100%;
+    min-height: 300px;
+  }
+  .grid-item {
+    width: 150px;  
+    margin: 5px;  
+    display: flex;
+    justify-content: center; 
+    align-items: center;     
+    height: 120px;
+  }
 }
 

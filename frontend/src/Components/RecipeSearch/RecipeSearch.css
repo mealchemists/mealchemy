@@ -7,14 +7,16 @@
 .searchContainer{
     display: flex;
     align-items: center; 
+    justify-content: center; /* Center everything horizontally */
+    width: 100%; 
 }
 
 .searchLeft, .searchRight {
     display: flex;
     justify-content: center; 
     align-items: center;
-    width: 35px;
-    position: relative;
+    flex: 0 1 auto; /* Allow these to grow or shrink based on available space */
+    margin: 0 10px; /* Add margin for spacing */
 }
 
 .searchMiddle {

@@ -144,13 +144,13 @@ export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSo
           <p>Main Ingredient</p>
           <Autocomplete
             id="tags-outlined"
-            options={mainIngredientList}  
-            value={selectedMainIngredient}  
+            options={mainIngredientList}
+            value={selectedMainIngredient}
             onChange={(event, newValue) => setSelectedMainIngredient(newValue || '')} // Handle single value
             renderInput={(params) => (
-              <TextField {...params} 
-              sx={{
-                "& .MuiOutlinedInput-root": {
+              <TextField {...params}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
                     height: "50px",
                     width: "100%",
                     border: "2px solid #b0dbb2",
@@ -159,25 +159,26 @@ export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSo
                     "&:hover fieldset": { border: "none" },
                     "&.Mui-focused fieldset": { border: "none" },
                     padding: "5px",
-                },
-            }}
-              placeholder="Search..." />
+                  },
+                }}
+                placeholder="Search..." />
             )}
           />
         </div>
 
         <div className="popupButtonContainer">
           <Button onClick={applyFilters} variant="contained" sx={{
-                        backgroundColor: '#6bb2f4',
-                        color: 'white',
-                        borderRadius: '10px',
-                        padding: '10px',
-                        marginTop:2,
-                    }}>Apply Filters</Button>
-          <Button onClick={resetFilters} variant="outlined" sx={{ marginTop: 2, color:'#6bb2f4',
+            backgroundColor: '#6bb2f4',
+            color: 'white',
             borderRadius: '10px',
             padding: '10px',
-           }}>Reset Filters</Button>
+            marginTop: 2,
+          }}>Apply Filters</Button>
+          <Button onClick={resetFilters} variant="outlined" sx={{
+            marginTop: 2, color: '#6bb2f4',
+            borderRadius: '10px',
+            padding: '10px',
+          }}>Reset Filters</Button>
         </div>
       </div>
     </div>

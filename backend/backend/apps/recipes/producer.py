@@ -3,18 +3,20 @@ import json
 import os
 
 from dotenv import load_dotenv
-from pika.exceptions import AMQPConnectionError, StreamLostError
-
 
 load_dotenv()
 
-is_testing = os.environ.get("DJANGO_TEST", "FALSE").upper() == "TRUE"
-if not is_testing:
+
+def publish_message(data, queue_name="admin"):
+    # Publish a message to to the queue with a temporary connection.
+
+    # prevent pipeline errors; we aren't testing producer/consumer here.
+    is_testing = os.environ.get("DJANGO_TEST", "FALSE").upper() == "TRUE"
+    amqp_url = os.environ["PIKA_URL"] if not is_testing else "amqp://localhost:5672/"
+
     try:
-        # We do not care about the producer consumer if we are testing.
-        params = pika.URLParameters(
-            os.environ.get("PIKA_URL", "amqp://localhost:5672/")
-        )
+        params = pika.URLParameters(amqp_url)
+        params.heartbeat = 120
         connection = pika.BlockingConnection(params)
         channel = connection.channel()
     except Exception as _:

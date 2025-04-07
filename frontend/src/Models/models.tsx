@@ -48,6 +48,7 @@ export interface FilterObject {
     filters?: string[];
     sortBy?: string;
     range?: number[];
+    needs_review: boolean,
     mainIngredient?: string;
 }
 
@@ -58,4 +59,21 @@ export interface FilterObject {
     sortBy?: string;
     range?: number[];
     mainIngredient?: string;
+}
+
+export enum Unit {
+    None = '',
+    Teaspoon = 'tsp',
+    Tablespoon = 'tbsp',
+    Cup = 'cup',
+    Ounce = 'oz',
+    Gram = 'g',
+    Pound = 'lb',
+    FluidOunce = 'fl oz',
+    Mililiter = 'mL',
+    Liter = 'L',
+    Kilogram = 'kg',
+    Pint = 'pt',
+    Quart = 'qt',
+    Gallon = 'gal',
 }

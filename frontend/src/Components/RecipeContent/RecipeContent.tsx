@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Ingredient, Recipe, RecipeIngredient, RecipeStep } from '../../Models/models';
+import { Ingredient, Recipe, RecipeIngredient, RecipeStep, Unit } from '../../Models/models';
 import './RecipeContent.css';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import IconButton from '@mui/material/IconButton';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
-import { Avatar, Button, Chip, styled, TextField, Tooltip } from '@mui/material';
+import { Avatar, Button, Chip, styled, TextField, Tooltip, useMediaQuery } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import SoupKitchenIcon from '@mui/icons-material/SoupKitchen';
 import FlatwareIcon from '@mui/icons-material/Flatware';
@@ -15,28 +14,24 @@ import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import DinnerDiningIcon from '@mui/icons-material/DinnerDining';
 import { toast } from 'react-toastify';
 
-import { deleteRecipeIngredients, putRecipeIngredients, createRecipeIngredients } from '../../api/recipeIngredientApi';
+import { putRecipeIngredients, createRecipeIngredients } from '../../api/recipeIngredientApi';
 import AddIngredientModal from '../AddIngredientModal/AddIngredientModal';
 import EditTagModal from '../EditTagModal/EditTagModal';
 import './RecipeContent.css';
-
-
 
 const options = [
     'Edit',
     'Delete'
 ];
 
-
 const ITEM_HEIGHT = 48;
-
 
 interface RecipeContentProps {
     recipeIngredient: RecipeIngredient;
     initialEditMode?: boolean;
     exitEditMode: () => void;
-    onDeleteRecipe: (recipe: RecipeIngredient) => void; // Adjusted prop type
-    onUpdateRecipe: (recipe: RecipeIngredient) => void; // Adjusted prop type
+    onDeleteRecipe: (recipe: RecipeIngredient) => void; 
+    onUpdateRecipe: (recipe: RecipeIngredient) => void; 
 }
 
 const VisuallyHiddenInput = styled('input')({
@@ -75,15 +70,25 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const handleCloseIngredientModal = () => setOpenAddIngredientModal(false);
 
     // For tags
-    const [mainIngredient, setMainIngredient] = useState(String(recipe.main_ingredient));
-    const [cookTime, setCookTime] = useState(String(recipe.cook_time));
-    const [prepTime, setPrepTime] = useState(String(recipe.prep_time));
-    const [totalTime, setTotalTime] = useState(String(recipe.total_time));
+    const [mainIngredient, setMainIngredient] = useState(
+        recipe.main_ingredient ? String(recipe.main_ingredient) : ""
+    );
+    const [cookTime, setCookTime] = useState(
+        recipe.cook_time !== null ? String(recipe.cook_time) : ""
+    );
+    const [prepTime, setPrepTime] = useState(
+        recipe.prep_time !== null ? String(recipe.prep_time) : ""
+    );
+    const [totalTime, setTotalTime] = useState(
+        recipe.total_time !== null ? String(recipe.total_time) : ""
+    );
 
     const [tags, setTags] = useState([mainIngredient, cookTime, prepTime, totalTime]);
     const [error, setError] = useState("");
 
     const [imageBase64, setImageBase64] = useState<string>(recipe.image_url);
+
+    const isMobile = useMediaQuery("(max-width:800px)");
 
     const ingredientRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -111,8 +116,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
     const putRecipe = async (data) => {
         try {
-
-            const response = await putRecipeIngredients(data);
+            await putRecipeIngredients(data);
             onUpdateRecipe(data);
         } catch (error) {
             setError("Error fetching recipes");
@@ -124,7 +128,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
     const createRecipe = async (data) => {
         try {
             const response = await createRecipeIngredients(data);
-            onUpdateRecipe(data);
+            onUpdateRecipe(response);
         } catch (error) {
             console.error("Error creating recipe Ingredient");
             return;
@@ -133,10 +137,10 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
     useEffect(() => {
         setTags([
-            mainIngredient,
-            String(cookTime),
-            String(prepTime),
-            String(totalTime)
+            mainIngredient || "", // Fallback to empty string if mainIngredient is null or undefined
+            cookTime || "",       // Fallback to empty string if cookTime is null or undefined
+            prepTime || "",       // Fallback to empty string if prepTime is null or undefined
+            totalTime || ""       // Fallback to empty string if totalTime is null or undefined
         ]);
     }, [mainIngredient, cookTime, prepTime, totalTime]);
 
@@ -180,14 +184,15 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
     const handleApplyTagChanges = (
         tempMainIngredient: string,
-        tempCookTime: number,
-        tempPrepTime: number,
-        tempTotalTime: number
+        tempCookTime: number | null,
+        tempPrepTime: number | null,
+        tempTotalTime: number | null
     ) => {
-        setMainIngredient(tempMainIngredient);
-        setCookTime(String(tempCookTime));
-        setPrepTime(String(tempPrepTime));
-        setTotalTime(String(tempTotalTime));
+        // Ensure null or undefined values don't cause unwanted string conversion
+        setMainIngredient(tempMainIngredient || "");  // Default to an empty string if tempMainIngredient is null
+        setCookTime(tempCookTime !== null ? String(tempCookTime) : "");  // Default to an empty string if tempCookTime is null
+        setPrepTime(tempPrepTime !== null ? String(tempPrepTime) : "");  // Default to an empty string if tempPrepTime is null
+        setTotalTime(tempTotalTime !== null ? String(tempTotalTime) : "");  // Default to an empty string if tempTotalTime is null
         handleCloseTagModal();
     };
 
@@ -205,14 +210,49 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         
         setIngredients(filteredIngredients);
         setInstructions(filteredInstructions);
-        
-        if (title == ""){
+        let error = false;
+        // validate fields 
+        if (!title){
+            error = true
             toast.error("Please enter a title");
             return;
         }
 
+        if (!cookTime ){
+            error = true
+            toast.error("Please enter cook time");
+            return;
+        }
+
+        if (!prepTime){
+            error = true
+            toast.error("Please enter a prep time");
+            return;
+        }
+
+        if (!totalTime){
+            error = true
+            toast.error("Please enter a total time");
+            return;
+        }
+
+        if (instructions == null || instructions.length == 0){
+            error = true
+            toast.error("Please enter steps");
+            return;
+        }
+
+        if (filteredIngredients.length == 0){
+            error = true
+            toast.error("Please enter ingredients");
+            return;
+        }
+
+    
+
         const body = {
             ...recipeIngredient,
+            needsReview: false,
             recipe: {
                 ...recipeIngredient.recipe,
                 name: title,
@@ -222,18 +262,22 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                 total_time: Number(totalTime),
                 image_url: imageBase64,
                 steps: instructions,
+                needs_review: false
             },
-            ingredients: filteredIngredients
+             ingredients: filteredIngredients.map(ingredient => ({
+                ...ingredient,
+                needs_review: false // Setting needs_review to false for each ingredient
+            }))
         };
-
+    
         if(recipeIngredient.id != -1){
             await putRecipe(body);
         }else{
             await createRecipe(body);
         }
-       
         setEditMode(false);
         exitEditMode();
+
     };
 
     const handleAddIngredient = (ingredient) => {
@@ -289,9 +333,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
                 <Menu
                     id="long-menu"
-                    MenuListProps={{
-                        'aria-labelledby': 'long-button',
-                    }}
                     anchorEl={anchorEl}
                     open={openOptions}
                     onClose={handleOptionsClose}
@@ -320,7 +361,8 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                             color: 'white',
                             borderRadius: '10px'
                         }}
-                        onClick={() => handleSave()}>Save</Button>
+                        onClick={() => handleSave()}>Save
+                    </Button>
                 )}
 
             </div>
@@ -408,14 +450,14 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                         alt={recipe.name}
                         variant="square"
                         sx={{
-                            width: "300px",
-                            height: "300px",
+                            width: isMobile ? "200px":"300px",
+                            height: isMobile ? "200px":"300px",
                             objectFit: "cover",
                             borderRadius: "10px",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            fontSize: "20rem",
+                            fontSize: isMobile ? "12rem" :"20rem",
                             backgroundColor: "#f0f0f0"
                         }}
                     >
@@ -461,6 +503,17 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                         <TextField
                                             defaultValue={ingredient.quantity}
                                             variant="outlined"
+                                            onChange={(e) => {
+                                                const sanitizedValue = e.target.value
+                                                // allow only positive decimals
+                                                .replace(/[^0-9.]/g, '')
+                                                .replace(/^\./, '')
+                                                .replace(/\.+/g, '.')
+                                                .replace(/(\..*)\./g, '$1');
+                                                if (ingredientRefs.current[index]) {
+                                                    ingredientRefs.current[index].value = sanitizedValue;
+                                                }
+                                            }}
                                             inputRef={(el) => (ingredientRefs.current[index] = el)}
                                             sx={{
                                                 "& .MuiOutlinedInput-root": {
@@ -470,6 +523,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                             }}
                                         />
                                         <TextField
+                                            select
                                             defaultValue={ingredient.unit}
                                             variant="outlined"
                                             inputRef={(el) => (ingredientRefs.current[index + ingredients.length] = el)}
@@ -477,10 +531,15 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
                                                 "& .MuiOutlinedInput-root": {
                                                     fontSize: "14px",
                                                 },
-                                                width: '75px',
-
+                                                width: "75px",
                                             }}
-                                        />
+                                        >
+                                            {Object.entries(Unit).map(([label, value]) => (
+                                                <MenuItem key={value} value={value}>
+                                                    {value === Unit.None ? <em>&lt;No unit&gt;</em> : value}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
                                         <TextField
                                             defaultValue={ingredient.name}
                                             inputRef={(el) => (ingredientRefs.current[index + ingredients.length * 2] = el)}

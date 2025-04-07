@@ -1,21 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Autocomplete, Box, Button, InputAdornment, MenuItem, Modal, Select, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, InputAdornment, MenuItem, Modal, Select, TextField, Typography, useMediaQuery } from '@mui/material';
 import { useAuth } from '../../api/useAuth';
 import { getAisles, addAisle } from '../../api/aisles';
 import { updateIngredientAisle } from '../../api/recipeIngredientApi';
 import './AisleModal.css'
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-    borderRadius: "10px",
-};
 
 
 function AisleModal({ open, onClose, ingredient}) {
@@ -23,6 +11,22 @@ function AisleModal({ open, onClose, ingredient}) {
     const {isAuthenticated, username, user_id} = useAuth();
     const [allAisles, setAllAisles] = useState<string[]>([]);
     const [completeAisles, setCompleteAisles] = useState([]);
+
+    const isMobile = useMediaQuery("(max-width:800px)");
+
+    const style = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: isMobile ? 300 : 400,
+        bgcolor: 'background.paper',
+        border: '2px solid #000',
+        boxShadow: 24,
+        p: 4,
+        borderRadius: '10px'
+    };
+    
     const sendAisleToParent = async() => {
         // create new aisle
         if (!user_id){
@@ -118,15 +122,19 @@ function AisleModal({ open, onClose, ingredient}) {
                     />
                     </div>
                 </div>
+
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
                 <Button variant="contained" 
+                disabled={!newAisle.trim()}
                 sx={{
                     backgroundColor: '#6bb2f4',
                     color: 'white',
                     borderRadius:'10px'
-
                 }}
-                 onClick={sendAisleToParent}>Done</Button>
+                onClick={sendAisleToParent}>Done</Button>
+                 </Box>
             </Box>
+
         </Modal >
     );
 }
