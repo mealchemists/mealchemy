@@ -8,6 +8,7 @@ import { Drawer, IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { getRecipeIngredients } from '../../api/recipeIngredientApi';
+import { toast } from 'react-toastify';
 
 
 function RecipePage() {
@@ -40,16 +41,22 @@ function RecipePage() {
 
     const handleDeleteRecipe = async (recipeToDelete: RecipeIngredient) => {
         // Delete the recipe from the list
-        await deleteRecipe(recipeToDelete.recipe.id);
-        setRecipeIngredients((prevRecipes) => {
-            const updatedRecipes = prevRecipes.filter(recipe => recipe !== recipeToDelete);
+        try {
+            await deleteRecipe(recipeToDelete.recipe.id);
+            setRecipeIngredients((prevRecipes) => {
+                const updatedRecipes = prevRecipes.filter(recipe => recipe !== recipeToDelete);
 
-            if (selectedRecipeIngredient === recipeToDelete) {
-                setSelectedRecipeIngredient(null);
-            }
-
-            return updatedRecipes;
-        });
+                if (selectedRecipeIngredient === recipeToDelete) {
+                    setSelectedRecipeIngredient(null);
+                }
+                toast.success("Recipe Deleted! 🍔");
+                return updatedRecipes;
+            });
+        } catch (error) {
+            console.error(error)
+            toast.error("Failed to delete recipe!")
+        }
+        
     };
 
     const handleUpdateRecipe = (updatedRecipe: RecipeIngredient) => {
@@ -61,12 +68,13 @@ function RecipePage() {
                 // If found, update the existing recipe ingredient
                 const updatedRecipeIngredients = [...prevRecipeIngredients];
                 updatedRecipeIngredients[existingRecipeIndex] = updatedRecipe;
+                toast.success("Recipe Updated! 🍔");
                 console.log("Updated recipe:", updatedRecipeIngredients);
                 return updatedRecipeIngredients;
             } else {
                 // If not found, add the new recipe ingredient
                 const updatedRecipeIngredients = [...prevRecipeIngredients, updatedRecipe];
-                console.log("Added new recipe:", updatedRecipeIngredients);
+                toast.success("Recipe Added! 🍔");
                 return updatedRecipeIngredients;
             }
         });
