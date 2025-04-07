@@ -464,22 +464,7 @@ class RecipeIngredientsAPIView(APIView):
                 sodium_per_100mg = random.uniform(0, 1500)
                 fiber_per_100g = random.uniform(0, 15)
 
-                if not ingredient_data.get("aisle"):
-                    Aisle.objects.get_or_create(
-                        name="Uncategorized", user=self.request.user
-                    )
-                else:
-                    # Check if aisle exists
-                    aisle_obj = Aisle.objects.filter(
-                        user_id=self.request.user, name=aisle
-                    ).first()
-                    if not aisle_obj:
-                        aisle_data = {"user": data["recipe"]["user"], "name": aisle}
-                        aisle_serializer = AisleSerializer(data=aisle_data)
-                        if aisle_serializer.is_valid():
-                            aisle_obj = aisle_serializer.save()
-                        else:
-                            aisle_obj = None
+                aisle_obj = validate_aisle(aisle, request) 
 
                 try:
                     # Check if the ingredient exists, if not, create it
