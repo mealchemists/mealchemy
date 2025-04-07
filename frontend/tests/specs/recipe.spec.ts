@@ -51,10 +51,9 @@ test('Create Recipe Validations', async ({ page }) => {
 });
 
 test('Delete Recipe', async ({ page }) => {
-  await page.goto('http://localhost:3000/#/login');
-  await page.getByRole('textbox', { name: 'Email' }).click();
-  await page.getByRole('textbox', { name: 'Email' }).fill('demo@email.com');
-  await page.getByRole('textbox', { name: 'Email' }).press('Tab');
-  await page.getByRole('textbox', { name: 'Password' }).fill('password$');
-  await page.getByRole('button', { name: 'Login' }).click();
+  await recipePage.openMoreMenu();
+  await recipePage.selectRecipes([2]);
+  await page.getByRole('button', { name: 'Delete' }).click();
+  await expect(page.getByText('Recipe2')).toHaveCount(0);
+  
 });

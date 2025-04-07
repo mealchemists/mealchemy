@@ -9,7 +9,7 @@ export class ShoppingListPage {
     }
 
     async navigateToShoppingList() {
-        await this.page.getByText('Shopping List').click();
+        await this.page.getByRole('navigation').locator('li', { hasText: 'Shopping List' }).click();
     }
 
     async assertRecipeVisible(recipeName: string) {

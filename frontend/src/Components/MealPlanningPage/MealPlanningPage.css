@@ -33,12 +33,12 @@
 }
 
 .rbc-row .rbc-event,  .rbc-event.rbc-selected{
-  background-color:#38793b;
+  background-color:#38793b!important;
   height:fit-content;
 }
 
 .rbc-header{
-  background-color:#38793b;
+  background-color:#38793b!important;
   color:white;
   border-bottom:1px solid #38793b  !important;
 }
@@ -55,7 +55,7 @@
 }
 .rbc-header.rbc-today, .rbc-day-bg.rbc-today{
   background-color:rgb(176, 219, 178, 0.3);
-  color:black;
+  color:white!important;
 }
 .calendarContainer {
   display: flex;
