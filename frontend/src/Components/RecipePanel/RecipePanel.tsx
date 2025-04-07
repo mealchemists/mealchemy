@@ -131,11 +131,12 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
                 }
             }
 
-            // After deletion, update the state and clear selected recipes
-            const updatedRecipes = recipeIngredient.filter(
-                recipeIngredient => !selectedRecipes.includes(recipeIngredient.recipe.id)
-            );
-            setRecipeIngredients(updatedRecipes);
+            // // After deletion, update the state and clear selected recipes
+            // const updatedRecipes = recipeIngredient.filter(
+            //     recipeIngredient => !selectedRecipes.includes(recipeIngredient.recipe.id)
+            // );
+            // setRecipeIngredients(updatedRecipes);
+            await fetchRecipes();
             setSelectedRecipes([]);
             setMultiSelect(false);
             setButtonVisibility(false);
@@ -160,7 +161,7 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
         for (const ri of selectedRecipeIngredients) {
             if (needsReview(ri)) {
                 toast.error("Cannot add malformed recipes to shopping list");
-                return; 
+                return;
             }
         }
         addToShoppingList(selectedRecipes, user_id);
@@ -216,7 +217,7 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
                             backgroundColor: '#6bb2f4',
                             color: 'white',
                             borderRadius: '10px',
-                            marginRight:'3px'
+                            marginRight: '3px'
 
                         }}
                         onClick={handleAddShoppingList}
