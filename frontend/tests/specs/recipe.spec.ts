@@ -12,46 +12,57 @@ test.beforeEach(async ({ page }) => {
   recipePage = new RecipePage(page);
 
   await loginPage.goto();
-  await loginPage.login('demo@email.com', 'password$');
+  await loginPage.login('test@email.com', 'password$');
 });
 
 test('Add Manual recipe', async () => {
   await recipePage.selectManualRecipe();
-  await recipePage.addManualRecipe('Recipe1');
+  await recipePage.addManualRecipe('Recipe1', 'Oranges',true);
 });
 
 test('Edit Recipe', async ({ page }) => {
-  await recipePage.selectRecipeByText('Recipe1Carrots101525');
+  await recipePage.selectRecipeByText('Recipe1');
   await recipePage.openEditMenu();
   await recipePage.editRecipeTitle('Recipe2');
-  await recipePage.updateTag('Tags:Carrots101525', 'Green Onion');
-  await recipePage.addIngredient('5', 'Broccoli');
+  await recipePage.updateTag('Broccoli',true);
+  await recipePage.addIngredient('5', 'Broccoli',true);
   await recipePage.updateInstruction(0, 'Eat');
   await recipePage.addInstruction('abc');
 
   await recipePage.save();
-  await recipePage.expectRecipeDetailsVisible('Recipe2', 'g Broccoli');
+  await expect(page.getByRole('paragraph').getByText('Recipe2')).toBeVisible();
 });
 
 test('Create Recipe Validations', async ({ page }) => {
   await recipePage.selectManualRecipe();
 
-  await recipePage.focusTitleInput();
+  await recipePage.editRecipeTitle(' ');
+  await recipePage.openEditTagModal();
   await recipePage.clearMainIngredient();
+  await page.getByRole('heading', { name: 'Edit Tags' }).click();
   await recipePage.clearCookPrepTime();
   await recipePage.save();
 
   await recipePage.expectError('Please enter a title');
-  await recipePage.enterTitle('Title');
+  await recipePage.editRecipeTitle('Recipe3');
+  await recipePage.save();
+
+  await recipePage.expectError('Please enter a Main Ingredient Tag');
+  await recipePage.openEditTagModal();
+  await recipePage.addMainIngredient('Beef Sirloin', true);
+  await recipePage.closeEditTagModal();
   await recipePage.save();
 
   await recipePage.expectError('Please enter a cook time');
-  await recipePage.fillCookTime();
+  await recipePage.openEditTagModal();
+  await recipePage.fillCookTime('10');
+  await recipePage.closeEditTagModal();
   await recipePage.save();
 
   await recipePage.expectError('Please enter a prep time');
-
-  await recipePage.fillPrepTime();
+  await recipePage.openEditTagModal();
+  await recipePage.fillPrepTime('10');
+  await recipePage.closeEditTagModal();
   await recipePage.save();
 
   await recipePage.expectError('Please enter steps');
@@ -59,45 +70,103 @@ test('Create Recipe Validations', async ({ page }) => {
   await recipePage.save();
 
   await recipePage.expectError('Please enter ingredients');
-  await recipePage.addIngredient('5', 'Broccoli');
+  await recipePage.addIngredient('5', 'Broccoli', false);
   await recipePage.save();
 
-  await recipePage.expectError('Please enter a Main Ingredient Tag');
-  await recipePage.addMainIngredient('Beef Sirloin', '101020');
-  await recipePage.save();
-  await expect(page.locator('span').filter({ hasText: 'Title' })).toBeVisible();
+  await expect(page.locator('span').filter({ hasText: 'Recipe3' })).toBeVisible();
 });
 
 test('Delete Recipe', async ({ page }) => {
+  // await recipePage.openMoreMenu();
+  // await recipePage.selectRecipes([0]);
+  // await page.getByRole('button', { name: 'Delete' }).click();
+  // await expect(page.getByText('Recipe2')).toHaveCount(0);
+
   await recipePage.openMoreMenu();
-  await recipePage.selectRecipes([2]);
+  await recipePage.selectRecipes([0]);
   await page.getByRole('button', { name: 'Delete' }).click();
+  await expect(page.getByText('Recipe3')).toHaveCount(0);
+});
+
+test('Delete All Recipes', async ({ page }) => {
+  await recipePage.selectManualRecipe();
+  await recipePage.addManualRecipe('Recipe1', 'Water', true);
+  await recipePage.selectManualRecipe();
+  await recipePage.addManualRecipe('Recipe2', 'Lemon', true);
+
+  await recipePage.openMoreMenu();
+  await recipePage.selectRecipes([0,1]);
+  await page.getByRole('button', { name: 'Delete' }).click();
+  await expect(page.getByText('Recipe1')).toHaveCount(0);
   await expect(page.getByText('Recipe2')).toHaveCount(0);
+
 });
 
 test('Filters', async ({ page }) => {
-  await page.locator('.searchMiddle').getByRole('textbox').click();
-  await page.getByRole('textbox').fill('beef');
-  await expect(page.getByText('Beef Stirfry')).toBeVisible();
-  await page.getByText('Title').click();
-  await page.getByRole('button').nth(2).click();
-  await page.getByRole('radio', { name: 'Cooking Time' }).check();
-  await page.getByRole('button', { name: 'Apply Filters' }).click();
-  await expect(page.getByRole('paragraph').getByText('Title')).toBeVisible();
-  await page.getByRole('button').nth(2).click();
-  await page.getByRole('button', { name: 'Reset Filters' }).click();
-  await page.locator('a').click();
-  await expect(page.getByText('Beef Stirfry')).toBeVisible();
+  await recipePage.selectManualRecipe();
+  await recipePage.addManualRecipe('Recipe1', 'Water', false);
+  await recipePage.selectManualRecipe();
+  await recipePage.addManualRecipe('Recipe2', 'Lemon', false);
+
+  // filter by name
+  await page.locator('div.searchContainer').getByRole('textbox').click();
+  await page.getByRole('textbox').fill('Recipe1');
+  await expect(page.locator('div.itemContainer:has-text("Recipe2")')).toHaveCount(0);
+
+  // clear searchbox
+  await page.getByRole('textbox').click();
+  await page.getByRole('textbox').fill('');
+
+  await page.waitForTimeout(2000);
+
+  // open filter box
   await page.getByRole('button').nth(2).click();
   await page.getByRole('combobox', { name: 'Search...' }).click();
-  await page.getByRole('option', { name: 'beef', exact: true }).click();
-  await page.locator('.MuiSlider-rail').click();
-  await page.locator('span').filter({ hasText: '50' }).nth(1).click();
+
+  await page.getByRole('option', { name: 'Water' }).click();
   await page.getByRole('button', { name: 'Apply Filters' }).click();
-  await expect(page.getByText('Beef Stirfry')).toBeVisible();
+
+  await expect(page.locator('div').filter({ hasText: /^Main Ingredient: Water$/ })).toBeVisible();
+
+  // open filter box
+  await page.getByRole('button').nth(2).click();
+  await page.getByRole('button', { name: 'Reset Filters' }).click();
+
+  await page.locator('a').click();
+  await page.getByRole('button').nth(2).click();
+ 
+  const thumbs = page.locator('.MuiSlider-thumb');
+
+    // Move RIGHT thumb to the left by 50px
+    const rightBox = await thumbs.last().boundingBox();
+    if (rightBox) {
+      const startX = rightBox.x + rightBox.width / 2;
+      const startY = rightBox.y + rightBox.height / 2;
+    
+      await page.mouse.move(startX+10, startY);
+      await page.mouse.down();
+      await page.mouse.move(startX + 80, startY); // drag left by 50px
+      await page.mouse.up();
+    }
+
+  const leftBox = await thumbs.first().boundingBox();
+  if (leftBox) {
+    const startX = leftBox.x + leftBox.width / 2;
+    const startY = leftBox.y + leftBox.height / 2;
+  
+    await page.mouse.move(startX+10, startY);
+    await page.mouse.down();
+    await page.mouse.move(startX + 50, startY); // drag right by 50px
+    await page.mouse.up();
+  }
+  await page.getByRole('button', { name: 'Apply Filters' }).click();
+  await expect(page.getByText('Recipe2')).toHaveCount(0);
+  await expect(page.getByText('Recipe1')).toHaveCount(0);
+
+  
 })
 
-test('Post request invalid cook_time', async ({ page, request }) => {
+test('Post request invalid', async ({ page, request }) => {
   const body = {
     "recipe": {
       "name": "Oven Roasted Red Potatoes and Asparagus",
@@ -114,7 +183,7 @@ test('Post request invalid cook_time', async ({ page, request }) => {
     "steps": [{"step_number":"1", "description":"wash"}],
     "added_by_extractor": true
   }
-  // TODO: ADD a delay to allow user to login
+  // delay to allow user to login
   await page.waitForTimeout(2000);
 
   const tokenResponse = await page.request.get(
@@ -141,9 +210,12 @@ test('Post request invalid cook_time', async ({ page, request }) => {
   await page.getByRole('button', { name: 'more' }).click();
   await page.getByRole('menuitem', { name: 'Select' }).click();
   await page.getByRole('checkbox').nth(4).check();
+  // add to Shopping List
   await page.getByRole('button', { name: 'Add to Shopping List' }).click();
   await expect(page.getByText('Cannot add malformed recipes')).toBeVisible();
   await expect(page.getByTestId('WarningAmberIcon').locator('path').first()).toBeVisible();
+
+  // Check Meal Planning
   await page.getByText('Meal Planning').click();
   await expect(page.getByLabel('Oven Roasted Red Potatoes and')).not.toBeVisible();
   
