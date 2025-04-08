@@ -11,7 +11,7 @@ const nutritionalData = [
 ]
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Total']
-
+// FR30 - Nutrition-Details
 const NutritionalAccordion = () => {
   return (
     <Box

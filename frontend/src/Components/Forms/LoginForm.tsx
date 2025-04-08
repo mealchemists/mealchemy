@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
 import {validatePassword, validateEmail} from '../../utils/formValidation';
 
+// FR2 - User.Login
 const LoginForm = ({ onSubmit, onForgotPassword, formError }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");

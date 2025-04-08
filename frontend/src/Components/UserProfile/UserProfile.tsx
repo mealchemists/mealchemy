@@ -30,6 +30,7 @@ function UserProfile() {
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
+  // FR4 - Security.Update.Password
   const handleChangePassword = () => {
     setShowPasswordInput(!showPasswordInput);
   };

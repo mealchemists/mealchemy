@@ -114,6 +114,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         }
     }
 
+    // FR21 - Recipe.Modify
     const putRecipe = async (data) => {
         try {
             await putRecipeIngredients(data);
@@ -125,6 +126,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         }
     }
 
+    // FR19 - Recipe.Create
     const createRecipe = async (data) => {
         try {
             const response = await createRecipeIngredients(data);
@@ -284,6 +286,7 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
 
     };
 
+    
     const handleAddIngredient = (ingredient) => {
         const newIngredients = [...ingredients, ingredient]
         setIngredients(newIngredients); // Add an empty ingredient field

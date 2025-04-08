@@ -39,7 +39,6 @@ function ShoppingListPage() {
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [aisleData, setAisleData] = useState([]);
 
-  // const [checked, setChecked] = useState<number[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width:800px)");
 
@@ -89,11 +88,12 @@ function ShoppingListPage() {
   };
 
 
+  // FR29 - ShoppingList.Cross
   const handleCheckChange = (aisleIndex: number, itemIndex: number) => {
     const updatedAisleData = [...aisleData];
     updatedAisleData[aisleIndex].items[itemIndex].checked =
       !updatedAisleData[aisleIndex].items[itemIndex].checked;
-    setAisleData(updatedAisleData); // Update the state with new checked values
+    setAisleData(updatedAisleData); 
   };
 
   const removeRecipes = async () => {
@@ -123,7 +123,7 @@ function ShoppingListPage() {
           slotProps={{
             paper: {
               sx: {
-                backgroundColor: '#f8f8f8' // Ensure it's a valid hex color
+                backgroundColor: '#f8f8f8' 
               }
             }
           }}

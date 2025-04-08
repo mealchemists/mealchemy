@@ -5,7 +5,7 @@ import { getAisles, addAisle } from '../../api/aisles';
 import { updateIngredientAisle } from '../../api/recipeIngredientApi';
 import './AisleModal.css'
 
-
+// FR28 - Category.Edit
 function AisleModal({ open, onClose, ingredient}) {
     const [newAisle, setNewAisle] = useState<string>("");
     const {isAuthenticated, username, user_id} = useAuth();

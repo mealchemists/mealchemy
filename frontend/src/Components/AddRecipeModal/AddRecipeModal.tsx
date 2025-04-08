@@ -117,8 +117,10 @@ function AddRecipeModal({
 
     const sendRecipeToParent = () => {
         if (addRecipeFormat) {
+            // FR5 - FR11
             addByPDF();
         } else {
+            // FR12 - FR18
             addByUrl();
         }
         onAddRecipe(newRecipe);
@@ -157,6 +159,7 @@ function AddRecipeModal({
                         </p>
                     )}
 
+                    {/* FR12 - FR18 */}
                     {addRecipeFormat === 0 && (
                         <div className="addRecipeUrl">
                             <label>Recipe URL:</label>
@@ -173,19 +176,13 @@ function AddRecipeModal({
                                         padding: "5px",
                                     },
                                 }}
-                                // sx={{
-                                //     width: "15ch",
-                                //     "& .MuiOutlinedInput-root": {
-                                //         height: "40px",
-                                //         "& input": { height: "100%", padding: "10px" },
-                                //     },
-                                // }}
                                 value={(recipeUrl)}
                                 onChange={(e) => setRecipeUrl(e.target.value)}
                             />
                         </div>
                     )}
 
+                    {/* FR5 - FR11 */}
                     {addRecipeFormat === 1 && (
                         <div className="addRecipePDF">
                             <label>Recipe PDF:</label>

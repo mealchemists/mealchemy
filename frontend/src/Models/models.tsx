@@ -12,6 +12,7 @@ export interface Recipe{
     needs_review?: Boolean|null
 }
 
+
 export interface Ingredient {
     id: Number,
     name: string,
