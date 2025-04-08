@@ -189,6 +189,22 @@ REACT_APP_API_URL=http://localhost:8000
 # Any other custom settings you need...
 ```
 
+### CloudAMQP URL
+
+1. Create a CloudAMQP account.
+2. Create a new instance with any name.
+3. Select any region and data center. I used Azure in East US, but it shouldn't really matter.
+4. Click 'Review' -> 'Create instance'.
+5. Navigate to your instance, and under 'AMQP details', copy the URL and paste it into the `PIKA_URL` environment variable.
+
+### USDA FDC API Key
+
+You can get your own USDA FoodData Central API key [here](https://fdc.nal.usda.gov/api-key-signup).
+
+### OpenAI API Key
+
+Provide an API key from OpenAI, and assign it to the `OPENAI_ECE493_G06_KEY` variable. In this case, you can use the one provided that was provided to this group.
+
 ### Docker
 
 If you would like to run the project locally under a Docker container, create a `.env` file at the root of this repository:
