@@ -66,7 +66,6 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
                 }));
             }
         } else {
-            // For fields other than "name", just update that field
             setNewIngredient((prev) => ({
                 ...prev,
                 [field]: value,
@@ -116,7 +115,7 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
                             <label>Quantity:</label>
                             <TextField
                                 value={newIngredient.quantity}
-                                onChange={(e) => handleInputChange("quantity", e.target.value)}
+                                onChange={(e) => handleInputChange("quantity", e.target.value.replace(/\D/g, ""))}
                                 sx={{
                                     "& .MuiOutlinedInput-root": {
                                         height: "40px",

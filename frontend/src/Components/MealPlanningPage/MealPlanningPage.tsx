@@ -73,7 +73,7 @@ function MealPlanningPage() {
   };
 
   const filterApply = (filterObj: FilterObject) => {
-    filterObj.needs_review = true
+    filterObj.needs_review = false;
     handleFilterApply(filterObj, setRecipeIngredients);
   };
 
@@ -396,6 +396,7 @@ function MealPlanningPage() {
       (partialSum, a) => partialSum + a,
       0
     );
+
     const mealCount = myEventsList.filter(
       (meal) => meal.placeholder === false
     ).length;
@@ -599,13 +600,6 @@ function MealPlanningPage() {
             applyFiltering={filterApply}
             recipeExtractor={() => {}}
             recipeIngredientsList={recipeIngredients}
-            mainIngredientList={recipeIngredients
-              .filter(
-                (recipeIngredient) => recipeIngredient.recipe.main_ingredient
-              ) // Filter based on `main_ingredient`
-              .map(
-                (recipeIngredient) => recipeIngredient.recipe.main_ingredient
-              )}
             ref={recipeSearchRef}
           />
           <div className="recipe-grid-container">

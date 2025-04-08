@@ -213,31 +213,36 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         console.log(filteredInstructions);
         let error = false;
         // validate fields 
-        if (!title){
+        if (title.trim()==""){
             error = true;
             toast.error("Please enter a title");
             return;
         }
+        if (mainIngredient.trim() == ""){
+            error = true;
+            toast.error("Please enter a Main Ingredient Tag");
+            return;
+        }
 
-        if (!cookTime ){
+        if (cookTime.trim()==""){
             error = true;
             toast.error("Please enter a cook time");
             return;
         }
 
-        if (!prepTime){
+        if (prepTime.trim()==""){
             error = true;
             toast.error("Please enter a prep time");
             return;
         }
 
-        if (!totalTime){
+        if (totalTime.trim()==""){
             error = true;
             toast.error("Please enter a total time");
             return;
         }
 
-        if (instructions == null || instructions.length == 0){
+        if (filteredInstructions == null || filteredInstructions.length == 0){
             error = true;
             toast.error("Please enter steps");
             return;
@@ -246,12 +251,6 @@ const RecipeContent: React.FC<RecipeContentProps> = ({
         if (filteredIngredients.length == 0){
             error = true;
             toast.error("Please enter ingredients");
-            return;
-        }
-
-        if (mainIngredient == ""){
-            error = true;
-            toast.error("Please enter a Main Ingredient Tag");
             return;
         }
 
