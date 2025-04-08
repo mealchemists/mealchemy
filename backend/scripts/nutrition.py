@@ -19,7 +19,6 @@ from django.conf import settings
 
 # load API key
 load_dotenv()
-print("Using database:", settings.DATABASES["default"]["NAME"])
 
 API_KEY_USDA = os.getenv("USDA_FDC_API_KEY")
 BASE_URL = "https://api.nal.usda.gov/fdc/v1"
@@ -52,6 +51,8 @@ PHYSICAL_DESCRIPTOR_PATTERN = (
     r"spiralized"
     r")\b"
 )
+
+names = [i.name for i in Ingredient.objects.all()]
 
 
 def preprocess_food_name(ingredient_name):
