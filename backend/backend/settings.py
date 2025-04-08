@@ -246,11 +246,13 @@ ALLOWED_HOSTS = [
     "consumer-102081122635.us-central1.run.app",
     "api.mealchemy.app",
     "mealchemy.app",
+    "backend"
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://backend-service-102081122635.us-west1.run.app",
     "https://react-service-102081122635.us-west1.run.app",
     "http://localhost:3000",
+    "http://localhost:5000",
     "https://consumer-102081122635.us-central1.run.app",
     "https://www.mealchemy.app",
     "https://mealchemy.app",
@@ -260,6 +262,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://backend-service-102081122635.us-west1.run.app",
     "https://react-service-102081122635.us-west1.run.app",
     "http://localhost:3000",
+    "http://localhost:5000",
     "https://consumer-102081122635.us-central1.run.app",
     "https://www.mealchemy.app",
     "https://mealchemy.app",
