@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
     shoppingListPage = new ShoppingListPage(page);
     mealPlanningPage = new MealPlanningPage(page);
     await loginPage.goto();
-    await loginPage.login('demo@email.com', 'password$');
+    await loginPage.login('test@email.com', 'password$');
 });
 
 test('Recipes: Add To Shopping List ', async ({ page }) => {
@@ -26,30 +26,32 @@ test('Recipes: Add To Shopping List ', async ({ page }) => {
     await shoppingListPage.navigateToShoppingList();
 
     // Go to Shopping List and verify
-    await shoppingListPage.assertRecipeVisible('Beef Stirfry');
-    await shoppingListPage.assertRecipeVisible('Honey Garlic Pork Chops');
+    await shoppingListPage.assertRecipeVisible('Recipe1');
+    await shoppingListPage.assertRecipeVisible('Recipe2');
 });
 
 test('Recipes: EditToExistingAisle ', async ({ page }) => {
     await shoppingListPage.navigateToShoppingList();
-    // Move 'ketchup' from Dairy to Snacks
-    await shoppingListPage.openCategory('Dairy');
-    await shoppingListPage.editIngredientCategory('ketchup', 'Snacks');
-    await shoppingListPage.openCategory('Snacks');
-    await shoppingListPage.assertIngredientVisible('ketchup');
+    // Move 'TestAisle1' from TestAisle1 to Snacks
+    await shoppingListPage.openCategory('TestAisle1');
+    await shoppingListPage.editIngredientCategory('Water', 'Beverages');
+    await shoppingListPage.assertIngredientVisible('Water');
 
-    // Move 'ketchup' from Snacks to Condiments
-    await shoppingListPage.editIngredientCategory('ketchup', 'Condiments');
-    await shoppingListPage.openCategory('Condiments');
-    await shoppingListPage.assertIngredientVisible('ketchup');
+});
+
+test('Recipes: EditToNewAisle ', async ({ page }) => {
+    await shoppingListPage.navigateToShoppingList();
+    // Move 'TestAisle1' from TestAisle1 to Snacks
+    await shoppingListPage.openCategory('Beverages');
+    await shoppingListPage.editIngredientCategory('Water', 'TestAisle1');
+    await shoppingListPage.assertIngredientVisible('Water');
+
 });
 
 test('Delete Recipes', async ({ page }) => {
-    const shoppingListPage = new ShoppingListPage(page);
     await page.getByRole('navigation').locator('li', { hasText: 'Shopping List' }).click();
-    // Move 'ketchup' from Dairy to Snacks
-    await page.getByRole('listitem').filter({ hasText: 'Beef Stirfry' }).getByRole('checkbox').check();
-    await page.getByRole('listitem').filter({ hasText: 'Honey Garlic Pork Chops' }).getByRole('checkbox').check();
+    await page.getByRole('listitem').filter({ hasText: 'Recipe1' }).getByRole('checkbox').check();
+    await page.getByRole('listitem').filter({ hasText: 'Recipe2' }).getByRole('checkbox').check();
     await page.getByRole('button', { name: 'Remove' }).click();
     await expect(page.getByRole('list').filter({ hasText: /^$/ })).toBeVisible();
 });
@@ -59,15 +61,15 @@ test('Meal Planning: Add To Shopping List ', async ({ page }) => {
     await mealPlanningPage.navigateToMealPlanning();
     await mealPlanningPage.selectMealNumber('2');
 
-    await mealPlanningPage.dragRecipeToDay('Beef Stirfrybeef321951', 2); 
-    await mealPlanningPage.dragRecipeToDay('Honey Garlic Pork Chopspork441357', 2); 
+    await mealPlanningPage.dragRecipeToDay('Recipe1101020', 2); 
+    await mealPlanningPage.dragRecipeToDay('Recipe2101020', 2); 
 
     await mealPlanningPage.saveMealPlan();
     await expect(page.getByText('Your Meal-Plan has been saved')).toBeVisible();
     await mealPlanningPage.addToShoppingListFromMealPlan();
 
     await shoppingListPage.navigateToShoppingList();
-    await shoppingListPage.assertRecipeVisible('Beef Stirfry');
-    await shoppingListPage.assertRecipeVisible('Honey Garlic Pork Chops');
+    await shoppingListPage.assertRecipeVisible('Recipe1');
+    await shoppingListPage.assertRecipeVisible('Recipe2');
 
 });

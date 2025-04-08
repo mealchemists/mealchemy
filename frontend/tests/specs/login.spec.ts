@@ -13,6 +13,19 @@ let recipePage: RecipePage;
 //     await loginPage.goto();
 //     await loginPage.login('demo@email.com', 'password$');
 //   });
+test('SignUp', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+
+    await loginPage.signup("test@email.com", "password!", "password!");
+});
+
+test('SignInNew', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+
+    await loginPage.login("test@email.com", "password!");
+});
 
 test('loginLogout', async ({ page }) => {
     const loginPage = new LoginPage(page);
@@ -20,7 +33,7 @@ test('loginLogout', async ({ page }) => {
     await loginPage.goto();
 
     // Login
-    await loginPage.login('demo@email.com', 'password$');
+    await loginPage.login('test@email.com', 'password!');
     await expect(page.getByRole('navigation')).toBeVisible();
     // Logout
     await loginPage.logout();
@@ -40,13 +53,6 @@ test('noAccountLogin', async ({ page }) => {
     await loginPage.goto();
     await loginPage.login('fake@email.com', 'password$');
     await expect(page.getByText('Invalid credentials')).toBeVisible();
-});
-
-test('SignUp', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-
-    await loginPage.signup("testUser@email.com", "password$", "password$");
 });
 
 test('Invalid password: too short', async ({ page }) => {
@@ -90,39 +96,33 @@ test('Invalid password: special character', async ({ page }) => {
     await expect(page.getByText('Password must contain at')).toBeVisible();
 });
 
-test('SignInNew', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-
-    await loginPage.login("testUser@email.com", "password$");
-});
 
 test('changePassword', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.login("testUser@email.com", "password$");
+    await loginPage.login("test@email.com", "password!");
     await expect(page.getByRole('navigation')).toBeVisible();
 
     // check we can login with new password
-    await loginPage.changePassword('password!');
-    await loginPage.login('testUser@email.com', 'password!');
+    await loginPage.changePassword('password$');
+    await loginPage.login('test@email.com', 'password$');
 })
 
 test('changePasswordShort', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.login("demo@email.com", "password!");
+    await loginPage.login("test@email.com", "password$");
     await expect(page.getByRole('navigation')).toBeVisible();
 
     // check we can login with new password
-    await loginPage.changePassword('password!');
+    await loginPage.changePassword('pass');
     await expect(page.getByText('Password must be at least 6')).toBeVisible();
 })
 
 test('changePasswordLong', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.login("demo@email.com", "password!");
+    await loginPage.login("test@email.com", "password$");
     await expect(page.getByRole('navigation')).toBeVisible();
 
     const longPassword = 'a'.repeat(51);
@@ -133,7 +133,7 @@ test('changePasswordLong', async ({ page }) => {
 test('changePasswordSpecialCharacter', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.login("demo@email.com", "password!");
+    await loginPage.login("test@email.com", "password$");
     await expect(page.getByRole('navigation')).toBeVisible();
 
     await loginPage.changePassword("Password");
@@ -143,7 +143,7 @@ test('changePasswordSpecialCharacter', async ({ page }) => {
 test('changePasswordBlank', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.login("demo@email.com", "password!");
+    await loginPage.login("test@email.com", "password$");
     await expect(page.getByRole('navigation')).toBeVisible();
 
     await loginPage.changePassword("");
