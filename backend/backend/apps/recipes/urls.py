@@ -8,6 +8,7 @@ from .views import (
     recipe_pdf,
     save_scraped_data,
     AisleAPIView,
+    get_jwt_token_endpoint,
 )
 
 urlpatterns = [
@@ -22,6 +23,7 @@ urlpatterns = [
         name="recipe-ingredients",
     ),
     path("save-scraped-data/", save_scraped_data, name="save-scraped-data"),
+    path("get-jwt-token/<str:email>", get_jwt_token_endpoint, name = "jwt-token"),
     path("recipe-url/", recipe_url, name="recipe-url"),
     path("recipe-pdf/", recipe_pdf, name="recipe-pdf"),
     path(

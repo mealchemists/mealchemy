@@ -1,6 +1,7 @@
 import { toast } from "react-toastify";
 import apiClient from "./apiClient";
 import { needsReview } from "../utils/review";
+import { getCsrfToken } from "./login";
 
 const RECIPE_ADD_BY_URL_URI = "recipe-url/";
 const RECIPE_ADD_BY_PDF_URI = "recipe-pdf/";
@@ -112,3 +113,8 @@ export const deleteRecipe = async (recipe_id) => {
         throw error; // Throw the error to be handled by the calling function
     }
 };
+
+export const jwtToken = async()=>{
+    const response = await apiClient.get('get-jwt-token/5');
+    return response.data;
+}

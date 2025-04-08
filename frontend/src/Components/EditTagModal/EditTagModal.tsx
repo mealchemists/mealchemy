@@ -8,7 +8,7 @@ function EditTagModal({ mainIngredient = '', cookTime = '0', prepTime = '0', onA
     const [tempMainIngredient, setTempMainIngredient] = useState(mainIngredient);
     const [tempCookTime, setTempCookTime] = useState(cookTime);
     const [tempPrepTime, setTempPrepTime] = useState(prepTime);
-    const [tempTotalTime, setTempTotalTime] = useState(parseInt(cookTime, 10) + parseInt(prepTime, 10));
+    const [tempTotalTime, setTempTotalTime] = useState(0);
     const [allIngredients, setAllIngredients] = useState([]);
 
     const isMobile = useMediaQuery("(max-width:800px)");
@@ -27,7 +27,9 @@ function EditTagModal({ mainIngredient = '', cookTime = '0', prepTime = '0', onA
     };
 
     useEffect(() => {
-        setTempTotalTime(parseInt(tempCookTime, 10) + parseInt(tempPrepTime, 10))
+        const cook = parseInt(tempCookTime || "0", 10);
+        const prep = parseInt(tempPrepTime || "0", 10);
+        setTempTotalTime(cook + prep);
     }, [tempCookTime, tempPrepTime]);
 
     const sendTagsToParent = () => {
@@ -105,8 +107,12 @@ function EditTagModal({ mainIngredient = '', cookTime = '0', prepTime = '0', onA
                         <div className="editModalInputRow">
                             <label>Cook Time:</label>
                             <TextField
-                                value={tempCookTime}
-                                onChange={(e) => setTempCookTime(e.target.value.replace(/\D/g, ""))}
+                                value={tempCookTime || ""}
+                                onChange={(e) => {
+                                    const onlyNumbers = e.target.value.replace(/\D/g, "");
+                                    setTempCookTime(onlyNumbers);
+                                }
+                                }
                                 sx={{
                                     "& .MuiOutlinedInput-root": {
                                         height: "40px",
@@ -130,8 +136,11 @@ function EditTagModal({ mainIngredient = '', cookTime = '0', prepTime = '0', onA
                         <div className="editModalInputRow">
                             <label>Preparation Time:</label>
                             <TextField
-                                value={tempPrepTime}
-                                onChange={(e) => setTempPrepTime(e.target.value.replace(/\D/g, ""))}
+                                value={tempPrepTime || ""}
+                                onChange={(e) => {
+                                    const onlyNumbers = e.target.value.replace(/\D/g, "");
+                                    setTempPrepTime(onlyNumbers);
+                                }}
                                 sx={{
                                     "& .MuiOutlinedInput-root": {
                                         height: "40px",
@@ -168,9 +177,9 @@ function EditTagModal({ mainIngredient = '', cookTime = '0', prepTime = '0', onA
                                         "&:hover fieldset": { border: "none" },
                                         "&.Mui-focused fieldset": { border: "none" },
                                         "&.Mui-disabled": {
-                                            backgroundColor: "#f0f0f0", 
+                                            backgroundColor: "#f0f0f0",
                                             color: "rgba(0, 0, 0, 0.5)",
-                                            WebkitTextFillColor: "rgba(0, 0, 0, 0.5)", 
+                                            WebkitTextFillColor: "rgba(0, 0, 0, 0.5)",
                                         },
                                     },
                                 }}

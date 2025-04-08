@@ -115,7 +115,7 @@ function RecipePage() {
                     slotProps={{
                         paper: {
                             sx: {
-                                backgroundColor: '#f8f8f8' // Ensure it's a valid hex color
+                                backgroundColor: '#f8f8f8' 
                             }
                         }
                     }}

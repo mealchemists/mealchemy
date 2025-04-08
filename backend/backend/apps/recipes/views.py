@@ -1,3 +1,4 @@
+from urllib.parse import unquote
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
@@ -39,6 +40,13 @@ import traceback
 # The server will be the producer that will send messages to the queue.
 # producer = Producer()
 
+@api_view(["GET"])
+def get_jwt_token_endpoint(request, email):
+    # Generate JWT token for the user
+    decoded_email = unquote(email)
+    user = User.objects.get(email=decoded_email)
+    refresh = RefreshToken.for_user(user)
+    return Response({"access_token": str(refresh.access_token)})
 
 def get_jwt_token(user_id):
     # Generate JWT token for the user
@@ -142,7 +150,7 @@ def save_scraped_data(request):
             # Handle units that are given as count quantities
             if unit is None:
                 unit = ""
-            elif unit not in Unit:
+            elif unit not in [u.value for u in Unit]:
                 # Prevent saving non-measurement units from extracted data
                 unit = ""
 

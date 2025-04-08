@@ -15,8 +15,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from urllib.parse import urlparse
-import environ
-import google.auth
+
 import environ
 import google.auth
 from google.cloud import secretmanager
@@ -29,7 +28,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Change this to "False" when you are ready for production
 env = environ.Env(DEBUG=(bool, True))
 env_file = os.path.join(BASE_DIR, ".env")
-
 
 # Attempt to load the Project ID into the environment, safely failing on error.
 try:
@@ -201,7 +199,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 # [START cloudrun_django_static_config]
 # Define static storage via django-storages[google]
-GS_BUCKET_NAME = env("GS_BUCKET_NAME")
+# GS_BUCKET_NAME = env("GS_BUCKET_NAME")
 STATIC_URL = "/static/"
 # STORAGES = {
 #     "default": {
