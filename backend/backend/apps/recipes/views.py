@@ -1,3 +1,4 @@
+from urllib.parse import unquote
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
@@ -40,9 +41,10 @@ import traceback
 # producer = Producer()
 
 @api_view(["GET"])
-def get_jwt_token_endpoint(request, user_id):
+def get_jwt_token_endpoint(request, email):
     # Generate JWT token for the user
-    user = User.objects.get(id=user_id)
+    decoded_email = unquote(email)
+    user = User.objects.get(email=decoded_email)
     refresh = RefreshToken.for_user(user)
     return Response({"access_token": str(refresh.access_token)})
 

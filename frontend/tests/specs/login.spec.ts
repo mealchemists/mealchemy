@@ -16,8 +16,9 @@ let recipePage: RecipePage;
 test('SignUp', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-
     await loginPage.signup("test@email.com", "password!", "password!");
+    await page.waitForTimeout(3000);
+
 });
 
 test('SignInNew', async ({ page }) => {
@@ -33,7 +34,7 @@ test('loginLogout', async ({ page }) => {
     await loginPage.goto();
 
     // Login
-    await loginPage.login('test@email.com', 'password!');
+    await loginPage.login("test@email.com", "password!");
     await expect(page.getByRole('navigation')).toBeVisible();
     // Logout
     await loginPage.logout();

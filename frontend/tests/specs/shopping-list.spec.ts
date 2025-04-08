@@ -35,6 +35,7 @@ test('Recipes: EditToExistingAisle ', async ({ page }) => {
     // Move 'TestAisle1' from TestAisle1 to Snacks
     await shoppingListPage.openCategory('TestAisle1');
     await shoppingListPage.editIngredientCategory('Water', 'Beverages');
+    await page.waitForTimeout(1500);
     await shoppingListPage.assertIngredientVisible('Water');
 
 });
@@ -44,6 +45,7 @@ test('Recipes: EditToNewAisle ', async ({ page }) => {
     // Move 'TestAisle1' from TestAisle1 to Snacks
     await shoppingListPage.openCategory('Beverages');
     await shoppingListPage.editIngredientCategory('Water', 'TestAisle1');
+    await page.waitForTimeout(1500);
     await shoppingListPage.assertIngredientVisible('Water');
 
 });

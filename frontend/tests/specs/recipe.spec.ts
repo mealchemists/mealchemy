@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 import { LoginPage } from '../pages/login-page';
 import { RecipePage } from '../pages/recipe-page';
 import {jwtToken} from '../../src/api/recipes';
+import {useAuth} from '../../src/api/useAuth';
 
 let loginPage: LoginPage;
 let recipePage: RecipePage;
@@ -77,10 +78,10 @@ test('Create Recipe Validations', async ({ page }) => {
 });
 
 test('Delete Recipe', async ({ page }) => {
-  // await recipePage.openMoreMenu();
-  // await recipePage.selectRecipes([0]);
-  // await page.getByRole('button', { name: 'Delete' }).click();
-  // await expect(page.getByText('Recipe2')).toHaveCount(0);
+  await recipePage.openMoreMenu();
+  await recipePage.selectRecipes([0]);
+  await page.getByRole('button', { name: 'Delete' }).click();
+  await expect(page.getByText('Recipe2')).toHaveCount(0);
 
   await recipePage.openMoreMenu();
   await recipePage.selectRecipes([0]);
@@ -160,7 +161,7 @@ test('Filters', async ({ page }) => {
     await page.mouse.up();
   }
   await page.getByRole('button', { name: 'Apply Filters' }).click();
-
+  await page.waitForTimeout(2000);
   const hasChildren = await page.locator('.recipeListContainer > *').count();
   
   expect(hasChildren).toBe(0);
@@ -187,8 +188,11 @@ test('Post request invalid', async ({ page, request }) => {
   // delay to allow user to login
   await page.waitForTimeout(2000);
 
+  let email = 'test@email.com';
+  const url = `http://localhost:8000/api/get-jwt-token/${encodeURIComponent(email)}`;
+
   const tokenResponse = await page.request.get(
-    'http://localhost:8000/api/get-jwt-token/3'
+   url
   );
   const token = await tokenResponse.json(); 
   const accessToken = token.access_token; 

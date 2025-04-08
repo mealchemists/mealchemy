@@ -52,11 +52,12 @@ test('Meal Planning: Decrease slots that have Recipe ', async ({page}) => {
 test('Meal Planning: Ensure Persistency ', async ({page}) => {
     await page.getByText('Meal Planning').click();
     await mealPlanningPage.selectMealNumber('1');
-
+    await page.waitForTimeout(500);
     await mealPlanningPage.dragRecipeToDay('Recipe1', 2); 
     await page.getByRole('button', { name: 'SAVE' }).click();
     await expect(page.getByText('Your Meal-Plan has been saved')).toBeVisible();
-    await page.goto('http://localhost:3000/#/MealPlanning');
+    await page.waitForTimeout(1000);
+    await page.reload();
 
     await expect(page.getByTitle('Recipe1').locator('div')).toBeVisible();
 
