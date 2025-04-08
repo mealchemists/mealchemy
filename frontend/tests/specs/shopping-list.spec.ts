@@ -61,8 +61,8 @@ test('Meal Planning: Add To Shopping List ', async ({ page }) => {
     await mealPlanningPage.navigateToMealPlanning();
     await mealPlanningPage.selectMealNumber('2');
 
-    await mealPlanningPage.dragRecipeToDay('Recipe1101020', 2); 
-    await mealPlanningPage.dragRecipeToDay('Recipe2101020', 2); 
+    await mealPlanningPage.dragRecipeToDay('Recipe1', 2); 
+    await mealPlanningPage.dragRecipeToDay('Recipe2', 2); 
 
     await mealPlanningPage.saveMealPlan();
     await expect(page.getByText('Your Meal-Plan has been saved')).toBeVisible();

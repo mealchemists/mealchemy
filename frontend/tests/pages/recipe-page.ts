@@ -5,81 +5,60 @@ export class RecipePage {
   constructor(private page: Page) { }
 
   async selectManualRecipe() {
-    await this.page.getByRole('button', { name: 'more' }).click();
+    await this.page.locator('div.searchContainer').getByRole('button', { name: 'more' }).click();
     await this.page.getByRole('menuitem', { name: 'Add Manually' }).click();
   }
-  async focusTitleInput() {
-    await this.page.getByRole('textbox').nth(1).click();
-  }
+
   async expectError(text: string) {
     await expect(this.page.getByText(text)).toBeVisible()
   }
-  async enterTitle(title: string) {
-    await this.page.locator('input[type="text"]').click();
-    await this.page.locator('input[type="text"]').fill(title);
+
+  async openEditTagModal(){
+    await this.page.locator('div.tagContainer').filter({ hasText: /Tags:/ }).getByRole('button').click();
+  }
+
+  async closeEditTagModal(){
+    await this.page.getByRole('button', { name: 'Done' }).click();
   }
   async clearCookPrepTime() {
-    await this.page.locator('div').filter({ hasText: /^Tags:000$/ }).getByRole('button').click();
-    await this.page.getByRole('textbox').first().click();
-    await this.page.getByRole('textbox').first().fill('');
-    await this.page.getByRole('textbox').nth(1).click();
-    await this.page.getByRole('textbox').nth(1).fill('');
-    await this.page.getByRole('button', { name: 'Done' }).click();
+    await this.fillCookTime('');
+    await this.fillPrepTime('');
+    await this.closeEditTagModal();
   }
-  async fillCookTime() {
-    await this.page.locator('div').filter({ hasText: /^Tags:0$/ }).getByRole('button').click();
+  async fillCookTime(cookTime:string) {
+
     await this.page.getByRole('textbox').first().click();
-    await this.page.getByRole('textbox').first().fill('10');
-    await this.page.getByRole('button', { name: 'Done' }).click();
+    await this.page.getByRole('textbox').first().fill(cookTime);
   }
-  async fillPrepTime() {
-    await this.page.locator('div').filter({ hasText: /^Tags:1010$/ }).getByRole('button').click();    
+  async fillPrepTime(prepTime:string) {
     await this.page.getByRole('textbox').nth(1).click();
-    await this.page.getByRole('textbox').nth(1).fill('10');
-    await this.page.getByRole('button', { name: 'Done' }).click();
+    await this.page.getByRole('textbox').nth(1).fill(prepTime);
   }
   async clearMainIngredient() {
-    await this.page.locator('div').filter({ hasText: /^Tags:Main Ingredient000$/ }).getByRole('button').click();
     await this.page.locator('#tags-outlined').click();
     await this.page.getByRole('button', { name: 'Clear' }).click();
-    await this.page.getByRole('button', { name: 'Done' }).click();
   }
 
-  async addManualRecipe(title) {
+  async addManualRecipe(title:string, mainIngredient:string, is_new:boolean) {
     await this.page.getByRole('textbox').nth(1).fill(title);
-    await this.page.locator('div', { hasText: /^Tags:Main Ingredient000$/ }).getByRole('button').click();
-    await this.page.locator('#tags-outlined').click();
-    await this.page.getByRole('option', { name: 'Carrots' }).click();
-    await this.page.getByRole('textbox').first().fill('10');
-    await this.page.getByRole('textbox').nth(1).fill('15');
-    await this.page.getByRole('button', { name: 'Done' }).click();
-
-    // Add Ingredient 1
-    await this.page.getByRole('button', { name: 'Add Ingredient' }).click();
-    await this.page.getByRole('textbox').first().fill('10');
-    await this.page.locator('#tags-outlined').first().click();
-    await this.page.getByRole('option', { name: 'Red Bell Pepper' }).click();
-    await this.page.getByRole('button', { name: 'Done' }).click();
-
-    // Add Ingredient 2
-    await this.page.getByRole('button', { name: 'Add Ingredient' }).click();
-    await this.page.getByRole('textbox').first().fill('20');
-    await this.page.locator('#tags-outlined').fill('Pineapples');
-    await this.page.locator('#tags-outlined').nth(1).fill('Produce');
-    await this.page.getByRole('button', { name: 'Done' }).click();
-
+    await this.openEditTagModal();
+    await this.addMainIngredient(mainIngredient, is_new);
+    await this.fillCookTime('10');
+    await this.fillPrepTime('10');
+    await this.closeEditTagModal();
+    await this.addIngredient('10', mainIngredient, is_new);
     // Add instructions
     await this.page.locator('ol').getByRole('textbox').fill('Wash ingredients');
     await this.page.getByRole('button', { name: 'Save' }).click();
-    await expect(this.page.getByRole('paragraph').getByText('Recipe1')).toBeVisible();
+    await expect(this.page.getByRole('paragraph').getByText(title)).toBeVisible();
   }
 
   async verifyRecipeExists(name: string) {
     await expect(this.page.getByLabel(name)).toBeVisible();
   }
 
-  async selectRecipeByText(text: string) {
-    await this.page.locator('div').filter({ hasText: new RegExp(`^${text}$`) }).first().click();
+  async selectRecipeByText(title: string) {
+    await this.page.getByRole('paragraph').getByText(title).first().click();
   }
 
   async openEditMenu() {
@@ -88,34 +67,36 @@ export class RecipePage {
   }
 
   async editRecipeTitle(newTitle: string) {
-
-    const titleInput = this.page.locator('[id="\\:r1r\\:"]');
-    await titleInput.click();
-    await titleInput.fill(newTitle);
+    await this.page.locator('input[type="text"]').first().click();
+    await this.page.locator('input[type="text"]').first().fill(newTitle);
   }
 
-  async updateTag(tagText: string, newTag: string) {
-    await this.page.locator('div').filter({ hasText: new RegExp(`^${tagText}$`) }).getByRole('button').click();
+  async updateTag(newTag: string, is_new:boolean) {
+    await this.openEditTagModal();
     await this.page.locator('#tags-outlined').click();
-    await this.page.getByRole('option', { name: newTag }).click();
-    await this.page.getByRole('textbox').first().click();
-    await this.page.getByRole('textbox').first().fill('15');
-    await this.page.getByRole('textbox').nth(1).click();
-    await this.page.getByRole('textbox').nth(1).fill('13');
-    await this.page.getByRole('button', { name: 'Done' }).click();
+    await this.addMainIngredient(newTag, is_new);
+    await this.fillCookTime('20');
+    await this.fillPrepTime('20');
+    await this.closeEditTagModal();
   }
 
-  async updateIngredient(index: number, quantity: string, name: string) {
+  async updateIngredient(quantity: string, name: string,is_new:boolean) {
     await this.page.getByRole('textbox').first().click();
     await this.page.getByRole('textbox').first().fill(quantity);
     await this.page.locator('#tags-outlined').first().click();
-    await this.page.getByRole('option', { name }).click();
+    if (is_new){
+      await this.page.locator('#tags-outlined').first().fill(name);
+      await this.page.locator('#tags-outlined').nth(1).click();
+      await this.page.locator('#tags-outlined').nth(1).fill('TestAisle1');
+    }else{
+      await this.page.getByRole('option', { name }).click();
+    }
     await this.page.getByRole('button', { name: 'Done' }).click();
   }
 
-  async addIngredient(quantity: string, name: string) {
+  async addIngredient(quantity: string, name: string, is_new:boolean) {
     await this.page.getByRole('button', { name: 'Add Ingredient' }).click();
-    await this.updateIngredient(1, quantity, name);
+    await this.updateIngredient(quantity, name, is_new);
   }
 
   async updateInstruction(index: number, text: string) {
@@ -133,15 +114,14 @@ export class RecipePage {
     await this.page.getByRole('button', { name: 'Save' }).click();
   }
 
-  async expectRecipeDetailsVisible(title: string, ingredient: string) {
-    await expect(this.page.locator('span').filter({ hasText: title })).toBeVisible();
-    await expect(this.page.getByText(ingredient)).toBeVisible();
-  }
-  async addMainIngredient(name: string, tags='000') {
-    await this.page.locator('div')  .filter({ hasText: new RegExp(`^Tags:${tags}$`) }).getByRole('button').click();
+
+  async addMainIngredient(name: string, is_new: boolean) {
     await this.page.locator('#tags-outlined').click();
-    await this.page.getByRole('option', { name }).click();
-    await this.page.getByRole('button', { name: 'Done' }).click();
+    if (is_new){
+        await this.page.locator('#tags-outlined').fill(name);
+    }else{
+      await this.page.getByRole('option', { name }).click();
+    }
   }
   async expectRecipeVisible(title: string, ingredient: string) {
     await expect(

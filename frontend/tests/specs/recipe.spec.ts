@@ -160,11 +160,12 @@ test('Filters', async ({ page }) => {
     await page.mouse.up();
   }
   await page.getByRole('button', { name: 'Apply Filters' }).click();
-  await expect(page.getByText('Recipe2')).toHaveCount(0);
-  await expect(page.getByText('Recipe1')).toHaveCount(0);
 
+  const hasChildren = await page.locator('.recipeListContainer > *').count();
   
-})
+  expect(hasChildren).toBe(0);
+
+  })
 
 test('Post request invalid', async ({ page, request }) => {
   const body = {
@@ -187,7 +188,7 @@ test('Post request invalid', async ({ page, request }) => {
   await page.waitForTimeout(2000);
 
   const tokenResponse = await page.request.get(
-    'http://localhost:8000/api/get-jwt-token/5'
+    'http://localhost:8000/api/get-jwt-token/3'
   );
   const token = await tokenResponse.json(); 
   const accessToken = token.access_token; 
@@ -202,18 +203,16 @@ test('Post request invalid', async ({ page, request }) => {
       },
     }
   );
-  await expect(page.getByText('Cannot add malformed recipes')).toBeVisible();
-
   // Now navigate to the recipe page and check that it's displayed
-  await page.goto('http://localhost:3000/#/Recipes');
+  await page.reload();
+  await expect(page.getByTestId('WarningAmberIcon').locator('path').first()).toBeVisible();
 
   await page.getByRole('button', { name: 'more' }).click();
   await page.getByRole('menuitem', { name: 'Select' }).click();
-  await page.getByRole('checkbox').nth(4).check();
+  await page.getByRole('checkbox').nth(2).check();
   // add to Shopping List
   await page.getByRole('button', { name: 'Add to Shopping List' }).click();
   await expect(page.getByText('Cannot add malformed recipes')).toBeVisible();
-  await expect(page.getByTestId('WarningAmberIcon').locator('path').first()).toBeVisible();
 
   // Check Meal Planning
   await page.getByText('Meal Planning').click();

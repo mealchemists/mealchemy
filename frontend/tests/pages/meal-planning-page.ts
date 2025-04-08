@@ -17,7 +17,7 @@ export class MealPlanningPage {
     }
 
     async dragRecipeToDay(recipeText: string, dayIndex: number) {
-        const source = await this.page.getByText(recipeText);
+        const source = await this.page.locator(`div.gridItemContainer:has-text("${recipeText}")`);
         const target = await this.page.locator(`.rbc-row-bg > div:nth-child(${dayIndex})`);
         await source.dragTo(target);
     }

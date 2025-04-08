@@ -44,9 +44,9 @@ test('Meal Planning: Decrease slots that have Recipe ', async ({page}) => {
     await page.getByText('Meal Planning').click();
     await mealPlanningPage.selectMealNumber('2');
     await mealPlanningPage.dragRecipeToDay('Recipe1', 2); 
-    await mealPlanningPage.dragRecipeToDay('Recipe2', 2); 
+    await mealPlanningPage.dragRecipeToDay('Recipe2', 2);
     await mealPlanningPage.selectMealNumber('1');
-    await page.getByText('2', { exact: true }).click();
+    await expect(page.locator('div:nth-child(2) > .MuiInputBase-root > .MuiSelect-select')).toHaveText('2');
 });
 
 test('Meal Planning: Ensure Persistency ', async ({page}) => {
