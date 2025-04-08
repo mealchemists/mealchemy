@@ -88,7 +88,11 @@ test('Delete Recipe', async ({ page }) => {
   await page.getByRole('button', { name: 'Delete' }).click();
   await expect(page.getByText('Recipe3')).toHaveCount(0);
 });
+test('Add Emoji', async({page})=>{
+  await recipePage.selectManualRecipe();
+  await recipePage.addManualRecipe('🍔', '🍔', true);
 
+})
 test('Delete All Recipes', async ({ page }) => {
   await recipePage.selectManualRecipe();
   await recipePage.addManualRecipe('Recipe1', 'Water', true);
@@ -96,7 +100,7 @@ test('Delete All Recipes', async ({ page }) => {
   await recipePage.addManualRecipe('Recipe2', 'Lemon', true);
 
   await recipePage.openMoreMenu();
-  await recipePage.selectRecipes([0,1]);
+  await recipePage.selectRecipes([0,1,2]);
   await page.getByRole('button', { name: 'Delete' }).click();
   await expect(page.getByText('Recipe1')).toHaveCount(0);
   await expect(page.getByText('Recipe2')).toHaveCount(0);
