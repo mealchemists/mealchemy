@@ -1,5 +1,27 @@
 # mealchemy
 
+<!--toc:start-->
+- [mealchemy](#mealchemy)
+  - [Overview](#overview)
+  - [Requirements](#requirements)
+    - [Cloud](#cloud)
+    - [Docker](#docker)
+    - [Local](#local)
+  - [Running Options](#running-options)
+    - [1. Cloud Deployment](#1-cloud-deployment)
+    - [2. Docker Deployment](#2-docker-deployment)
+    - [3. Local Development](#3-local-development)
+      - [Backend (Django)](#backend-django)
+      - [Frontend (React)](#frontend-react)
+      - [Recipe Extractor (Custom Python Service)](#recipe-extractor-custom-python-service)
+  - [Environment Variables](#environment-variables)
+    - [CloudAMQP URL](#cloudamqp-url)
+    - [USDA FDC API Key](#usda-fdc-api-key)
+    - [OpenAI API Key](#openai-api-key)
+    - [Docker configuration](#docker-configuration)
+    - [Local run](#local-run)
+<!--toc:end-->
+
 <div align="center">
 
 <img src="frontend/public/mealchemy-logo.png" alt="Mealchemy Logo" style="width: 200px; height: auto; padding: 10px;" />
@@ -208,7 +230,7 @@ You can get your own USDA FoodData Central API key [here](https://fdc.nal.usda.g
 
 Provide an API key from OpenAI, and assign it to the `OPENAI_ECE493_G06_KEY` variable. In this case, you can use the one provided that was provided to this group.
 
-### Docker
+### Docker configuration
 
 If you would like to run the project locally under a Docker container, create a `.env` file at the root of this repository:
 
