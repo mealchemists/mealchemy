@@ -1,8 +1,11 @@
 # mealchemy
 
-![](frontend/public/mealchemy-logo.png)
+<div align="center">
 
-Smart meal planning & shopping app for ECE 493.
+<img src="frontend/public/mealchemy-logo.png" alt="Mealchemy Logo" style="width: 200px; height: auto; padding: 10px;" />
+</div>
+
+Smart meal planning & shopping app for ECE 493 W2025, group 6.
 
 ## Overview
 
