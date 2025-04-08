@@ -150,3 +150,15 @@ test('changePasswordBlank', async ({ page }) => {
     await loginPage.changePassword("");
     await expect(page.getByText('Password must be at least 6')).toBeVisible();
 })
+test('forgotPasswordUI', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await page.getByRole('button', { name: 'Forgot Password?' }).click();
+    await expect(page.getByRole('heading', { name: 'Forgot Password' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Send Password Reset Link' })).toBeVisible();
+    await page.getByRole('button', { name: 'Forgot Password?' }).click();
+    await page.getByRole('button', { name: 'Send Password Reset Link' }).click();
+    await expect(page.getByText('Email is required.')).toBeVisible();
+    await page.getByRole('button', { name: 'Back to Login' }).click();
+    await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
+})
