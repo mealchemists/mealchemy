@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './FilterPopup.css';
 import CloseIcon from '@mui/icons-material/Close';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -9,25 +9,38 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
+import { getRecipeIngredients } from '../../api/recipeIngredientApi';
 
 interface FilterPopupProps {
   onClose: (e: React.MouseEvent) => void;
   onFilterChange: (selectedFilters: string[], sortBy: string, sliderRange: number[], mainIngredient: string) => void;
   sortBy: string;
   sliderRange: number[];
-  mainIngredientList: string[]; // Ensure this is an array of strings
 }
 
 function valuetext(range: number) {
   return `${range}mins`;
 }
 
-export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSortBy, sliderRange: initialSliderRange, mainIngredientList }: FilterPopupProps) {
+export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSortBy, sliderRange: initialSliderRange }: FilterPopupProps) {
   const [sortBy, setSortBy] = useState<string>(initialSortBy);
   const [sliderRange, setSliderRange] = useState<number[]>([0, 10]);
   const [sliderValue, setSliderValue] = useState<number[]>([]);
   const [selectedMainIngredient, setSelectedMainIngredient] = useState<string>(''); // This should be a single string
+  const [mainIngredientList, setMainIngredientList] = useState([]);
 
+  useEffect(()=>{
+    const getMainIngredientList = async() => {
+      const response = await getRecipeIngredients();
+      const mainIngredients = Array.from(
+        new Set(response.map((item: any) => item.recipe.main_ingredient))
+      );
+
+      setMainIngredientList(mainIngredients);
+      }
+    
+    getMainIngredientList();
+  })
   const applyFilters = (e: React.MouseEvent) => {
     const filters: string[] = [];
 
@@ -147,6 +160,23 @@ export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSo
             options={mainIngredientList}
             value={selectedMainIngredient}
             onChange={(event, newValue) => setSelectedMainIngredient(newValue || '')} // Handle single value
+            slotProps={{
+              popper: {
+                modifiers: [
+                  {
+                    name: 'zIndex',
+                    enabled: true,
+                    phase: 'beforeWrite',
+                    fn: ({ state }) => {
+                      state.styles.popper.zIndex = '2000';
+                    },
+                  },
+                ],
+                sx: {
+                  zIndex: 2000, // fallback for basic control
+                },
+              },
+            }}
             renderInput={(params) => (
               <TextField {...params}
                 sx={{

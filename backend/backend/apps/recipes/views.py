@@ -1,3 +1,4 @@
+from urllib.parse import unquote
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
@@ -39,6 +40,13 @@ import traceback
 # The server will be the producer that will send messages to the queue.
 # producer = Producer()
 
+@api_view(["GET"])
+def get_jwt_token_endpoint(request, email):
+    # Generate JWT token for the user
+    decoded_email = unquote(email)
+    user = User.objects.get(email=decoded_email)
+    refresh = RefreshToken.for_user(user)
+    return Response({"access_token": str(refresh.access_token)})
 
 def get_jwt_token(user_id):
     # Generate JWT token for the user
@@ -113,6 +121,7 @@ def save_scraped_data(request):
                 ingredient, created = Ingredient.objects.get_or_create(
                     name=ingredient_data["name"],
                     aisle=aisle,
+                    user=request.user,
                     defaults={
                         "calories_per_100g": calories_per_100g,
                         "protein_per_100g": protein_per_100g,
@@ -141,7 +150,7 @@ def save_scraped_data(request):
             # Handle units that are given as count quantities
             if unit is None:
                 unit = ""
-            elif unit not in Unit:
+            elif unit not in [u.value for u in Unit]:
                 # Prevent saving non-measurement units from extracted data
                 unit = ""
 
@@ -463,22 +472,7 @@ class RecipeIngredientsAPIView(APIView):
                 sodium_per_100mg = random.uniform(0, 1500)
                 fiber_per_100g = random.uniform(0, 15)
 
-                if not ingredient_data.get("aisle"):
-                    Aisle.objects.get_or_create(
-                        name="Uncategorized", user=self.request.user
-                    )
-                else:
-                    # Check if aisle exists
-                    aisle_obj = Aisle.objects.filter(
-                        user_id=self.request.user, name=aisle
-                    ).first()
-                    if not aisle_obj:
-                        aisle_data = {"user": data["recipe"]["user"], "name": aisle}
-                        aisle_serializer = AisleSerializer(data=aisle_data)
-                        if aisle_serializer.is_valid():
-                            aisle_obj = aisle_serializer.save()
-                        else:
-                            aisle_obj = None
+                aisle_obj = validate_aisle(aisle, request) 
 
                 try:
                     # Check if the ingredient exists, if not, create it

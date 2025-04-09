@@ -27,7 +27,6 @@ interface RecipeSearchProps {
     onSelect?: (value: string) => void;
     applyFiltering: (filterObj: object) => void;
     recipeIngredientsList: RecipeIngredient[];
-    mainIngredientList: string[];
     recipeExtractor: (recipe: RecipeIngredient[]) => void
 }
 
@@ -36,7 +35,7 @@ export interface RecipeSearchRef {
   }
   
 
-const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, applyFiltering, mainIngredientList, recipeIngredientsList, recipeExtractor}, ref) => {
+const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, applyFiltering, recipeIngredientsList, recipeExtractor}, ref) => {
     const [isFilterPopupOpen, setIsFilterPopupOpen] = useState<boolean>(false);
     const [filterChips, setFilterChips] = useState([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -132,7 +131,7 @@ const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, 
     const onSearchRecipe = (event: React.ChangeEvent<HTMLInputElement>) => {
         const query = event.target.value;
         setSearchQuery(query);
-
+        console.log(query);
         // Send both search query and filter data to the parent whenever the search query changes
         applyFiltering({
             searchQuery: query,
@@ -174,9 +173,6 @@ const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, 
                         
                     <Menu
                         id="long-menu"
-                        MenuListProps={{
-                            'aria-labelledby': 'long-button',
-                        }}
                         anchorEl={anchorEl}
                         open={openOptions}
                         onClose={handleOptionsClose}
@@ -217,7 +213,6 @@ const RecipeSearch = forwardRef<RecipeSearchRef,RecipeSearchProps>(({ onSelect, 
                             onFilterChange={handleFilterChange}
                             sortBy={sortBy}
                             sliderRange={sliderRange}
-                            mainIngredientList={mainIngredientList}
                         />
                    </Popper>
                 </div>

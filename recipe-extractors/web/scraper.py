@@ -1,3 +1,5 @@
+import shutil
+import tempfile
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -16,13 +18,15 @@ class Scraper:
 
     def scrape_website(self, website):
         print("Launching Chrome...")
-
-        # Automatically download and install the correct ChromeDriver
+        
         chrome_driver_path = ChromeDriverManager().install()
-
+        user_data_dir = tempfile.mkdtemp()
         # Set up Chrome options if needed
         options = webdriver.ChromeOptions()
-
+        options.add_argument("--headless")  # Run in headless mode (no GUI)
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument(f"--user-data-dir={user_data_dir}") 
         # Launch the Chrome browser with the automatically downloaded ChromeDriver
         driver = webdriver.Chrome(service=Service(chrome_driver_path), options=options)
 
@@ -33,6 +37,7 @@ class Scraper:
             return html
         finally:
             driver.quit()
+            shutil.rmtree(user_data_dir, ignore_errors=True)
 
     def extract_body_content(self, html_content):
         return self.preprocess(html_content)
@@ -104,10 +109,6 @@ class Scraper:
             clean_text = "\n".join(
                 [line.strip() for line in text.splitlines() if line.strip()]
             )
-
-            # Optionally, you can save it to a file
-            with open("detail.html", "w") as f:
-                f.write(clean_text)
 
             return clean_text
 

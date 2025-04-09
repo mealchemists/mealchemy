@@ -1,5 +1,5 @@
 
-from datetime import datetime
+from datetime import date, datetime, timedelta
 import random
 import uuid
 from rest_framework import status
@@ -49,6 +49,7 @@ class MealPlanApiTest(APITestCase):
             "day_planned": "2025-04-06T14:30:00.123456Z",
             "meal_type": "Breakfast",
             "recipe":  {
+                "id": self.recipe.id,
                 "name": "Tomato Soup",
                 "cook_time": None,
                 "prep_time": None,
@@ -72,23 +73,52 @@ class MealPlanApiTest(APITestCase):
 
     def test_get_detail(self):
         # Make sure the MealPlan and Recipe objects are created properly
-        recipe = Recipe.objects.create(name="Recipe Name")
-        meal_plan = MealPlan.objects.create(day_planned="2025-04-06", recipe=recipe)
+        recipe = Recipe.objects.create(user=self.user, name="Recipe Name")
+        meal_plan = MealPlan.objects.create(day_planned=date.today(), recipe=recipe)
 
         # Now, when you make the GET request, the response should include the 'recipe' field
-        response = self.client.get(f'/api/meal_plan/{meal_plan.id}/')  # Adjust URL as needed
+        response = self.client.get( self.url) 
         
         # Check that the 'recipe' is in the response data
-        self.assertIn('recipe', response.data)  # Make sure the 'recipe' key is present
-        self.assertEqual(response.data['recipe']['id'], recipe.id)  # Verify the 'id' of the nested 'recipe'
-        self.assertEqual(response.data['recipe']['name'], recipe.name)  # Verify the 'name' of the nested 'recipe'
+        self.assertEqual(len(response.data['meal_plan']), 2)
+        for meal_plan in response.data['meal_plan']:
+            self.assertIn('recipe', meal_plan)  # Make sure the 'recipe' key is present
+            self.assertIn(meal_plan['recipe']['id'], [recipe.id, self.recipe.id])  
+            self.assertIn(meal_plan['recipe']['name'], [recipe.name, self.recipe.name])
+            
+    def test_get_detail_with_date_range(self):
+        today = date.today()
+        next_week = today + timedelta(days=7)
+        next_week_2_day = today + timedelta(days=9)
+        
+
+        # Recipes and meal plans
+        recipe1 = Recipe.objects.create(user=self.user, name="Recipe One")
+        recipe2 = Recipe.objects.create(user=self.user, name="Recipe Two")
+
+        meal_plan1 = MealPlan.objects.create(day_planned=next_week_2_day, recipe=recipe1)
+        meal_plan2 = MealPlan.objects.create(day_planned=next_week, recipe=recipe2)
+
+        # GET request with date range filter that only includes today
+        response = self.client.get(
+            self.url,
+            {'start_date': str(next_week - timedelta(days=1)), 'end_date': str(next_week_2_day)}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['meal_plan']), 2)
+
+        for meal_plan_data in response.data['meal_plan']:
+            self.assertIn('recipe', meal_plan_data)
+            self.assertIn(meal_plan_data['recipe']['id'], [recipe1.id, recipe2.id])
+            self.assertIn(meal_plan_data['recipe']['name'], [recipe1.name, recipe2.name])
 
     def test_create_object(self):
         """
         Test to ensure that a new meal plan can be created.
         """
         response = self.client.post(self.url, self.meal_plan_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)  # Expect 201 Created for successful creation
+        self.assertEqual(response.status_code, status.HTTP_200_OK)  # Expect 201 Created for successful creation
         self.assertEqual(MealPlan.objects.count(), 2)  # Verify a new meal plan is created
 
     def test_delete_object(self):

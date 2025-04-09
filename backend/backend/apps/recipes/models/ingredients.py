@@ -65,7 +65,8 @@ class Ingredient(models.Model):
     def save(self, *args, **kwargs):
         # TODO: Query the FoodData Central API and process the contents.
         # If the API fails, prompt the user to manually enter the nutrition information.
-
+        if not self.aisle:
+            self.aisle, _ = Aisle.objects.get_or_create(name="Uncategorized", user=self.user)
         self.needs_review = not (self.name)
         # Safety
         if not self.user and self.aisle:
