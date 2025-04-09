@@ -7,6 +7,7 @@ import moment from 'moment';
 const nutrientNameMapping: { [key: string]: string } = {
   'CALORIES_ID_ATWATER': 'Calories',
   'Energy': 'Calories',
+  'Energy (Atwater General Factors)': 'Calories',
   'Protein': 'Protein',
   'Carbohydrate, by difference': 'Carbohydrates',
   'Total Sugars': 'Sugar',
@@ -39,27 +40,33 @@ const aggregateNutrients = (events: MealPlanEvent[]) => {
         sodium: 0,
       };
     }
-    ingredients.forEach((ingredient) => {
+
+    for (let ingredient of ingredients) {
       const nutrientInfo = ingredient.nutrient_information;
 
-      nutrientInfo.forEach((nutrientData) => {
+      if (!Array.isArray(nutrientInfo)) {
+        continue;
+      }
+
+      console.log(`\n---${ingredient.name}---`);
+      for (let nutrientData of nutrientInfo) {
         const nutrients = nutrientData.nutrients;
+        
         Object.values(nutrients).forEach((nutrient) => {
-          const nutrientName = nutrient.nutrient_name; // The raw nutrient name from API
-          console.log("Nutrient name", nutrientName)
-          console.log("Nutrient value", nutrient.value)
-          const readableNutrientName = formatNutrientName(nutrientName); // Get the readable name
-          console.log("readable", readableNutrientName)
-          const nutrientValue = parseFloat(nutrient.value as string); // Ensure it's a number
+          const nutrientName = nutrient.nutrient_name;
+          const readableNutrientName = formatNutrientName(nutrientName);
+          const nutrientValue = parseFloat(nutrient.value as string);
+
+          console.log(`${nutrientName} -> ${readableNutrientName} - ${nutrientValue}`);
 
           // Only aggregate the value if it's a valid number
           if (!isNaN(nutrientValue) && aggregatedNutrients[dayPlanned][readableNutrientName] !== undefined) {
             aggregatedNutrients[dayPlanned][readableNutrientName] += nutrientValue;
             aggregatedNutrients[dayPlanned][readableNutrientName] = Math.round(aggregatedNutrients[dayPlanned][readableNutrientName]);
           }
-        });
-      });
-    });
+        })
+      }
+    }
   });
 
   return aggregatedNutrients;
@@ -86,16 +93,22 @@ const NutritionalAccordion = ({ nutritionalData }: NutritionalAccordionProps) =>
       calories: 'Kcal',
       protein: 'g',
       fat: 'g',
-      carbs: 'g',
+      carbohydrates: 'g',
       sugar: 'g',
       fiber: 'g',
       sodium: 'mg',
     };
-    return `${value} ${nutrientUnits[nutrientName] || ''}`;
+    return `${value} ${nutrientUnits[nutrientName.toLowerCase()] || ''}`;
   };
 
 return (
-    <Box sx={{ width: '600px' }}>
+    
+    <Box sx={{ width: '60%' }}>
+      <p className='nutritionDisclaimer'>
+        Note: nutrition information is measured per 100g and collected from each ingredient from each recipe
+        from the weekly plan. Accuracy may vary per recipe.<br />
+        - Depending on USDA FoodData Central, nutrition information may or may not be available for some ingredients.
+      </p>
       {daysOfWeek.map((day, index) => {
         // Find the corresponding date for the current day of the week
         const currentDate = moment().startOf('week').add(index, 'days').format('YYYY-MM-DD');

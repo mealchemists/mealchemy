@@ -61,7 +61,7 @@ elif os.environ.get("GOOGLE_CLOUD_PROJECT", None):
 
     env.read_env(io.StringIO(payload))
 # else:
-    # raise Exception("No local .env or GOOGLE_CLOUD_PROJECT detected. No secrets found.")
+# raise Exception("No local .env or GOOGLE_CLOUD_PROJECT detected. No secrets found.")
 # [END cloudrun_django_secret_config]
 SECRET_KEY = env("SECRET_KEY")
 
@@ -244,7 +244,7 @@ ALLOWED_HOSTS = [
     "consumer-102081122635.us-central1.run.app",
     "api.mealchemy.app",
     "mealchemy.app",
-    "backend"
+    "backend",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://backend-service-102081122635.us-west1.run.app",
@@ -275,3 +275,4 @@ if os.getenv("PROD", "False").lower() == "true":
     CSRF_COOKIE_SAMESITE = "None"  # CSRF cookies for cross-site requests
     CSRF_COOKIE_SECURE = True  # Only send cookies over HTTPS
     CSRF_COOKIE_DOMAIN = "mealchemy.app"
+
