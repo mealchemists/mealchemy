@@ -6,13 +6,6 @@ import { RecipePage } from '../pages/recipe-page';
 let loginPage: LoginPage;
 let recipePage: RecipePage;
 
-// test.beforeEach(async ({ page }) => {
-//     loginPage = new LoginPage(page);
-//     recipePage = new RecipePage(page);
-
-//     await loginPage.goto();
-//     await loginPage.login('demo@email.com', 'password$');
-//   });
 test('SignUp', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
@@ -156,7 +149,6 @@ test('forgotPasswordUI', async ({ page }) => {
     await page.getByRole('button', { name: 'Forgot Password?' }).click();
     await expect(page.getByRole('heading', { name: 'Forgot Password' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Send Password Reset Link' })).toBeVisible();
-    await page.getByRole('button', { name: 'Forgot Password?' }).click();
     await page.getByRole('button', { name: 'Send Password Reset Link' }).click();
     await expect(page.getByText('Email is required.')).toBeVisible();
     await page.getByRole('button', { name: 'Back to Login' }).click();
