@@ -12,6 +12,13 @@ export interface Recipe{
     needs_review?: Boolean|null
 }
 
+type Nutrient = {
+  nutrient_id: number;
+  nutrient_name: string;
+  value: string;
+  unit: string;
+};
+
 export interface Ingredient {
     id: Number,
     name: string,
@@ -25,7 +32,8 @@ export interface Ingredient {
     fiber_per_100g: Number,
     sodium_per_100mg: Number,
     needs_review?: Boolean| null,
-    aisle: String
+    aisle: String,
+    nutrient_information?: { food_name: string; fdc_id: number; data_type: string; nutrients: Record<string, Nutrient> }[];
 }
 
 export interface RecipeIngredient {
@@ -76,4 +84,17 @@ export enum Unit {
     Pint = 'pt',
     Quart = 'qt',
     Gallon = 'gal',
+}
+
+export interface MealPlanEvent {
+  id: string; // `${day}-${mealPlan.recipe.id}`
+  mealPlan_id?: number;
+  start: Date;
+  end: Date;
+  day_planned?: string;
+  allDay: boolean;
+  title: string;
+  placeholder: boolean;
+  recipe?: Recipe;
+  ingredients?: Ingredient[];
 }
