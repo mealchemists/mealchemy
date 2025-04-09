@@ -13,6 +13,7 @@ const nutrientNameMapping: { [key: string]: string } = {
   'Total Sugars': 'Sugar',
   'SUGAR_ID': 'Sugar',
   'Total lipid (fat)': 'Fat',
+  'Cholesterol': 'Cholesterol',
   'Fiber, total dietary': 'Fiber',
   'Sodium, Na': 'Sodium',
 };
@@ -35,9 +36,10 @@ const aggregateNutrients = (events: MealPlanEvent[]) => {
         Protein: 0,
         Carbohydrates: 0,
         Fat: 0,
-        sugar: 0,
-        fiber: 0,
-        sodium: 0,
+        Cholesterol: 0,
+        Sugar: 0,
+        Fiber: 0,
+        Sodium: 0,
       };
     }
 
@@ -93,6 +95,7 @@ const NutritionalAccordion = ({ nutritionalData }: NutritionalAccordionProps) =>
       calories: 'Kcal',
       protein: 'g',
       fat: 'g',
+      cholesterol: 'mg',
       carbohydrates: 'g',
       sugar: 'g',
       fiber: 'g',

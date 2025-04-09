@@ -13,8 +13,6 @@ from dotenv import load_dotenv
 # django.setup()
 
 
-
-
 # load API key
 load_dotenv()
 
@@ -22,7 +20,7 @@ API_KEY_USDA = os.getenv("USDA_FDC_API_KEY")
 BASE_URL = "https://api.nal.usda.gov/fdc/v1"
 
 
-# USDA FoodData Central (FDC) nutrient IDs
+# USDA FoodData Central (FDC) nutrient IDs as defined by Appendix K.
 # https://www.ars.usda.gov/ARSUserFiles/80400530/pdf/fndds/2021_2023_FNDDS_Doc.pdf
 FDC_NUTRITION_IDS = {
     "CALORIES_ID_ATWATER": 2047,  # Atwater general factors
@@ -34,6 +32,7 @@ FDC_NUTRITION_IDS = {
     "FAT_ID": 1004,
     "FIBER_ID": 1079,  # Total dietary - not used in calculation
     "SODIUM_ID": 1093,
+    "CHOLESTROL_ID": 1253,
 }
 
 # Remove all physical recipe preparation descriptors - as they don't
@@ -85,8 +84,6 @@ def search_fdc(query):
     # Search FDC under the 'Foundation' database first. If we are unable to find a result,
     # then it is most likely under a brand.
     results = query_fdc_api(params)
-    
-
 
     # if len(results) == 0:
     #     print("Retry with branded!")
@@ -109,7 +106,9 @@ def query_fdc_api(params):
         food_fdc_id = food.get("fdcId", "Unknown FDC ID")
         food_dtype = food.get("dataType", "Unknown data type")
 
-        print(f"({i + 1}/{len(data.get('foods'))}): {food_name} ({food_fdc_id}, {food_dtype})")
+        print(
+            f"({i + 1}/{len(data.get('foods'))}): {food_name} ({food_fdc_id}, {food_dtype})"
+        )
         print("\t--Nutrients per 100g--")
 
         food_nutrients = food.get("foodNutrients", None)
@@ -119,7 +118,11 @@ def query_fdc_api(params):
             for internal_name, nutrient_id in FDC_NUTRITION_IDS.items():
                 # Look for the specified nutrients in food_nutrients
                 nutrient = next(
-                    (nutrient for nutrient in food_nutrients if nutrient["nutrientId"] == nutrient_id),
+                    (
+                        nutrient
+                        for nutrient in food_nutrients
+                        if nutrient["nutrientId"] == nutrient_id
+                    ),
                     None,
                 )
 
@@ -133,7 +136,7 @@ def query_fdc_api(params):
                         "nutrient_id": nutrient_id,
                         "nutrient_name": nutrient_name,
                         "value": nutrient_value,
-                        "unit": nutrient_unit
+                        "unit": nutrient_unit,
                     }
                 else:
                     # If nutrient is missing, store a 'Not Available' entry
@@ -141,19 +144,23 @@ def query_fdc_api(params):
                         "nutrient_id": nutrient_id,
                         "nutrient_name": internal_name,
                         "value": "N/A",
-                        "unit": "N/A"
+                        "unit": "N/A",
                     }
-            
-            # Add the nutrient data to the results list
-            results.append({
-                "food_name": food_name,
-                "fdc_id": food_fdc_id,
-                "data_type": food_dtype,
-                "nutrients": food_nutrient_data
-            })
-        else:
-            print(f"Warning: No nutrients found for {food_name} (FDC ID: {food_fdc_id})")
 
+            # Add the nutrient data to the results list
+            results.append(
+                {
+                    "food_name": food_name,
+                    "fdc_id": food_fdc_id,
+                    "data_type": food_dtype,
+                    "nutrients": food_nutrient_data,
+                }
+            )
+        else:
+            print(
+                f"Warning: No nutrients found for {food_name} (FDC ID: {food_fdc_id})"
+            )
+        print(results)
         print()  # for better readability
     return results
 
