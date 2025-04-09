@@ -72,6 +72,7 @@ function MealPlanningPage() {
     return { startDate: start, endDate: end };
   };
 
+  // FR32 - Calendar.Recipe
   const filterApply = (filterObj: FilterObject) => {
     filterObj.needs_review = false;
     handleFilterApply(filterObj, setRecipeIngredients);
@@ -149,6 +150,7 @@ function MealPlanningPage() {
     }
   };
 
+  // FR27 - ShoppingList.Generate.MealPlan
   const handleAddToShoppingList = async () => {
     if (!user_id) {
       return
@@ -205,18 +207,6 @@ function MealPlanningPage() {
     setSearchRecipes(recipeIngredients); // Ensure filtered list updates when recipes change
   }, [recipeIngredients]);
 
-  const handleSearchRecipe = (searchInput) => {
-    if (searchInput.trim() === "") {
-      setSearchRecipes(recipeIngredients);
-    } else {
-      const filtered = recipeIngredients.filter((recipeIngredient) =>
-        recipeIngredient.recipe.name
-          .toLowerCase()
-          .includes(searchInput.toLowerCase())
-      );
-      setSearchRecipes(filtered);
-    }
-  };
   const handleNext = () => {
     if (currentPage < totalPages - 1) {
       setCurrentPage(currentPage + 1);
@@ -229,6 +219,7 @@ function MealPlanningPage() {
     }
   };
 
+  // FR33 - Recipe.Choose
   const handleDragStart = (recipe) => {
     setDraggedRecipe(recipe.recipe);
   };
@@ -306,6 +297,7 @@ function MealPlanningPage() {
     return eventCounts[dayString] || 0;
   };
 
+  // FR31 - Calendar.Slot
   const handleMealChange = (day, mealCount, mealPlan = null) => {
     // Update events list based on new meal count
     setMyEventsList((prevEvents) => {
@@ -387,6 +379,7 @@ function MealPlanningPage() {
     }
   };
 
+  // FR34 - Slot.Edit
   const validateMealCount = () => {
     const weekDays = getWeekDays(currentDate).map((day) =>
       eventCountPerday(day)

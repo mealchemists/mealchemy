@@ -2,7 +2,7 @@ import { Autocomplete, Box, Button, InputAdornment, Modal, TextField, useMediaQu
 import { useEffect, useState } from 'react';
 import { getAllIngredients } from '../../api/recipeIngredientApi';
 
-
+// FR24 - Recipe.Categorize, FR25 - Recipe.ManageTags
 function EditTagModal({ mainIngredient = '', cookTime = '0', prepTime = '0', onApplyTagChanges, open, onClose }) {
     // Temporary variables for edit tag modal
     const [tempMainIngredient, setTempMainIngredient] = useState(mainIngredient);

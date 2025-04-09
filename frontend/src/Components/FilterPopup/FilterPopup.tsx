@@ -22,6 +22,7 @@ function valuetext(range: number) {
   return `${range}mins`;
 }
 
+// FR23 - Recipe.Filter
 export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSortBy, sliderRange: initialSliderRange }: FilterPopupProps) {
   const [sortBy, setSortBy] = useState<string>(initialSortBy);
   const [sliderRange, setSliderRange] = useState<number[]>([0, 10]);

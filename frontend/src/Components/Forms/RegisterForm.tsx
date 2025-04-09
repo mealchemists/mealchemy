@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
 import {validatePassword, validateEmail, validateConfirmPassword} from '../../utils/formValidation';
 
-
+// FR1 - User.Register
 const RegisterForm = ({ onSubmit, formError, onBack }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");

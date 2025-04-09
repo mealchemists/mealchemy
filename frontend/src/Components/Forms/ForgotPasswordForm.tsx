@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
 import { validateEmail} from '../../utils/formValidation';
 
+// FR3 - Security.Forgot.Password
 const ForgotPasswordForm = ({ onSubmit, onBack }) => {
     const [email, setEmail] = useState("");
     const [emailError, setEmailError] = useState(""); 
