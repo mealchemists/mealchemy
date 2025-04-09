@@ -4,7 +4,7 @@ from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
-from units import Unit, Quantity
+
 
 # load API key
 load_dotenv()

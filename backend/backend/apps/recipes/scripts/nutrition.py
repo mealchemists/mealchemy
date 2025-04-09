@@ -7,15 +7,13 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, ROOT_DIR)
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
-django.setup()
+# ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+# sys.path.insert(0, ROOT_DIR)
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
+# django.setup()
 
 
-from backend.apps.recipes.models.ingredients import Ingredient
-from backend.apps.recipes.models.recipe import Recipe
-from django.conf import settings
+
 
 # load API key
 load_dotenv()
@@ -52,17 +50,17 @@ PHYSICAL_DESCRIPTOR_PATTERN = (
     r")\b"
 )
 
-names = [i.name for i in Ingredient.objects.all()]
+# names = [i.name for i in Ingredient.objects.all()]
 
 
-def preprocess_food_name(ingredient_name):
-    # TODO: use named entity recognition to extract food names, and use FDC's search operators...
-    ingredient_name = ingredient_name.lower()
-    ingredient_name = re.sub(
-        PHYSICAL_DESCRIPTOR_PATTERN,
-        "",
-        ingredient_name,
-    )
+# def preprocess_food_name(ingredient_name):
+#     # TODO: use named entity recognition to extract food names, and use FDC's search operators...
+#     ingredient_name = ingredient_name.lower()
+#     ingredient_name = re.sub(
+#         PHYSICAL_DESCRIPTOR_PATTERN,
+#         "",
+#         ingredient_name,
+#     )
 
 
 def search_fdc(query):
@@ -81,19 +79,21 @@ def search_fdc(query):
         # "sortOrder": "desc",
         # Survey (FNDDS) is the only dataset where I can retrieve portion information.
         "dataType": ["Foundation", "Survey (FNDDS)"],
-        "pageSize": 10,
+        "pageSize": 1,
     }
 
     # Search FDC under the 'Foundation' database first. If we are unable to find a result,
     # then it is most likely under a brand.
     results = query_fdc_api(params)
+    
 
-    if len(results) == 0:
-        print("Retry with branded!")
-        params["dataType"] = ["Branded"]
-        results.append(query_fdc_api(params))
 
-    return
+    # if len(results) == 0:
+    #     print("Retry with branded!")
+    #     params["dataType"] = ["Branded"]
+    #     results.append(query_fdc_api(params))
+
+    return results
 
 
 def query_fdc_api(params):
@@ -104,27 +104,22 @@ def query_fdc_api(params):
     results = []
 
     for i, food in enumerate(data.get("foods")):
-        # TODO: Better error handling....
-        food_name = food.get("description", ValueError("Food has no name!"))
-        food_fdc_id = food.get("fdcId", ValueError("Food does has no FDC ID!"))
-        food_dtype = food.get("dataType", ValueError("Food does not have a data type!"))
+        # Better error handling to ensure data is present.
+        food_name = food.get("description", "Unknown food name")
+        food_fdc_id = food.get("fdcId", "Unknown FDC ID")
+        food_dtype = food.get("dataType", "Unknown data type")
 
-        print(
-            f"({i + 1}/{len(data.get('foods'))}): {food_name} ({food_fdc_id}, {food_dtype})"
-        )
+        print(f"({i + 1}/{len(data.get('foods'))}): {food_name} ({food_fdc_id}, {food_dtype})")
         print("\t--Nutrients per 100g--")
 
         food_nutrients = food.get("foodNutrients", None)
+        food_nutrient_data = {}
+
         if food_nutrients is not None:
             for internal_name, nutrient_id in FDC_NUTRITION_IDS.items():
-                # Print only the nutritions specified in FDC_NUTRITION_IDS as
-                # we are not interested in all of them.
+                # Look for the specified nutrients in food_nutrients
                 nutrient = next(
-                    (
-                        nutrient
-                        for nutrient in food_nutrients
-                        if nutrient["nutrientId"] == nutrient_id
-                    ),
+                    (nutrient for nutrient in food_nutrients if nutrient["nutrientId"] == nutrient_id),
                     None,
                 )
 
@@ -133,23 +128,40 @@ def query_fdc_api(params):
                     nutrient_value = nutrient.get("value", None)
                     nutrient_unit = nutrient.get("unitName", None)
 
-                    print(f"\t{nutrient_name}: {nutrient_value} {nutrient_unit}")
+                    # Store the nutrient info in the dictionary
+                    food_nutrient_data[nutrient_id] = {
+                        "nutrient_id": nutrient_id,
+                        "nutrient_name": nutrient_name,
+                        "value": nutrient_value,
+                        "unit": nutrient_unit
+                    }
                 else:
-                    print(f"\t[{internal_name} N/A]")
-
+                    # If nutrient is missing, store a 'Not Available' entry
+                    food_nutrient_data[nutrient_id] = {
+                        "nutrient_id": nutrient_id,
+                        "nutrient_name": internal_name,
+                        "value": "N/A",
+                        "unit": "N/A"
+                    }
+            
+            # Add the nutrient data to the results list
+            results.append({
+                "food_name": food_name,
+                "fdc_id": food_fdc_id,
+                "data_type": food_dtype,
+                "nutrients": food_nutrient_data
+            })
         else:
-            raise ValueError("No nutrients found!")
+            print(f"Warning: No nutrients found for {food_name} (FDC ID: {food_fdc_id})")
 
-        print()
-        results.append(food)
-
+        print()  # for better readability
     return results
 
 
 if __name__ == "__main__":
     while True:
         search_term = input("Search up something: ")
-        preprocess_food_name(search_term)
+        # preprocess_food_name(search_term)
 
         try:
             search_fdc(search_term)
