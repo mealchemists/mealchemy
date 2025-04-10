@@ -7,6 +7,10 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
+
 # ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 # sys.path.insert(0, ROOT_DIR)
 # os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
@@ -68,8 +72,9 @@ def search_fdc(query):
     # if not available, to try and save some performance.
     #  - We will not use the 'SR Legacy' dataset as we want more recent results.
 
-    # TODO: make use of the search operators.
     # NOTE: `query` can also be provided a FDC ID.
+
+    query = query.lower()
 
     params = {
         "api_key": API_KEY_USDA,  # USDA FDC API does not support passing API keys via headers.
@@ -78,12 +83,13 @@ def search_fdc(query):
         # "sortOrder": "desc",
         # Survey (FNDDS) is the only dataset where I can retrieve portion information.
         "dataType": ["Foundation", "Survey (FNDDS)"],
-        "pageSize": 1,
+        "pageSize": 10,
     }
 
     # Search FDC under the 'Foundation' database first. If we are unable to find a result,
     # then it is most likely under a brand.
-    results = query_fdc_api(params)
+    # results = query_fdc_api(params)
+    results = cosine_similarity_search(query, params)
 
     # if len(results) == 0:
     #     print("Retry with branded!")
@@ -91,6 +97,115 @@ def search_fdc(query):
     #     results.append(query_fdc_api(params))
 
     return results
+
+
+def extract_core_ingredient(text):
+    # extract core ingredient using spaCy noun chunk extraction
+    doc = nlp(text)
+    noun_chunks = list(doc.noun_chunks)
+    if noun_chunks:
+        # return the first noun chunk's text in lowercase
+        return noun_chunks[0].text.lower().strip()
+    else:
+        return text.lower().strip()
+
+
+def cosine_similarity_search(raw_query, params):
+    response = requests.get(url=f"{BASE_URL}/foods/search", params=params, timeout=5)
+    data = response.json()
+
+    candidates = data.get("foods", [])
+    if not candidates:
+        return None
+
+    query_doc = nlp(raw_query)
+    best_candidate = None
+    best_score = -1.0
+
+    # get the closest match
+    for candidate in candidates:
+        description = candidate.get("description", "").lower().strip()
+        candidate_doc = nlp(description)
+        semantic_score = query_doc.similarity(candidate_doc)
+
+        # if the raw query is in the description or if any token lemma equals the raw query, then
+        # give a boost to its similarity score
+        contains_query = raw_query in description
+
+        query_in_candidate = any(raw_query == token.lemma_ for token in candidate_doc)
+
+        keyword_boost = 0.3 if contains_query or query_in_candidate else 0.0
+
+        # if we have a partial match, we increase the score
+        extracted_core = extract_core_ingredient(description)
+        # if the query is a substring of the core or vice versa, also boost
+        core_boost = (
+            0.4 if raw_query in extracted_core or extracted_core in raw_query else 0.0
+        )
+
+        total_score = semantic_score + keyword_boost + core_boost
+
+        if total_score > best_score:
+            best_score = total_score
+            best_candidate = candidate
+
+    closest_match = best_candidate.get("description")
+    food = next(x for x in data["foods"] if x["description"] == closest_match)
+
+    # get the nutrients
+    food_name = food.get("description", "Unknown food name")
+    food_fdc_id = food.get("fdcId", "Unknown FDC ID")
+    food_dtype = food.get("dataType", "Unknown data type")
+    food_nutrients = food.get("foodNutrients")
+    food_nutrient_data = {}
+    results = []
+
+    if food_nutrients is not None:
+        for internal_name, nutrient_id in FDC_NUTRITION_IDS.items():
+            # Look for the specified nutrients in food_nutrients
+            nutrient = next(
+                (
+                    nutrient
+                    for nutrient in food_nutrients
+                    if nutrient["nutrientId"] == nutrient_id
+                ),
+                None,
+            )
+
+            if nutrient is not None:
+                nutrient_name = nutrient.get("nutrientName", None)
+                nutrient_value = nutrient.get("value", None)
+                nutrient_unit = nutrient.get("unitName", None)
+
+                # Store the nutrient info in the dictionary
+                food_nutrient_data[nutrient_id] = {
+                    "nutrient_id": nutrient_id,
+                    "nutrient_name": nutrient_name,
+                    "value": nutrient_value,
+                    "unit": nutrient_unit,
+                }
+            else:
+                # If nutrient is missing, store a 'Not Available' entry
+                food_nutrient_data[nutrient_id] = {
+                    "nutrient_id": nutrient_id,
+                    "nutrient_name": internal_name,
+                    "value": "N/A",
+                    "unit": "N/A",
+                }
+
+        # Add the nutrient data to the results list
+        results.append(
+            {
+                "food_name": food_name,
+                "fdc_id": food_fdc_id,
+                "data_type": food_dtype,
+                "nutrients": food_nutrient_data,
+            }
+        )
+    else:
+        print(f"Warning: No nutrients found for {food_name} (FDC ID: {food_fdc_id})")
+
+    return best_candidate
 
 
 def query_fdc_api(params):

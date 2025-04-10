@@ -5,7 +5,7 @@ from pathlib import Path
 import spacy
 import re
 
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../"))
 sys.path.insert(0, ROOT_DIR)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 django.setup()
