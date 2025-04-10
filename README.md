@@ -235,24 +235,28 @@ If you would like to run the project locally under a Docker container, create a 
 - Make sure that `DOCKER=True` under 'Docker settings' below.
 
 ```env
-## Global
-OPENAI_ECE493_G06_KEY="my_openai_key"
-USDA_FDC_API_KEY="my_fdc_api_key"
-PIKA_URL="my_cloudamqp_url"
-SECRET_KEY="my_django_secretkey"
+#######################################################
+# The following env variables should never be commented out
+#######################################################
+PIKA_URL=""
+SECRET_KEY="d"
+OPENAI_ECE493_G06_KEY=""
+USDA_FDC_API_KEY=""
+EMAIL_PASSWORD="stvc hxpi bwbq uqes"
+EMAIL_USER="mealchemy.robot@gmail.com"
+DEFAULT_EMAIL="mealchemy.robot@gmail.com"
+#######################################################
 
-# Email (for sending forgot password emails)
-EMAIL_PASSWORD="my_email_password"
-EMAIL_USER="my_email_user"
-DEFAULT_EMAIL="my_default_email"
+#Local Setup 
+# DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mealchemy"
 
-## Docker settings
+# docker
 DOCKER="True"
 POSTGRES_DB="db"
-POSTGRES_USER="my_postgres_user"
-POSTGRES_PASSWORD="my_postgres_password"
+POSTGRES_USER="postgres"
+POSTGRES_PASSWORD="root"
 EXTRACT_URL="http://backend:8080"
-DATABASE_URL="postgres://postgres:root@db:5432/db" # you can directly use this as its defined in the docker container
+DATABASE_URL = "postgres://postgres:root@db:5432/db"
 ```
 
 ### Local run
@@ -262,28 +266,28 @@ If you are running locally, you need to have your postgres installation and poin
 make sure to set `DOCKER="False"` like in the example below:
 
 ```env
-## Global
-OPENAI_ECE493_G06_KEY="my_openai_key"
-USDA_FDC_API_KEY="my_fdc_api_key"
-PIKA_URL="my_cloudamqp_url"
-SECRET_KEY="my_django_secretkey"
+#######################################################
+# The following env variables should never be commented out
+#######################################################
+PIKA_URL="amqps://njslbjoh:sBepSHwzktvaxnpm9-5kcCAtJR63rzJ0@horse.lmq.cloudamqp.com/njslbjoh"
+SECRET_KEY="django-insecure-99qei#smfu0763xsl#hf^ln$52gj8o-es99dl2t@e(0i=%uk3k"
+OPENAI_ECE493_G06_KEY="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"
+USDA_FDC_API_KEY="etBO0wIQc1ItuiBGVY9BOPAJH3BYNrBkf0j8es2t"
+EMAIL_PASSWORD="stvc hxpi bwbq uqes"
+EMAIL_USER="mealchemy.robot@gmail.com"
+DEFAULT_EMAIL="mealchemy.robot@gmail.com"
+#######################################################
 
-# Email (for sending forgot password emails)
-EMAIL_PASSWORD="my_email_password"
-EMAIL_USER="my_email_user"
-DEFAULT_EMAIL="my_default_email"
+#Local Setup 
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mealchemy"
 
-## Local settings
-DOCKER="False"
-DATABASE_URL="postgresql://<user>:<password>@localhost:5432/<database_name>"
-
-# Or if you want to just use sqlite
-DOCKER="False"
-USE_SQLITE3="True" # Use if you want make debugging a bit easier locally, as there are VSCode extensions that let you view SQLite3 databases.
-POSTGRES_DB="db"
-POSTGRES_USER="my_postgres_user"
-POSTGRES_PASSWORD="my_postgres_password"
-DATABASE_URL="my_postgres_url"
+# docker
+# DOCKER="True"
+# POSTGRES_DB="db"
+# POSTGRES_USER="postgres"
+# POSTGRES_PASSWORD="root"
+# EXTRACT_URL="http://backend:8080"
+# DATABASE_URL = "postgres://postgres:root@db:5432/db"
 ```
 
 
