@@ -40,6 +40,8 @@ import os
 import json
 import traceback
 
+from google.cloud import storage
+
 # The server will be the producer that will send messages to the queue.
 # producer = Producer()
 
@@ -205,6 +207,15 @@ def recipe_url(request):
         )
 
 
+def upload_to_bucket(bucket_name, source_filepath, dst_blob_name):
+    storage_client = storage.Client()
+
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(dst_blob_name)
+
+    blob.upload_from_filename(source_filepath)
+
+
 @api_view(["POST"])
 def recipe_pdf(request):
     if request.method == "POST":
@@ -218,6 +229,12 @@ def recipe_pdf(request):
         with open(temp_path, "wb+") as dst:
             for chunk in file.chunks():
                 dst.write(chunk)
+
+        upload_to_bucket(
+            bucket_name="modified-wonder-447918-q3_mealchemy_bucket",
+            source_filepath=temp_path,
+            dst_blob_name="tmp/",
+        )
 
         # Add the token to the data to send via message queue
         access_token = get_jwt_token(user_id)

@@ -6,10 +6,10 @@ import sys
 import tempfile
 from pathlib import Path
 from time import perf_counter
+from google.cloud import storage
 
 import requests
 from llm import setup_llm_chain
-
 from .pdf_utils import PDFUtils
 
 # allow relative import
@@ -34,7 +34,22 @@ EXTRACTOR_ENDPOINT = "/api/save-scraped-data/"
 URL = EXTRACT_URL + EXTRACTOR_ENDPOINT
 
 
+def download_from_bucket(bucket_name, source_filepath, dst_blob_name):
+    storage_client = storage.Client()
+
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(dst_blob_name)
+
+    blob.download_to_filename(source_filepath)
+
+
 def extract_recipe_data_pdf(temp_path, user, token):
+    download_from_bucket(
+        bucket_name="modified-wonder-447918-q3_mealchemy_bucket",
+        source_filepath=temp_path,
+        dst_blob_name="tmp/",
+    )
+
     # load and extract
     pages = PDFUtils.load_pdf_pages_path(temp_path)
 
