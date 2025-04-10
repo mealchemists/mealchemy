@@ -125,17 +125,42 @@ return (
           <Accordion
             key={day}
             sx={{
-              borderRadius: index === 0 ? '10px 10px 0 0' : index === daysOfWeek.length - 1 ? '0 0 10px 10px' : '0',
+              overflow: "hidden",
+              "&:not(:last-child)": {
+                marginBottom: "1px",
+              },
+              "&:first-of-type": {
+                borderRadius: "10px 10px 0 0",
+              },
+              "&:last-of-type": {
+                borderRadius: daysOfWeek.length === 1 ? "10px 10px 0 0" : "0 0 10px 10px",
+              },
+              "&.Mui-expanded": {
+                borderRadius: "10px",
+              },
               boxShadow: '0px 3px 7px #38793b',
             }}
           >
             <AccordionSummary
               expandIcon={<ExpandMoreIcon sx={{ color: '#38793b' }} />}
               sx={{
-                backgroundColor: '#b0dbb2',
-                color: 'black',
-                borderRadius: index === 0 ? '10px 10px 0 0' : index === daysOfWeek.length - 1 ? '0 0 10px 10px' : '0',
-              }}
+                backgroundColor: "#b0dbb2",
+                color: "black",
+                borderRadius:
+                  index === 0 // First Accordion
+                    ? "10px 10px 0 0"
+                    : index === daysOfWeek.length - 1
+                      ? "0 0 10px 10px"
+                      : "0px",
+                "&.Mui-expanded": {
+                  borderRadius:
+                    index === 0
+                      ? "10px 10px 0 0"
+                      : index === daysOfWeek.length - 1
+                        ? "0 0 10px 10px"
+                        : "10px",
+                },
+                            }}
             >
               <Typography>{day}</Typography>
             </AccordionSummary>
