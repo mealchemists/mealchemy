@@ -8,7 +8,7 @@ export const handleFilterApply = async (filterObj: FilterObject, setRecipeIngred
     const queryParams = new URLSearchParams();
     // Add filters to query params (example)
     if (searchQuery) queryParams.append('search', searchQuery);
-    if (needs_review) queryParams.append('needs_review', 'true')
+    if (needs_review == false) queryParams.append('needs_review', "false");
     if (sortBy) queryParams.append('ordering', sortBy);
     if (range.length) queryParams.append('cook_time_min', range[0].toString());
     if (range.length > 1) queryParams.append('cook_time_max', range[1].toString());

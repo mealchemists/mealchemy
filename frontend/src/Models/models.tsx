@@ -56,18 +56,19 @@ export interface FilterObject {
     filters?: string[];
     sortBy?: string;
     range?: number[];
-    needs_review: boolean,
+    needs_review?: boolean,
     mainIngredient?: string;
 }
 
 
-export interface FilterObject {
-    searchQuery?: string;
-    filters?: string[];
-    sortBy?: string;
-    range?: number[];
-    mainIngredient?: string;
-}
+// export interface FilterObject {
+//     searchQuery?: string;
+//     filters?: string[];
+//     sortBy?: string;
+//     range?: number[];
+//     mainIngredient?: string;
+//     needs_review?: string;
+// }
 
 export enum Unit {
     None = '',
