@@ -259,7 +259,6 @@ const fetchMealPlans = async (startDate, endDate) => {
   }
 };
 
-
   // FR27 - ShoppingList.Generate.MealPlan
   const handleAddToShoppingList = async () => {
     if (!user_id) {

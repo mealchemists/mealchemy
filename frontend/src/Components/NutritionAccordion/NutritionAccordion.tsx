@@ -23,6 +23,7 @@ const formatNutrientName = (nutrientName: string) => {
   return nutrientNameMapping[nutrientName] || nutrientName; // Default to original if not mapped
 };
 
+// FR30 - Nutrition.Details
 const aggregateNutrients = (events: MealPlanEvent[]) => {
   const aggregatedNutrients: { [key: string]: any } = {};
 

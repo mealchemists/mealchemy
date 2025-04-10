@@ -26,6 +26,21 @@ class UserAuthTests(APITestCase):
         data = {"email": "", "password": ""}
         response = self.client.post("/api/register/", data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+    def test_FR1_user_exists(self):
+        # Attempt to register a user that already exists
+        data = {
+            "email": "test@example.com",
+            "password": "password123",
+            "username": "test@example.com"
+        }
+        response = self.client.post("/api/register/", data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+    def test_FR1_no_info(self):
+        data = {"email": "", "password": ""}
+        response = self.client.post("/api/register/", data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_FR2_login_user_success(self):
         data = {"email": "test@example.com", "password": "password123"}
