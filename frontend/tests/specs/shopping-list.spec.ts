@@ -29,8 +29,13 @@ test('Recipes: Add To Shopping List ', async ({ page }) => {
     await shoppingListPage.assertRecipeVisible('Recipe1');
     await shoppingListPage.assertRecipeVisible('Recipe2');
 });
+test('Shopping List: Cross Off ', async ({ page }) => {
+    await shoppingListPage.navigateToShoppingList();
+    await page.locator('div').filter({ hasText: /^Water10 gMove$/ }).getByRole('checkbox').check();
+    await page.locator('div').filter({ hasText: /^Water10 gMove$/ }).getByRole('checkbox').uncheck();
 
-test('Recipes: EditToExistingAisle ', async ({ page }) => {
+});
+test('Shopping List: EditToExistingAisle ', async ({ page }) => {
     await shoppingListPage.navigateToShoppingList();
     // Move 'TestAisle1' from TestAisle1 to Snacks
     await shoppingListPage.openCategory('TestAisle1');
@@ -40,7 +45,7 @@ test('Recipes: EditToExistingAisle ', async ({ page }) => {
 
 });
 
-test('Recipes: EditToNewAisle ', async ({ page }) => {
+test('Shopping List: EditToNewAisle ', async ({ page }) => {
     await shoppingListPage.navigateToShoppingList();
     // Move 'TestAisle1' from TestAisle1 to Snacks
     await shoppingListPage.openCategory('Beverages');
@@ -50,7 +55,7 @@ test('Recipes: EditToNewAisle ', async ({ page }) => {
 
 });
 
-test('Delete Recipes', async ({ page }) => {
+test('Shopping List: Delete Recipes', async ({ page }) => {
     await page.getByRole('navigation').locator('li', { hasText: 'Shopping List' }).click();
     await page.getByRole('listitem').filter({ hasText: 'Recipe1' }).getByRole('checkbox').check();
     await page.getByRole('listitem').filter({ hasText: 'Recipe2' }).getByRole('checkbox').check();

@@ -11,12 +11,6 @@ import spacy
 
 nlp = spacy.load("en_core_web_sm")
 
-# ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-# sys.path.insert(0, ROOT_DIR)
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
-# django.setup()
-
-
 # load API key
 load_dotenv()
 
@@ -205,7 +199,7 @@ def cosine_similarity_search(raw_query, params):
     else:
         print(f"Warning: No nutrients found for {food_name} (FDC ID: {food_fdc_id})")
 
-    return best_candidate
+    return results
 
 
 def query_fdc_api(params):

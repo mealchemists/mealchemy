@@ -11,7 +11,8 @@ import random
 from django.db.models import Q
 from django.http import Http404
 
-from backend.apps.recipes.models.nutrition import search_fdc
+# from backend.apps.recipes.models.nutrition import search_fdc
+from .scripts.nutrition import search_fdc
 from ..meal_plan.models.meal_plan import MealPlan
 from .models.ingredients import Ingredient, RecipeIngredient, Aisle
 from .models.recipe import Recipe, Step
@@ -42,6 +43,7 @@ import traceback
 # The server will be the producer that will send messages to the queue.
 # producer = Producer()
 
+
 @api_view(["GET"])
 def get_jwt_token_endpoint(request, email):
     # Generate JWT token for the user
@@ -49,6 +51,7 @@ def get_jwt_token_endpoint(request, email):
     user = User.objects.get(email=decoded_email)
     refresh = RefreshToken.for_user(user)
     return Response({"access_token": str(refresh.access_token)})
+
 
 def get_jwt_token(user_id):
     # Generate JWT token for the user
@@ -469,11 +472,11 @@ class RecipeIngredientsAPIView(APIView):
                     )
 
                 nutrients = search_fdc(ingredient_name)
-            
+
                 if not nutrients:
                     nutrients = {}
-                
-                aisle_obj = validate_aisle(aisle, request) 
+
+                aisle_obj = validate_aisle(aisle, request)
 
                 try:
                     # Try to create a new ingredient, or if it exists, do nothing
@@ -484,7 +487,7 @@ class RecipeIngredientsAPIView(APIView):
                             "aisle": aisle_obj,
                             "nutrients": nutrients,
                             "user": self.request.user,
-                        }
+                        },
                     )
 
                     # If the ingredient is newly created, proceed
@@ -496,7 +499,9 @@ class RecipeIngredientsAPIView(APIView):
                 except IntegrityError:
                     # Handle potential IntegrityError if unique constraints are violated
                     return Response(
-                        {"error": "Failed to create ingredient due to a database error"},
+                        {
+                            "error": "Failed to create ingredient due to a database error"
+                        },
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     )
 

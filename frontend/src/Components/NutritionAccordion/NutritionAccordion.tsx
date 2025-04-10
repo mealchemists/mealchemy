@@ -79,6 +79,7 @@ type NutritionalAccordionProps = {
   nutritionalData: MealPlanEvent[]; // Array of MealPlanEvent
 };
 
+// FR30 - Nutrition-Details
 const NutritionalAccordion = ({ nutritionalData }: NutritionalAccordionProps) => {
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 

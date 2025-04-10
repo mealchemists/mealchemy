@@ -115,6 +115,7 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
         }
     };
 
+    // FR22 - Recipe.Delete
     const handleDelete = async () => {
         if (selectedRecipes.length === 0) {
             return;
@@ -130,11 +131,6 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
                 }
             }
 
-            // // After deletion, update the state and clear selected recipes
-            // const updatedRecipes = recipeIngredient.filter(
-            //     recipeIngredient => !selectedRecipes.includes(recipeIngredient.recipe.id)
-            // );
-            // setRecipeIngredients(updatedRecipes);
             await fetchRecipes();
             setSelectedRecipes([]);
             setMultiSelect(false);
@@ -152,6 +148,7 @@ const RecipePanel: React.FC<RecipePanelProps> = ({
 
     const { isAuthenticated, username, user_id } = useAuth();
 
+    // FR26 - ShoppingList.Generate.Recipes
     const handleAddShoppingList = async () => {
         const selectedRecipeIngredients = recipeIngredient.filter((ri) => selectedRecipes.includes(ri.recipe.id));
 

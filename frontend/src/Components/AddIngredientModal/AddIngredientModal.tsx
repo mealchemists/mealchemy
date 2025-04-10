@@ -7,7 +7,6 @@ import { getAisles } from '../../api/aisles';
 import { useAuth } from '../../api/useAuth';
 
 
-
 const blankRecipe1 = {
     id: -1,
     name: "",
@@ -23,6 +22,7 @@ const blankRecipe1 = {
     aisle: ""
 }
 
+// FR20 - Recipe.Create.AddIngredient
 function AddIngredientModal({ open, onClose, onAddIngredient }) {
     const [newIngredient, setNewIngredient] = useState<Ingredient>(blankRecipe1);
     const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
@@ -43,6 +43,7 @@ function AddIngredientModal({ open, onClose, onAddIngredient }) {
         p: 4,
         borderRadius: '10px',
     };
+
     const handleInputChange = (field: string, value: string) => {
         if (field === "name") {
             // Check if the name exists in allIngredients

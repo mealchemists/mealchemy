@@ -174,6 +174,26 @@ If you prefer to run the application locally, follow these steps to set up each 
 
    - The frontend will be available at `http://localhost:3000`.
 
+##### Frontend Tests
+1. Install playwright
+   - in the frontend directory run:
+      ```bash
+     npm install playwright
+     npx playwright install chromium
+     ```
+2. Clear the backend database
+   - go to the backend directory and run:
+     ```bash
+     python manage.py shell < backend/cleanup.py
+     ```
+3. Execute tests one by one by executing the following commands after the previous one has finished:
+    ```bash
+    npx playwright test tests/specs/login.spec.ts
+    npx playwright test tests/specs/recipe.spec.ts
+    npx playwright test tests/specs/meal-planning.spec.ts
+    npx playwright test tests/specs/shopping-list.spec.ts
+    ```
+     
 #### Recipe Extractor (Custom Python Service)
 
 1. **Install dependencies**:
@@ -303,4 +323,85 @@ DATABASE_URL="my_postgres_url"
 ```
 
 Similarly to with Docker, create two `.env` files in the `backend/` and `recipe-extractors/` directories.
+
+## User Guide
+### Login Page
+#### Sign up
+- Click on the Sign up button and enter email and password in the corresponding textfields
+- Password must be between 6 and 50 characters with 1 special character
+  
+#### Login
+- Enter in credentials and access the site
+
+#### Forgot Password
+- User must enter the registered email in order to send a password
+- If there is a match, an email will be sent containing a link to change the password
+
+### Recipe Page
+#### Recipe Panel
+<div><img width="600" alt="image" src="https://github.com/user-attachments/assets/027902b3-f808-4a86-a0fb-3990ef71f769" />
+</div>
+
+- **Recipe Addition Methods:**
+  - Add manually (all fields, including tags, must be filled)
+  - Add by URL (warns user if any fields are missing)
+  - Add by PDF (warns user if any fields are missing)
+
+- **Select Option Features:**
+  - Select and delete recipes
+  - Select and add recipes to Shopping List
+  - View recipe content when a recipe is selected
+    
+<div><img width="600" alt="image" src="https://github.com/user-attachments/assets/d01ad13e-dd69-4026-8168-75cd2befbf87" /></div>
+
+- Recipes are easily searchable through these filters
+
+#### Recipe COntent
+<div>
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/6806d3d3-7d37-4eb4-a750-24f31453ded8" />
+  </div>
+  
+- **Recipe Management:**
+  - Edit and Delete buttons allow the user to edit and delete recipes
+  - Tags can be removed and must be replaced with a new tag
+
+- **Ingredient Handling:**
+  - When manually adding ingredients, if the ingredient is not in the database, the user is required to specify the grocery aisle
+  - If a recipe is added through URL or PDF, the grocery aisle is inferred using an LLM and added to the database
+
+### Meal Planning Page
+<div>
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/74b8362b-bc1b-4efd-a51e-25cfea712ce7" />
+  </div>
+  
+- **Meal Plan Creation:**
+  - The user can add a meal slot by selecting the dropdown corresponding to the desired day
+  - The user can then drag and drop a recipe into the placeholder meal slot
+  - Meal slots can be deleted by clicking on the garbage icon
+  - The meal plan will only be saved if it is not blank and all placeholder meal slots are filled
+
+- **Additional Features:**
+  - Recipes can be added to the shopping list as long as they are within the current calendar view
+  - Nutrition for the saved meal plan is visible by clicking on the Nutrition Details tab
+
+
+### Shopping List Page
+<div>
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/c6d07231-1607-4828-8224-bdc22a6eb6d7" />
+  </div>
+  
+- The ingredients can be crossed out by checking the boxes, this will reset when the page is refreshed
+- If the aisle is incorrect for the ingredient, the ingredient can be moved and entering the correct aisle in the modal
+- The recipe can also be removed from the Shopping List by clicking on the checkbox in the Recipes box. This will also remove the ingredients in the Shopping List
+
+### User Profile
+#### Change Password
+- Click on the Change Password button, enter the new password, and click on Done 
+- The password must fulfill the same conditions as the Sign Up page
+  
+#### Sign out
+- Click on the button to Sign Out and be redirected to the Login page
+
+
+
 

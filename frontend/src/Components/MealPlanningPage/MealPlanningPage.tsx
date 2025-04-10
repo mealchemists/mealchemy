@@ -73,6 +73,7 @@ function MealPlanningPage() {
     return { startDate: start, endDate: end };
   };
 
+  // FR32 - Calendar.Recipe
   const filterApply = (filterObj: FilterObject) => {
     filterObj.needs_review = false;
     handleFilterApply(filterObj, setRecipeIngredients);
@@ -259,7 +260,7 @@ const fetchMealPlans = async (startDate, endDate) => {
 };
 
 
-
+  // FR27 - ShoppingList.Generate.MealPlan
   const handleAddToShoppingList = async () => {
     if (!user_id) {
       return
@@ -335,6 +336,7 @@ useEffect(() => {
     }
   };
 
+  // FR33 - Recipe.Choose
   const handleDragStart = (recipe) => {
     setDraggedRecipe(recipe);
   };
@@ -417,6 +419,7 @@ useEffect(() => {
     return eventCounts[dayString] || 0;
   };
 
+  // FR31 - Calendar.Slot
   const handleMealChange = (day, mealCount, mealPlan = null) => {
     // Update events list based on new meal count
     setMyEventsList((prevEvents: MealPlanEvent[]): MealPlanEvent[] => {
@@ -512,6 +515,7 @@ useEffect(() => {
     }
   };
 
+  // FR34 - Slot.Edit
   const validateMealCount = () => {
     const weekDays = getWeekDays(currentDate).map((day) =>
       eventCountPerday(day)
