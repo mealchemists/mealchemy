@@ -5,11 +5,23 @@ import django
 from pathlib import Path
 
 import requests
+import importlib
+import subprocess
 from dotenv import load_dotenv
 
 import spacy
 
-nlp = spacy.load("en_core_web_sm")
+
+def load_spacy_model(model_name="en_core_web_sm"):
+    if importlib.util.find_spec(model_name) is None:
+        print(f"Downloading missing spaCy model '{model_name}'...")
+        subprocess.run(
+            [sys.executable, "-m", "spacy", "download", model_name], check=True
+        )
+    return spacy.load(model_name)
+
+
+nlp = load_spacy_model()
 
 # load API key
 load_dotenv()
