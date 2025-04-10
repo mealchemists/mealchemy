@@ -3,7 +3,7 @@ name: Deploy to GCP ok
 on:
   push:
     branches:
-      - main 
+      - capstone
 
 jobs:
   # deploy-frontend:
