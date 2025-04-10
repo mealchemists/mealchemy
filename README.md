@@ -65,6 +65,7 @@ Installation of docker can be found here:  https://docs.docker.com/engine/instal
 
 #### Dependencies
 - Python 3.12
+- Postgresql 16
 - Tesseract-OCR
   - Ubuntu: `sudo apt install -y tesseract-ocr`
 - poppler-utils
