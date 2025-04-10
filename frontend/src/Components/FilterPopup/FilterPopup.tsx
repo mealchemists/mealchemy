@@ -41,7 +41,7 @@ export default function FilterPopup({ onClose, onFilterChange, sortBy: initialSo
       }
     
     getMainIngredientList();
-  })
+  },[])
   const applyFilters = (e: React.MouseEvent) => {
     const filters: string[] = [];
 
