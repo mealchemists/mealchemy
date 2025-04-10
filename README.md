@@ -154,12 +154,18 @@ If you prefer to run the application locally, follow these steps to set up each 
      ```
      python manage.py makemigrations && python manage.py migrate
      ```
-
 3. **Run the backend**:
+   - Run backend tests
+     ```bash
+     python manage.py test
+     ```
+
+4. **Run the backend**:
    - Start the Django development server:
      ```bash
      python manage.py runserver
      ```
+   
 
    - The backend will be available at `http://localhost:8000`.
 
@@ -280,7 +286,6 @@ POSTGRES_PASSWORD="my_postgres_password"
 DATABASE_URL="my_postgres_url"
 ```
 
-Similarly to with Docker, create two `.env` files in the `backend/` and `recipe-extractors/` directories.
 
 ## User Guide
 ### Login Page
