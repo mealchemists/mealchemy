@@ -23,7 +23,12 @@ import os
 
 load_dotenv()
 
-EXTRACT_URL = os.getenv("EXTRACT_URL", "http://localhost:8000")
+
+if os.getenv("DOCKER", "False").lower() == "true":
+    EXTRACT_URL = os.getenv("EXTRACT_URL", "http://localhost:8000")
+else:
+    EXTRACT_URL = "http://localhost:8000"
+
 EXTRACTOR_ENDPOINT = "/api/save-scraped-data/"
 
 URL = EXTRACT_URL + EXTRACTOR_ENDPOINT

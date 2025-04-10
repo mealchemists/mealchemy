@@ -25,7 +25,7 @@ import {
 } from "./CalendarComponents";
 import NutritionalAccordion from "../NutritionAccordion/NutritionAccordion";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import {FilterObject } from '../../Models/models';
+import {FilterObject, MealPlanEvent } from '../../Models/models';
 
 import { getRecipeIngredients } from "../../api/recipeIngredientApi";
 import {
@@ -35,12 +35,13 @@ import {
 } from "../../api/mealPlanApi";
 import { useAuth } from "../../api/useAuth";
 import { addToShoppingList } from "../../api/shoppingList";
+import { start } from "repl";
 
 const localizer = momentLocalizer(moment);
 const DragAndDropCalendar = withDragAndDrop(Calendar);
 
 function MealPlanningPage() {
-  const [myEventsList, setMyEventsList] = useState([]);
+  const [myEventsList, setMyEventsList] = useState<MealPlanEvent[]>([]);
   // const [selectedMeals, setSelectedMeals] = useState({});
   const [draggedRecipe, setDraggedRecipe] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -103,7 +104,7 @@ function MealPlanningPage() {
 
   const fetchRecipes = async () => {
     try {
-      const queryParams = new URLSearchParams();
+    const queryParams = new URLSearchParams();
       queryParams.append('needs_review', 'false')
       const response = await getRecipeIngredients(queryParams);
       setRecipeIngredients(response); // Store fetched recipes
@@ -114,41 +115,149 @@ function MealPlanningPage() {
     }
   };
 
-  const fetchMealPlans = async (startDate, endDate) => {
-    setMyEventsList([]); // Reset the events list
+  // const fetchMealPlans = async (startDate, endDate) => {
+  //   setMyEventsList([]); // Reset the events list
+    
+    
+  //   const searchParams = {
+  //     start_date: startDate.toISOString().split("T")[0],
+  //     end_date: endDate.toISOString().split("T")[0],
+  //   };
+  
+  //   try {
+  //     const response = await getMealPlans(searchParams);
+  //     const fetchedMealPlans = response?.meal_plan ?? []; // Fallback to an empty array
+      
+  //     // Group the fetched meal plans by day
+  //     const groupedMealPlans = fetchedMealPlans.reduce((acc, mealPlan) => {
+  //       const day = moment(mealPlan.day_planned)
+  //         .startOf("day")
+  //         .format("YYYY-MM-DD");
+  //       if (!acc[day]) {
+  //         acc[day] = [];
+  //       }
+  //       acc[day].push(mealPlan);
+  //       return acc;
+  //     }, {});
+  
+  //     // Process each day's meal plans together
+  //     Object.keys(groupedMealPlans).forEach((dayString) => {
+  //       const day = moment(dayString);
+  //       const mealPlansForDay = groupedMealPlans[dayString];
+  //       console.log(mealPlansForDay) 
+  //       // Create a new events list with non-day events + new meal plans
+  //       setMyEventsList(prevEvents => {
+  //         // Keep events for other days
+  //         const otherDayEvents = prevEvents.filter(
+  //           event => !moment(event.start).isSame(day, "day")
+  //         );
+  //         // Create events for this day's meal plans
+  //         const newDayEvents = mealPlansForDay.map(mealPlan => {
+  //           // Find the matching recipeIngredients for the current mealPlan.recipe.id
+  //           const matchedRecipeIngredient = recipeIngredients.find(ri => ri.recipe.id === mealPlan.recipe.id);
+  //           console.log("mealPlan", mealPlan);
+  //           console.log("ri", recipeIngredients)
+  //           return {
+  //             id: `${day}-${mealPlan.recipe.id}`,
+  //             mealPlan_id: mealPlan.id,
+  //             start: moment(mealPlan.day_planned).startOf("day").toDate(),
+  //             end: moment(mealPlan.day_planned).startOf("day").toDate(),
+  //             day_planned: mealPlan.day_planned,
+  //             allDay: true,
+  //             title: mealPlan.recipe.name,
+  //             placeholder: false,
+  //             recipe: {
+  //               ...mealPlan.recipe, // Spread the existing recipe object to keep other properties
+  //               ingredients: matchedRecipeIngredient ? matchedRecipeIngredient.ingredients : [] // Add ingredients if matched
+  //             }
+  //           };
+  //         });
+  //         console.log("new dat", newDayEvents)
+          
+  //         // Return combined events
+  //         return [...otherDayEvents, ...newDayEvents];
+  //       });
+  //     });
+      
+  //     console.log("Updated events list after fetch:", myEventsList);
+  //   } catch (error) {
+  //     console.error("Error fetching meal plans:", error);
+  //   }
+  // };
 
-    const searchParams = {
-      start_date: startDate.toISOString().split("T")[0],
-      end_date: endDate.toISOString().split("T")[0],
-    };
+const fetchMealPlans = async (startDate, endDate) => {
+  setMyEventsList([]); // Reset the events list
+  const events = []; // Create a local array to collect all events
 
-    try {
-      const response = await getMealPlans(searchParams);
-      const fetchedMealPlans = response?.meal_plan ?? []; // Fallback to an empty array if `meal_plan` is undefined
-
-      // Group the fetched meal plans by day using formatted date string as the key
-      const groupedMealPlans = fetchedMealPlans.reduce((acc, mealPlan) => {
-        const day = moment(mealPlan.day_planned)
-          .startOf("day")
-          .format("YYYY-MM-DD"); // Use formatted date string as key
-        if (!acc[day]) {
-          acc[day] = [];
-        }
-        acc[day].push(mealPlan);
-        return acc;
-      }, {});
-
-      Object.keys(groupedMealPlans).forEach((dayString) => {
-        const day = moment(dayString); // Convert string back to moment object
-        const mealPlansForDay = groupedMealPlans[dayString]; // Get all meal plans for the day
-        mealPlansForDay.forEach((mealPlan) => {
-          handleMealChange(day, mealPlansForDay.length, mealPlan); // Call `handleMealChange` for each meal plan
-        });
-      });
-    } catch (error) {
-      console.error("Error fetching meal plans:", error);
-    }
+  const searchParams = {
+    start_date: startDate.toISOString().split("T")[0],
+    end_date: endDate.toISOString().split("T")[0],
   };
+
+  try {
+    const response = await getMealPlans(searchParams);
+    const fetchedMealPlans = response?.meal_plan ?? []; // Fallback to an empty array
+
+    // Group the fetched meal plans by day
+    const groupedMealPlans = fetchedMealPlans.reduce((acc, mealPlan) => {
+      const day = moment(mealPlan.day_planned)
+        .startOf("day")
+        .format("YYYY-MM-DD");
+      if (!acc[day]) {
+        acc[day] = [];
+      }
+      acc[day].push(mealPlan);
+      return acc;
+    }, {});
+
+    // Process each day's meal plans
+    Object.keys(groupedMealPlans).forEach((dayString) => {
+      const day = moment(dayString);
+      const mealPlansForDay = groupedMealPlans[dayString];
+      
+      // Generate all events for this day
+      const dayEvents = [];
+      
+      // First, add all non-placeholder events from actual meal plans
+      mealPlansForDay.forEach((mealPlan) => {
+        if (mealPlan && mealPlan.recipe) { // Ensure recipe exists
+          dayEvents.push({
+            id: `${dayString}-${mealPlan.recipe.id}`,
+            mealPlan_id: mealPlan.id,
+            start: moment(mealPlan.day_planned).startOf("day").toDate(),
+            end: moment(mealPlan.day_planned).startOf("day").toDate(),
+            day_planned: mealPlan.day_planned,
+            allDay: true,
+            title: mealPlan.recipe.name,
+            placeholder: false,
+            recipe: mealPlan.recipe, // Ensure recipe is properly assigned
+            ...(recipeIngredients
+              ? recipeIngredients
+                  .filter((ri) => ri.recipe.id === mealPlan.recipe.id)
+                  .map((ri) => ({
+                    ingredients: ri.ingredients,
+                  }))[0] || {} // Provide empty object if no match
+              : {}),
+          });
+        }
+      });
+      
+      // Add this day's events to the overall events array
+      events.push(...dayEvents);
+    });
+
+    // Set the state once with all events collected
+    setMyEventsList(events);
+    
+    // Use a timeout to log the updated state after React has processed the state update
+    setTimeout(() => {
+      console.log("Updated event list:", events);
+    }, 0);
+    
+  } catch (e) {
+    console.error("Error fetching meal plans:", e);
+  }
+};
 
   // FR27 - ShoppingList.Generate.MealPlan
   const handleAddToShoppingList = async () => {
@@ -174,14 +283,15 @@ function MealPlanningPage() {
             allDay,
             title,
             placeholder,
+            recipe,
             ...rest
           }) => ({
-            ...rest,
+            recipe: recipe,
             id: mealPlan_id,
             day_planned: start,
           })
         );
-
+      console.log("Meal plan data",myEventsList)
       const response = await putMealPlan(meal_plan_data);
     } catch (error) {
       console.error("Error fetching meal plans:", error);
@@ -189,10 +299,16 @@ function MealPlanningPage() {
   };
 
   useEffect(() => {
-    const { startDate, endDate } = getStartAndEndOfWeek(new Date());
-    fetchRecipes();
+  fetchRecipes();
+}, []);
+
+useEffect(() => {
+  const { startDate, endDate } = getStartAndEndOfWeek(new Date());
+  if (recipeIngredients.length > 0) {
     fetchMealPlans(startDate, endDate);
-  }, []);
+  }
+}, [recipeIngredients]);
+
 
   useEffect(() => {
     const startIndex = currentPage * recipesPerPage;
@@ -221,7 +337,7 @@ function MealPlanningPage() {
 
   // FR33 - Recipe.Choose
   const handleDragStart = (recipe) => {
-    setDraggedRecipe(recipe.recipe);
+    setDraggedRecipe(recipe);
   };
 
   const dragFromOutsideItem = useCallback(() => {
@@ -237,11 +353,16 @@ function MealPlanningPage() {
           if (ev.id === event.id && ev.placeholder) {
             return {
               ...ev,
-              title: draggedRecipe.name,
+              title: draggedRecipe.recipe.name,
               start: start,
               end: end,
               placeholder: false,
-              recipe: draggedRecipe,
+              recipe: draggedRecipe.recipe,
+              ingredients: recipeIngredients
+                  ? recipeIngredients
+                      .filter((ri) => ri.recipe.id === draggedRecipe.recipe.id) // Match on recipe id
+                      .map((ri) => ri.ingredients)[0] || [] // Take the ingredients array directly
+                  : [],
             };
           }
           return ev;
@@ -300,7 +421,7 @@ function MealPlanningPage() {
   // FR31 - Calendar.Slot
   const handleMealChange = (day, mealCount, mealPlan = null) => {
     // Update events list based on new meal count
-    setMyEventsList((prevEvents) => {
+    setMyEventsList((prevEvents: MealPlanEvent[]): MealPlanEvent[] => {
       // Separate non-placeholder and placeholder events for the current day
       const existingNonPlaceholderEvents = prevEvents.filter(
         (event) => moment(event.start).isSame(day, "day") && !event.placeholder
@@ -310,6 +431,7 @@ function MealPlanningPage() {
         (event) => moment(event.start).isSame(day, "day") && event.placeholder
       );
 
+      
       // Calculate the total number of existing meal slots (both actual meals and placeholders)
       const totalExistingEvents =
         existingNonPlaceholderEvents.length + existingPlaceholderEvents.length;
@@ -320,6 +442,7 @@ function MealPlanningPage() {
           ? mealPlan // mealPlan is passed in as a single object
             ? [
               {
+
                 id: `${day}-${mealPlan.recipe.id}`, // Unique ID for the meal plan
                 mealPlan_id: mealPlan.id,
                 start: moment(mealPlan.day_planned).startOf("day").toDate(),
@@ -329,18 +452,25 @@ function MealPlanningPage() {
                 title: mealPlan.recipe.name, // Using the title from the single meal plan
                 placeholder: false, // This is an actual meal plan
                 recipe: mealPlan.recipe,
+                // Find the matching RecipeIngredient for the current recipe
+                ingredients: recipeIngredients
+                  ? recipeIngredients
+                      .filter((ri) => ri.recipe.id === mealPlan.recipe.id) // Match on recipe id
+                      .map((ri) => ri.ingredients)[0] || [] // Take the ingredients array directly
+                  : [],
               },
             ]
             : Array.from({ length: difference }, (_, i) => ({
               id: `${day}-slot-${totalExistingEvents + i}`,
               start: moment(day).startOf("day").toDate(),
               end: moment(day).startOf("day").toDate(),
+              day_planned: moment(day).startOf('day').format('YYYY-MM-DD'),
               allDay: true,
               title: "Drag meal here", // Placeholder title
               placeholder: true, // This is a placeholder event
             }))
           : [];
-
+  
       // Remove excess placeholders if the difference is negative
       const updatedPlaceholderEvents =
         difference < 0
@@ -356,6 +486,7 @@ function MealPlanningPage() {
         ...updatedPlaceholderEvents, // Updated list of placeholders
       ];
     });
+    console.log("my event list", myEventsList)
   };
 
   const resetEventToPlaceholder = async (event) => {
@@ -368,9 +499,13 @@ function MealPlanningPage() {
       }
     }
 
+    
+    console.log(myEventsList)
     // Remove deleted item from event list
     setMyEventsList((prevEvents) =>
-      prevEvents.filter((ev) => ev.id != event.id)
+      prevEvents.filter((ev) => {
+          return ev.id !== event.id;
+      })
     );
   };
   const handleViewChange = (event, newView) => {
@@ -400,7 +535,10 @@ function MealPlanningPage() {
     return true;
   };
 
+  const filteredEvents = myEventsList.filter((event) => event.placeholder === false);
+
   const saveMealPlan = () => {
+    console.log("okay", myEventsList)
     if (validateMealCount()) {
       updateMealPlan();
       toast.success("Your Meal-Plan  has been saved! 🍔");
@@ -641,7 +779,7 @@ function MealPlanningPage() {
             marginTop: "20px",
           }}
         >
-          <NutritionalAccordion />
+          <NutritionalAccordion nutritionalData={filteredEvents} />
         </Box>
       )}
     </div>

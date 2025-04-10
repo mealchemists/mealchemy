@@ -10,6 +10,9 @@ from django.contrib.auth.models import User
 import random
 from django.db.models import Q
 from django.http import Http404
+
+# from backend.apps.recipes.models.nutrition import search_fdc
+from .scripts.nutrition import search_fdc
 from ..meal_plan.models.meal_plan import MealPlan
 from .models.ingredients import Ingredient, RecipeIngredient, Aisle
 from .models.recipe import Recipe, Step
@@ -40,6 +43,7 @@ import traceback
 # The server will be the producer that will send messages to the queue.
 # producer = Producer()
 
+
 @api_view(["GET"])
 def get_jwt_token_endpoint(request, email):
     # Generate JWT token for the user
@@ -47,6 +51,7 @@ def get_jwt_token_endpoint(request, email):
     user = User.objects.get(email=decoded_email)
     refresh = RefreshToken.for_user(user)
     return Response({"access_token": str(refresh.access_token)})
+
 
 def get_jwt_token(user_id):
     # Generate JWT token for the user
@@ -104,13 +109,13 @@ def save_scraped_data(request):
             # TODO: handle fuzzy Ingredient retrieval in a different function
             aisle_name = ingredient_data.get("aisle", None)
             aisle = validate_aisle(aisle_name, request)
-            calories_per_100g = random.uniform(50, 500)
-            protein_per_100g = random.uniform(1, 30)
-            carbs_per_100g = random.uniform(1, 50)
-            sugar_per_100g = random.uniform(0, 30)
-            fat_per_100g = random.uniform(0, 20)
-            sodium_per_100mg = random.uniform(0, 1500)
-            fiber_per_100g = random.uniform(0, 15)
+            # calories_per_100g = random.uniform(50, 500)
+            # protein_per_100g = random.uniform(1, 30)
+            # carbs_per_100g = random.uniform(1, 50)
+            # sugar_per_100g = random.uniform(0, 30)
+            # fat_per_100g = random.uniform(0, 20)
+            # sodium_per_100mg = random.uniform(0, 1500)
+            # fiber_per_100g = random.uniform(0, 15)
 
             try:
                 # Newly created recipe ingredients will be uncategorized.
@@ -123,13 +128,13 @@ def save_scraped_data(request):
                     aisle=aisle,
                     user=request.user,
                     defaults={
-                        "calories_per_100g": calories_per_100g,
-                        "protein_per_100g": protein_per_100g,
-                        "carbs_per_100g": carbs_per_100g,
-                        "sugar_per_100g": sugar_per_100g,
-                        "fat_per_100g": fat_per_100g,
-                        "sodium_per_100mg": sodium_per_100mg,
-                        "fiber_per_100g": fiber_per_100g,
+                        # "calories_per_100g": calories_per_100g,
+                        # "protein_per_100g": protein_per_100g,
+                        # "carbs_per_100g": carbs_per_100g,
+                        # "sugar_per_100g": sugar_per_100g,
+                        # "fat_per_100g": fat_per_100g,
+                        # "sodium_per_100mg": sodium_per_100mg,
+                        # "fiber_per_100g": fiber_per_100g,
                         "aisle": aisle,
                     },
                 )
@@ -294,6 +299,7 @@ class RecipeIngredientsAPIView(APIView):
                         "aisle": ri.ingredient.aisle.name
                         if ri.ingredient.aisle
                         else None,
+                        "nutrient_information": ri.ingredient.nutrients,
                         "needs_review": ri.needs_review,
                     }
                 )
@@ -365,13 +371,13 @@ class RecipeIngredientsAPIView(APIView):
 
                 # TODO: handle nutrition information
                 # TODO: handle fuzzy Ingredient retrieval in a different function
-                calories_per_100g = random.uniform(50, 500)
-                protein_per_100g = random.uniform(1, 30)
-                carbs_per_100g = random.uniform(1, 50)
-                sugar_per_100g = random.uniform(0, 30)
-                fat_per_100g = random.uniform(0, 20)
-                sodium_per_100mg = random.uniform(0, 1500)
-                fiber_per_100g = random.uniform(0, 15)
+                # calories_per_100g = random.uniform(50, 500)
+                # protein_per_100g = random.uniform(1, 30)
+                # carbs_per_100g = random.uniform(1, 50)
+                # sugar_per_100g = random.uniform(0, 30)
+                # fat_per_100g = random.uniform(0, 20)
+                # sodium_per_100mg = random.uniform(0, 1500)
+                # fiber_per_100g = random.uniform(0, 15)
 
                 try:
                     ingredient, created = Ingredient.objects.get_or_create(
@@ -379,13 +385,13 @@ class RecipeIngredientsAPIView(APIView):
                         user=self.request.user,
                         defaults={
                             "user": self.request.user,
-                            "calories_per_100g": calories_per_100g,
-                            "protein_per_100g": protein_per_100g,
-                            "carbs_per_100g": carbs_per_100g,
-                            "sugar_per_100g": sugar_per_100g,
-                            "fat_per_100g": fat_per_100g,
-                            "sodium_per_100mg": sodium_per_100mg,
-                            "fiber_per_100g": fiber_per_100g,
+                            # "calories_per_100g": calories_per_100g,
+                            # "protein_per_100g": protein_per_100g,
+                            # "carbs_per_100g": carbs_per_100g,
+                            # "sugar_per_100g": sugar_per_100g,
+                            # "fat_per_100g": fat_per_100g,
+                            # "sodium_per_100mg": sodium_per_100mg,
+                            # "fiber_per_100g": fiber_per_100g,
                             "aisle": aisle_obj,
                         },
                     )
@@ -448,10 +454,12 @@ class RecipeIngredientsAPIView(APIView):
             )  # Extract ingredients
 
             for ingredient_data in ingredients_data:
+                id = ingredient_data.get("id")
                 ingredient_name = ingredient_data.get("name")
                 quantity = ingredient_data.get("quantity")
                 unit = ingredient_data.get("unit")
                 display_name = ingredient_data.get("display_name")
+                nutrients = ingredient_data.get("nutrient_information")
                 aisle = ingredient_data.get("aisle")  # the aisle name
 
                 if not display_name:
@@ -463,45 +471,45 @@ class RecipeIngredientsAPIView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-                # Handle random nutrition data if not already provided
-                calories_per_100g = random.uniform(50, 500)
-                protein_per_100g = random.uniform(1, 30)
-                carbs_per_100g = random.uniform(1, 50)
-                sugar_per_100g = random.uniform(0, 30)
-                fat_per_100g = random.uniform(0, 20)
-                sodium_per_100mg = random.uniform(0, 1500)
-                fiber_per_100g = random.uniform(0, 15)
+                nutrients = search_fdc(ingredient_name)
 
-                aisle_obj = validate_aisle(aisle, request) 
+                if not nutrients:
+                    nutrients = {}
+
+                aisle_obj = validate_aisle(aisle, request)
 
                 try:
-                    # Check if the ingredient exists, if not, create it
+                    # Try to create a new ingredient, or if it exists, do nothing
                     ingredient, created = Ingredient.objects.get_or_create(
-                        name=ingredient_name,
-                        user=self.request.user,
-                        defaults={
-                            "user": self.request.user,
-                            "calories_per_100g": calories_per_100g,
-                            "protein_per_100g": protein_per_100g,
-                            "carbs_per_100g": carbs_per_100g,
-                            "sugar_per_100g": sugar_per_100g,
-                            "fat_per_100g": fat_per_100g,
-                            "sodium_per_100mg": sodium_per_100mg,
-                            "fiber_per_100g": fiber_per_100g,
+                        name=ingredient_name,  # Try to find an existing ingredient by name
+                        user=self.request.user,  # User constraint to ensure the right owner
+                        defaults={  # If it's a new ingredient, set the defaults
                             "aisle": aisle_obj,
+                            "nutrients": nutrients,
+                            "user": self.request.user,
                         },
                     )
+
+                    # If the ingredient is newly created, proceed
+                    if created:
+                        print(f"Created new ingredient: {ingredient_name}")
+                    else:
+                        print(f"Ingredient already exists: {ingredient_name}")
+
                 except IntegrityError:
-                    # If an IntegrityError occurs, we simply ignore it and continue
-                    ingredient = Ingredient.objects.get(
-                        name=ingredient_name, user=self.request.user
+                    # Handle potential IntegrityError if unique constraints are violated
+                    return Response(
+                        {
+                            "error": "Failed to create ingredient due to a database error"
+                        },
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     )
 
                 # Create RecipeIngredient relationships
                 ri = RecipeIngredient.objects.create(
                     user=self.request.user,
-                    recipe=recipe,
-                    ingredient=ingredient,
+                    recipe=recipe,  # Assuming 'recipe' is defined earlier in the context
+                    ingredient=ingredient,  # The new or existing ingredient
                     quantity=quantity,
                     unit=unit,
                     display_name=display_name,

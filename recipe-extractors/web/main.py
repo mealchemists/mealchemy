@@ -13,7 +13,10 @@ from .scraper import Scraper
 
 load_dotenv()
 
-EXTRACT_URL = os.getenv("EXTRACT_URL", "http://localhost:8000")
+if os.getenv("DOCKER", "False").lower() == "true":
+    EXTRACT_URL = os.getenv("EXTRACT_URL", "http://localhost:8000")
+else:
+    EXTRACT_URL = "http://localhost:8000"
 EXTRACTOR_ENDPOINT = "/api/save-scraped-data/"
 
 URL = EXTRACT_URL + EXTRACTOR_ENDPOINT
@@ -27,7 +30,7 @@ def extract_recipe_data_url(url, user, token):
         cleaned_content = scraper.clean_body_content(body_content)
         start_time = perf_counter()
         result = parse_with_openai(cleaned_content)
-        
+
         assert result is not None
         if result["recipe"].get("source_url", None) is None:
             result["recipe"]["source_url"] = url

@@ -56,7 +56,7 @@ class PDFUtils:
         Debug function to display one (or more) images side by side.
         """
 
-        cv2.imshow(window_name, cv2.hconcat(images))
+        cv2.imshow(window_name, cv2.vconcat(images))
         while True:
             key = cv2.waitKey(1) & 0xFF
             if key == ord(" "):
@@ -409,8 +409,10 @@ class PDFUtils:
 
                 region_no += 1
 
+            PDFUtils.debug_show_image([display_image])
+
             PDFUtils.debug_show_image(
-                [display_image, cv2.cvtColor(masked_regions, cv2.COLOR_GRAY2BGR)]
+                [cv2.cvtColor(masked_regions, cv2.COLOR_GRAY2BGR)]
             )
 
         return regions
@@ -478,7 +480,9 @@ def main():
     ELECTRONIC_SINGLE_PATH = "./source_material/electronic_printouts/single/Slow Cooker Pineapple Pork Chops.pdf"
 
     print("Loading pages")
-    pages = PDFUtils.load_pdf_pages_path(HARDCOPY_MULTI_PATH_2, dpi=DPI)
+    pages = PDFUtils.load_pdf_pages_path(
+        "./source_material/hardcopy_scans/single/Crunchy Orange Chicken.pdf", dpi=DPI
+    )
     print("Pages loaded")
 
     for i, page in enumerate(pages):

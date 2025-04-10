@@ -18,13 +18,14 @@ class RecipeIngredientsAPITest(APITestCase):
         self.aisle = Aisle.objects.create(name="Produce", user=self.user)
         self.ingredient =  Ingredient.objects.create(
             name="TEST-OBJECT-" + str(uuid.uuid4()),
-            calories_per_100g=random.uniform(50, 500),
-            protein_per_100g=random.uniform(1, 30),
-            carbs_per_100g=random.uniform(1, 50),
-            sugar_per_100g=random.uniform(0, 30),
-            fat_per_100g=random.uniform(0, 20),
-            sodium_per_100mg=random.uniform(0,1500),
-            fiber_per_100g=random.uniform(0, 15),
+            nutrients = {}
+            # calories_per_100g=random.uniform(50, 500),
+            # protein_per_100g=random.uniform(1, 30),
+            # carbs_per_100g=random.uniform(1, 50),
+            # sugar_per_100g=random.uniform(0, 30),
+            # fat_per_100g=random.uniform(0, 20),
+            # sodium_per_100mg=random.uniform(0,1500),
+            # fiber_per_100g=random.uniform(0, 15),
 
         )
         self.recipe = Recipe.objects.create(user=self.user, name="Tomato Soup")

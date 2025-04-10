@@ -9,6 +9,7 @@ WORKDIR /app
 # Copy the requirements.txt and install dependencies
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN python -m spacy download en_core_web_sm
 
 # Copy all project files into the container
 COPY . /app

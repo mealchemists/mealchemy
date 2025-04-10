@@ -213,7 +213,7 @@ ALLOWED_HOSTS = [
     "consumer-102081122635.us-central1.run.app",
     "api.mealchemy.app",
     "mealchemy.app",
-    "backend"
+    "backend",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://backend-service-102081122635.us-west1.run.app",
@@ -243,3 +243,4 @@ if os.getenv("PROD", "False").lower() == "true":
     CSRF_COOKIE_SAMESITE = "None"  
     CSRF_COOKIE_SECURE = True 
     CSRF_COOKIE_DOMAIN = "mealchemy.app"
+

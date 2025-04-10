@@ -160,6 +160,7 @@ Now, based on the provided text, generate the following fields in the JSON:
             - For example, if the text is "1 cup milk", then the ingredient's "name" should be "milk", the "quantity" should be 1, and the "unit" should be "cup".
             - For example, if the text is "1 can of olives", then the ingredient's "name" should be "can of olives", the "quantity" should be 1, and the "unit" should be "null".
             - For example, if the text is "one head of lettuce", then the ingredient's "name" should be "head of lettuce", the "quantity" should be 1, and the "unit" should be "null".
+            - For example, if the text is "1 can (398 ml) coconut milk", then the ingredient\'s "name" should be "coconut milk", the "quantity" should be 398, and the "unit" should be "mL".
      - Quantity (if specified)
         - All quantities should be converted to numbers.
             - For example, if a quantity is given as "1/3" or "⅓", then it should be converted to "0.33".
@@ -178,7 +179,7 @@ Now, based on the provided text, generate the following fields in the JSON:
             - L (liter)
             - g (gram)
             - kg (kilogram)
-            - If the ingredient quantity is based on a count unit (e.g., "1 can of coconut milk"), do not abbreviate.
+        - If the ingredient quantity is based on a count unit (e.g., "1 can of coconut milk"), and there is no explicit measurement given in the same line, do not abbreviate.
 
 3. **Steps:**
    - A list of steps, each containing:
@@ -227,6 +228,7 @@ PDF_SYSTEM_PROMPT = (
     '      - For example, if the text is "1 cup milk", then the ingredient\'s "name" should be "milk", the "quantity" should be 1, and the "unit" should be "cup".\n'
     '      - For example, if the text is "1 can of olives", then the ingredient\'s "name" should be "can of olives", the "quantity" should be 1, and the "unit" should be "null".\n'
     '      - For example, if the text is "one head of lettuce", then the ingredient\'s "name" should be "head of lettuce", the "quantity" should be 1, and the "unit" should be "null".'
+    '      - For example, if the text is "1 can (398 ml) coconut milk", then the ingredient\'s "name" should be "coconut milk", the "quantity" should be 398, and the "unit" should be "mL".\n'
     "- **All measurement units must be converted to their most common abbreviated forms STRICTLY DEFINED FROM THE LIST BELOW:**\n"
     "    - tsp (teaspoon)\n"
     "    - tbsp (tablespoon)\n"
@@ -241,7 +243,7 @@ PDF_SYSTEM_PROMPT = (
     "    - L (liter)\n"
     "    - g (gram)\n"
     "    - kg (kilogram)\n"
-    '- If the ingredient quantity is based on a count unit (e.g., "1 can of coconut milk"), do not abbreviate.\n'
+    '- If the ingredient quantity is based on a count unit (e.g., "1 can of coconut milk"), and there is no explicit measurement given in the same line, do not abbreviate.\n'
     "- Output the JSON exactly in the specified format with proper keys and data types.\n"
     "- Your response should consist solely of the structured, prettily printed JSON string without any additional Markdown formatting."
 )
