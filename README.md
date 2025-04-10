@@ -74,7 +74,7 @@ Installation of docker can be found here:  https://docs.docker.com/engine/instal
 - Chrome
   - Ubuntu:
     - `wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb`
-    - `dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install`
+    - `sudo dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install`
 
 #### Virtual Environment
 Create a Python virtual environment
