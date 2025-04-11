@@ -78,7 +78,7 @@ jobs:
             --set-env-vars "EMAIL_PASSWORD=${{secrets.EMAIL_PASSWORD}}" \
             --set-env-vars "DEFAULT_EMAIL=${{secrets.DEFAULT_EMAIL}}" \
             --set-env-vars "PIKA_URL=${{secrets.PIKA_URL}}" \
-              --set-env-vars "USDA_FDC_API_KEY=etBO0wIQc1ItuiBGVY9BOPAJH3BYNrBkf0j8es2t"
+            --set-env-vars "USDA_FDC_API_KEY=etBO0wIQc1ItuiBGVY9BOPAJH3BYNrBkf0j8es2t" \
             --set-env-vars "PROD=true" \
             --platform managed \
             --port 8080
