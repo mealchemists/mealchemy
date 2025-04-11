@@ -43,12 +43,12 @@ def download_from_bucket(bucket_name, source_filepath, dst_blob_name):
     blob.download_to_filename(source_filepath)
 
 
-def extract_recipe_data_pdf(temp_path, user, token):
+def extract_recipe_data_pdf(gcs_blob_path, temp_path, user, token):
     # Download the file from GCS to the local temp path
     download_from_bucket(
         bucket_name="modified-wonder-447918-q3_mealchemy_bucket",
-        source_filepath=temp_path,
-        dst_blob_name=temp_path,
+        source_filepath=temp_path,      # local file path to save to
+        dst_blob_name=gcs_blob_path,    # blob name in GCS
     )
 
     # load and extract
@@ -62,7 +62,6 @@ def extract_recipe_data_pdf(temp_path, user, token):
         shutil.rmtree(item)
 
     print("Purged temporary directory!")
-
 
     raw_texts = PDFUtils.extract_raw_text_hardcopy(pages, verbose=True)
 
