@@ -1,3 +1,4 @@
+import tempfile
 import pika
 import sys
 import json
@@ -86,8 +87,15 @@ class AsyncConsumer:
                 args = (url, user, token)
             elif task_type == "pdf":
                 callback_function = extract_recipe_data_pdf
-                temp_file_path = payload.get("temp_path", None)
-                args = (temp_file_path, user, token)
+
+                gcs_blob_path = payload.get("gcs_blob_path")
+                if not gcs_blob_path:
+                    raise ValueError("Missing GCS blob path in payload")
+
+                # Create a local temp file path to download the PDF
+                temp_path = tempfile.mktemp(suffix=".pdf", prefix="mealchemy_download_")
+
+                args = (gcs_blob_path, temp_path, user, token)
             else:
                 raise ValueError("Invalid task type!")
 

@@ -1,4 +1,6 @@
+import shutil
 from urllib.parse import unquote
+import uuid
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
@@ -206,23 +208,21 @@ def recipe_url(request):
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
-
 def upload_to_bucket(bucket_name, source_filepath, dst_blob_name):
     storage_client = storage.Client()
-
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(dst_blob_name)
-
     blob.upload_from_filename(source_filepath)
+    print(f"Uploaded {source_filepath} to gs://{bucket_name}/{dst_blob_name}")
 
-
+    
 @api_view(["POST"])
 def recipe_pdf(request):
     if request.method == "POST":
         file = request.FILES.get("temp_file")
         user_id = request.user.id
 
-        # store PDF file in tempdir
+        # Save the uploaded PDF to a temp dir
         temp_dir = tempfile.mkdtemp(prefix="mealchemy_pdf_upload")
         temp_path = os.path.join(temp_dir, file.name)
 
@@ -230,22 +230,28 @@ def recipe_pdf(request):
             for chunk in file.chunks():
                 dst.write(chunk)
 
+        # Upload to GCS
+        dst_blob_name = f"tmp/{uuid.uuid4()}_{file.name}"
         upload_to_bucket(
             bucket_name="modified-wonder-447918-q3_mealchemy_bucket",
             source_filepath=temp_path,
-            dst_blob_name="tmp/",
+            dst_blob_name=dst_blob_name,
         )
 
-        # Add the token to the data to send via message queue
+        # Clean up the local file
+        shutil.rmtree(temp_dir)
+
+        # Generate access token for message
         access_token = get_jwt_token(user_id)
         print(f"Generated token for user {user_id}: {access_token}")
 
-        # construct message for consumer, sending the path to the tempfile
-        message = dict()
-        message["user"] = user_id
-        message["token"] = access_token
-        message["task_type"] = "pdf"
-        message["payload"] = {"temp_path": temp_path}
+        # Construct message for consumer
+        message = {
+            "user": user_id,
+            "token": access_token,
+            "task_type": "pdf",
+            "payload": {"gcs_blob_path": dst_blob_name},
+        }
 
         success = publish_message(message)
         if success:
